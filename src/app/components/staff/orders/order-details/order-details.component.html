@@ -1,0 +1,262 @@
+<div class="my-4 text-center justify-center">
+    <h2 class="mb-5 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Order</h2>
+</div>
+
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center justify-center" id="order-tab" data-tabs-toggle="#order-tab-content" role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="overview-tab" data-tabs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="false">Overview</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="products-tab" data-tabs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Products</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="shipping-tab" data-tabs-target="#shipping" type="button" role="tab" aria-controls="shipping" aria-selected="false">Shipping</button>
+        </li>
+        <li role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="track-tab" data-tabs-target="#track" type="button" role="tab" aria-controls="track" aria-selected="false">Track</button>
+        </li>
+    </ul>
+</div>
+
+<form [formGroup]="orderForm" (ngSubmit)="save()" id="order-tab-content">
+    <input type="hidden" id="id" name="id" formControlName="id"/>
+    <!-- Tab Overview -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">User ID:</label>
+            <input [formControl]="userId" type="text" readonly
+            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer:</label>
+            <input [formControl]="userFullName" type="text" readonly
+            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Cost:</label>
+            <input [formControl]="productCost" type="number" readonly
+            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Subtotal:</label>
+            <input [formControl]="subtotal" type="number" readonly
+            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Shipping Cost:</label>
+            <input [formControl]="shippingCost" (change)="updateTotal()" type="number" step="0.01" min="0" required
+            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Tax:</label>
+            <input [formControl]="tax" (change)="updateTotal()" type="number" step="0.01" min="0" required
+            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Total:</label>
+            <input [formControl]="total" type="number" readonly
+            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Payment Method:</label>
+            <select id="paymentMethod" formControlName="paymentMethod" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option value="COD">COD</option>
+                <option value="CREDIT_CARD">CREDIT_CARD</option>
+                <option value="PAYPAL">PAYPAL</option>
+            </select>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Status:</label>
+            <select id="status" formControlName="status" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option value="NEW">NEW - Order was placed by the customer</option>
+                <option value="CANCEL">CANCEL - Order was rejected</option>
+                <option value="PROCESSING">PROCESSING - Order is being processed</option>
+                <option value="PACKAGED">PACKAGED - Products were packaged</option>
+                <option value="PICKED">PICKED - Shipper picked the package</option>
+                <option value="SHIPPING">SHIPPING - Shipper is delivering the package</option>
+                <option value="DELIVERED">DELIVERED - Customer received products</option>
+                <option value="RETURNED">RETURNED - Products were returned</option>
+                <option value="RETURN_REQUESTED">RETURN_REQUESTED - Customer send request to return purchase</option>
+                <option value="PAID">PAID - Customer has paid this order</option>
+                <option value="REFUNDED">REFUNDED - Customer has been refunded</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tab Products -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="products" role="tabpanel" aria-labelledby="products-tab">
+        <div *ngFor="let orderDetail of listOrderDetails, index as idx" id="order_detail_{{orderDetail.id}}" class="flex flex-row z-0 w-full mb-5 group rounded border-2 dark:border-white dark:text-white p-4">
+            <div class="flex flex-col w-32">
+                <label class="mb-4">{{ idx + 1 }}</label>
+                <button *ngIf="listOrderDetails.length > 1" type="button" (click)="removeOrderDetailById(orderDetail.id)"
+                    class="w-fit text-red-600 dark:text-red-500 hover:underline">
+                        <span class="sr-only">Delete this order detail</span>
+                        <i class="fa-solid fa-trash-can fa-lg"></i>
+                </button>
+            </div>
+
+            <div class="h-fit w-96">
+                <img class="h-48 w-48" src="{{ orderDetail.productImagePath }}" alt="Product Main Image" />
+            </div>
+
+            <div class="flex flex-col w-full">
+                <span class="w-full pb-4 font-bold text-lg">{{ orderDetail.productName }}</span>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Product Cost:</label>
+                    <input type="number" name="productCostTotal" class="text-gray-900" step="0.01" min="0" (change)="updateProductCost()" [(ngModel)]="orderDetail.productCostTotal" [ngModelOptions]="{standalone: true}">
+                </div>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Quantity:</label>
+                    <input type="number" name="quantity" class="text-gray-900" step="1" min="1" (change)="updateQuantity(orderDetail.id)" [(ngModel)]="orderDetail.quantity" [ngModelOptions]="{standalone: true}">
+                </div>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Unit Price:</label>
+                    <input type="number" name="unitPrice" class="text-gray-900" step="0.01" min="0" (change)="updateQuantity(orderDetail.id)" [(ngModel)]="orderDetail.unitPrice" [ngModelOptions]="{standalone: true}">
+                </div>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Subtotal:</label>
+                    <input type="number" name="subtotal" class="bg-gray-300 text-gray-900" readonly [(ngModel)]="orderDetail.subtotal" [ngModelOptions]="{standalone: true}">
+                </div>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Shipping Cost:</label>
+                    <input type="number" name="shippingCost" class="text-gray-900" step="0.01" min="0" (change)="updateShippingCost()" [(ngModel)]="orderDetail.shippingCost" [ngModelOptions]="{standalone: true}">
+                </div>
+            </div>
+        </div>
+        
+        <button type="button" id="btnAddProduct" name="btnAddProduct" class="bg-green-500 text-white p-2 rounded" (click)="showAddProductModal = true;">Add Product</button>
+    </div>
+
+    <!-- Tab Shipping -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="shipping" role="tabpanel" aria-labelledby="shipping-tab">
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Order Time:</label>
+            <div class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">{{ orderTime.value | date}}</div>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Deliver Days:</label>
+            <app-input (change)="updateDeliverDate()" class="w-1/3" [control]="deliverDays" [type]="'number'" [step]="1" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Expect Deliver Date:</label>
+            <div class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">{{ deliverDate.value | date}}</div>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name:</label>
+            <app-input class="w-1/3" [control]="firstName" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name:</label>
+            <app-input class="w-1/3" [control]="lastName" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number:</label>
+            <app-input class="w-1/3" [control]="phoneNumber" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 1:</label>
+            <app-input class="w-1/3" [control]="addressLine1" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 2:</label>
+            <app-input class="w-1/3" [control]="addressLine2" [type]="'text'"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">City:</label>
+            <app-input class="w-1/3" [control]="city" [type]="'text'"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Country:</label>
+            <select id="country" formControlName="country" (change)="getStateByCountryName()" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option *ngFor="let c of listCountries" value="{{ c.name }}">{{ c.name }}</option>
+            </select>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">State:</label>
+            <select id="state" formControlName="state" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option *ngFor="let s of listStates" value="{{ s.name }}">{{ s.name }}</option>
+            </select>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Postal Code:</label>
+            <app-input class="w-1/3" [control]="postalCode" [type]="'text'"></app-input>
+        </div>
+    </div>
+
+    <!-- Tab Track -->
+    <div class="hidden p-4 rounded-lg w-auto mx-auto" id="track" role="tabpanel" aria-labelledby="track-tab">
+        <div *ngFor="let track of listOrderTrack, index as idx" id="track_{{track.id}}" class="flex flex-row z-0 w-full mb-5 group rounded border-2 bg-white p-4">
+            <div class="flex flex-col w-32">
+                <label class="mb-4">{{ idx + 1 }}</label>
+                <button *ngIf="track.status != 'NEW'" type="button" (click)="removeTrackById(track.id)" 
+                    class="w-fit text-red-600 dark:text-red-500 hover:underline">
+                        <span class="sr-only">Delete this track</span>
+                        <i class="fa-solid fa-trash-can fa-lg"></i>
+                </button>
+            </div>
+            <div class="flex flex-col w-full">
+                <div class="flex flex-row pb-2">
+                    <label class="w-32 my-auto">Time:</label>
+                    <input type="datetime-local" name="trackTime" [(ngModel)]="track.updatedTime" [ngModelOptions]="{standalone: true}" [readOnly]="track.status == 'NEW'">
+                </div>
+                <div class="flex flex-row pb-2">
+                    <label class="w-32 my-auto">Status:</label>
+                    <input *ngIf="track.status == 'NEW'" type="text" name="trackStatus" value="NEW" readonly>
+                    <select *ngIf="track.status != 'NEW'" name="trackStatus" [(ngModel)]="track.status" [ngModelOptions]="{standalone: true}">
+                        <option value="NEW">NEW</option>
+                        <option value="CANCEL">CANCEL</option>
+                        <option value="PROCESSING">PROCESSING</option>
+                        <option value="PACKAGED">PACKAGED</option>
+                        <option value="PICKED">PICKED</option>
+                        <option value="SHIPPING">SHIPPING</option>
+                        <option value="DELIVERED">DELIVERED</option>
+                        <option value="RETURNED">RETURNED</option>
+                        <option value="RETURN_REQUESTED">RETURN_REQUESTED</option>
+                        <option value="PAID">PAID</option>
+                        <option value="REFUNDED">REFUNDED</option>
+                    </select>
+                </div>
+                <div class="flex flex-row">
+                    <label class="w-32 my-auto">Notes:</label>
+                    <textarea name="trackNotes" rows="2" class="w-96" [(ngModel)]="track.notes" [ngModelOptions]="{standalone: true}" [readOnly]="track.status == 'NEW'"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <button (click)="addNewTrack()" type="button"  id="btnAddTrack" name="btnAddTrack" class="bg-green-500 text-white p-2 rounded">Add Track Record</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center justify-content-center">
+        <button type="button" (click)="cancel()"
+        class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
+        <button type="submit" [disabled]="orderForm.invalid"
+        class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+    </div>
+</form>
+
+<app-add-product-modal [isVisible]="showAddProductModal" (addProductToOrderEmitter)="addProductToOrder($event)" (closeModalEmitter)="closeModal()"></app-add-product-modal>

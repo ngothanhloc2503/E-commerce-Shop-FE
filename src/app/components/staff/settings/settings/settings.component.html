@@ -1,0 +1,58 @@
+<div class="my-4 text-center justify-center">
+    <h2 class="mb-5 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Settings</h2>
+</div>
+
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center justify-center" id="settings-tab" data-tabs-toggle="#settings-tab-content" role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="general-tab" data-tabs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">General</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="countries-tab" data-tabs-target="#countries" type="button" role="tab" aria-controls="countries" aria-selected="false">Countries</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="states-tab" data-tabs-target="#states" type="button" role="tab" aria-controls="states" aria-selected="false">States</button>
+        </li>
+        <li role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="mail-server-tab" data-tabs-target="#mail-server" type="button" role="tab" aria-controls="mail-server" aria-selected="false">Mail Server</button>
+        </li>
+        <li role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="mail-templates-tab" data-tabs-target="#mail-templates" type="button" role="tab" aria-controls="mail-templates" aria-selected="false">Mail Templates</button>
+        </li>
+        <li role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="payment-tab" data-tabs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">Payment</button>
+        </li>
+    </ul>
+</div>
+
+<div id="settings-tab-content">
+    <!-- Tab General -->
+    <div class="hidden p-4 rounded-lg max-w-md mx-auto" id="general" role="tabpanel" aria-labelledby="general-tab">
+        <app-general-setting [listAllSettings]="listAllSettings" [logoImageBaseURI]="logoImageBaseURI"></app-general-setting>
+    </div>
+
+    <!-- Tab Countries -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="countries" role="tabpanel" aria-labelledby="countries-tab">
+        <app-countries-setting></app-countries-setting>
+    </div>
+
+    <!-- Tab States -->
+    <div class="hidden p-4 rounded-lg" id="states" role="tabpanel" aria-labelledby="states-tab">
+        <app-state-setting></app-state-setting>
+    </div>
+
+    <!-- Tab Mail Server -->
+    <div class="hidden p-4 rounded-lg w-auto mx-auto" id="mail-server" role="tabpanel" aria-labelledby="mail-server-tab">
+        <app-mail-server-setting [listAllSettings]="listAllSettings"></app-mail-server-setting>
+    </div>
+
+    <!-- Tab Mail Templates -->
+    <div class="hidden px-4 rounded-lg w-full mx-auto" id="mail-templates" role="tabpanel" aria-labelledby="mail-templates-tab">
+        <app-mail-templates-setting [listAllSettings]="listAllSettings"></app-mail-templates-setting>
+    </div>
+
+    <!-- Tab Payment -->
+    <div class="hidden p-4 rounded-lg w-auto mx-auto" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+        <app-payment-setting [listAllSettings]="listAllSettings"></app-payment-setting>
+    </div>
+</div>

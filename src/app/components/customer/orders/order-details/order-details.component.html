@@ -1,0 +1,226 @@
+<div *ngIf="isVisible" id="order-details-modal" tabindex="0" aria-hidden="true" class="overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center flex">
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Order Details
+                </h3>
+                <button type="button" (click)="closeModal()"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <div>
+                <!-- Tab header -->
+                <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center dark:text-white">
+                        <li class="me-2">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-600 hover:border-gray-300 dark:hover:text-blue-600" (click)="showTab('overview')" [class]="activeTab === 'overview' ? 'text-blue-600 font-bold' : ''">Overview</button>
+                        </li>
+                        <li class="me-2">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-600 hover:border-gray-300 dark:hover:text-blue-600" (click)="showTab('products')" [class]="activeTab === 'products' ? 'text-blue-600 font-bold' : ''">Products</button>
+                        </li>
+                        <li class="me-2">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-600 hover:border-gray-300 dark:hover:text-blue-600" (click)="showTab('shipping')" [class]="activeTab === 'shipping' ? 'text-blue-600 font-bold' : ''">Shipping</button>
+                        </li>
+                        <li>
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-600 hover:border-gray-300 dark:hover:text-blue-600" (click)="showTab('track')" [class]="activeTab === 'track' ? 'text-blue-600 font-bold' : ''">Track</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tab content -->
+                <div id="order-tab-content">
+                    <!-- Tab Overview -->
+                    <div *ngIf="activeTab === 'overview'" class="p-4 rounded-lg w-full mx-auto" id="overview">
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Order ID:</label>
+                            <input [value]="order.id" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Subtotal:</label>
+                            <input [value]="order.subtotal" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Shipping Cost:</label>
+                            <input [value]="order.shippingCost" readonly type="text" class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Tax:</label>
+                            <input [value]="order.tax" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Total:</label>
+                            <input [value]="order.total" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Payment Method:</label>
+                            <input [value]="order.paymentMethod" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Status:</label>
+                            <input [value]="order.status" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                    </div>
+                
+                    <!-- Tab Products -->
+                    <div *ngIf="activeTab === 'products'" class="p-4 rounded-lg w-full mx-auto" id="products">
+                        <div *ngFor="let orderDetail of order.orderDetails, index as idx" id="order_detail_{{orderDetail.id}}" class="flex flex-row z-0 w-full mb-5 group rounded border-2 dark:border-white dark:text-white p-4">
+                            <label class="mb-4 w-32">{{ idx + 1 }}</label>
+                
+                            <div class="h-fit w-96">
+                                <img class="h-48 w-48" src="{{ orderDetail.productImagePath }}" alt="Product Main Image" />
+                            </div>
+                
+                            <div class="flex flex-col w-full">
+                                <span class="w-full pb-4 font-bold text-lg">{{ orderDetail.productName }}</span>
+                                <div class="flex flex-row">
+                                    <label class="w-32 my-auto">Quantity:</label>
+                                    <input [value]="orderDetail.quantity" type="text" readonly class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                                <div class="flex flex-row">
+                                    <label class="w-32 my-auto">Unit Price:</label>
+                                    <input [value]="orderDetail.unitPrice" type="text" readonly 
+                                    class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                                <div class="flex flex-row">
+                                    <label class="w-32 my-auto">Subtotal:</label>
+                                    <input [value]="orderDetail.subtotal" type="text" readonly 
+                                    class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                                <div class="flex flex-row">
+                                    <label class="w-32 my-auto">Shipping Cost:</label>
+                                    <input [value]="orderDetail.shippingCost" type="text" readonly 
+                                    class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Tab Shipping -->
+                    <div *ngIf="activeTab === 'shipping'" class="p-4 rounded-lg w-full mx-auto" id="shipping">
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Order Time:</label>
+                            <div class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">{{ order.orderTime | date}}</div>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Deliver Days:</label>
+                            <input [value]="order.deliverDays" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Expect Deliver Date:</label>
+                            <div class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">{{ order.deliverDate | date}}</div>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name:</label>
+                            <input [value]="order.firstName" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name:</label>
+                            <input [value]="order.lastName" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number:</label>
+                            <input [value]="order.phoneNumber" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 1:</label>
+                            <input [value]="order.addressLine1" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 2:</label>
+                            <input [value]="order.addressLine2" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">City:</label>
+                            <input [value]="order.city" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Country:</label>
+                            <input [value]="order.country" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">State:</label>
+                            <input [value]="order.state" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                
+                        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+                            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">Postal Code:</label>
+                            <input [value]="order.postalCode" type="text" readonly
+                            class="shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                        </div>
+                    </div>
+                
+                    <!-- Tab Track -->
+                    <div *ngIf="activeTab === 'track'" class="p-4 rounded-lg w-auto mx-auto" id="track">
+                        <div *ngFor="let track of order.orderTrack, index as idx" id="track_{{track.id}}" class="flex flex-row z-0 w-full mb-5 group rounded border-2 bg-white p-4">
+                            <label class="mb-4 w-32">{{ idx + 1 }}</label>
+
+                            <div class="flex flex-col w-full">
+                                <div class="flex flex-row pb-2">
+                                    <label class="w-32 my-auto">Time:</label>
+                                    <div class="w-full shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light">{{ track.updatedTime | date}}</div>
+                                </div>
+                                <div class="flex flex-row pb-2">
+                                    <label class="w-32 my-auto">Status:</label>
+                                    <input [value]="track.status" type="text" readonly
+                                    class="w-full shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                                <div class="flex flex-row">
+                                    <label class="w-32 my-auto">Notes:</label>
+                                    <input [value]="track.notes" type="text" readonly
+                                    class="w-full shadow-sm bg-gray-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-1/3 p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="flex justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button (click)="closeModal()" type="button" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-red-500 rounded-lg border border-gray-200 hover:bg-red-600 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:border-gray-600 dark:hover:text-white">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

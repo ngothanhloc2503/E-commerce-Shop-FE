@@ -1,0 +1,43 @@
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { StorageService } from '../../storage/storage.service';
+import { Observable } from 'rxjs';
+import { API_URL } from '../../../constants';
+import { UtilsService } from '../../utils/utils.service';
+
+const BASE_URL = API_URL + '/customer/checkout';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CheckoutService {
+
+  constructor(
+    private httpClient: HttpClient,
+    private utilsService: UtilsService,
+  ) { }
+
+  getCheckoutInformation(): Observable<any> {
+    return this.httpClient.get(BASE_URL, {
+      headers: this.utilsService.createAuthorizationHeader(),
+    });
+  }
+
+  placeOrder(paymentMethod: string): Observable<any> {
+    let data = new FormData();
+    data.append("paymentMethod", paymentMethod);
+    return this.httpClient.post(BASE_URL + '/place-order', data, {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'text',
+    });
+  }
+
+  processPaypalOrder(orderId: string) {
+    let data = new FormData();
+    data.append("orderId", orderId);
+    return this.httpClient.post(BASE_URL + '/process-paypal-order', data, {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'text',
+    });
+  }
+}

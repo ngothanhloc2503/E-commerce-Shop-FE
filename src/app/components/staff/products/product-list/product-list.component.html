@@ -1,0 +1,186 @@
+<div class="my-4">
+    <h2 class="mb-4 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Products</h2>
+    <div>
+        <a routerLink="/staff/products/new" class="fa-solid fa-folder-plus fa-xl icon-dark dark:text-blue-500" style="text-decoration:none"></a>
+        <span class="dark:text-white">&nbsp;|&nbsp;</span>
+        <a routerLink="/staff/products/export/csv" class="fa-solid fa-file-csv fa-xl icon-dark dark:text-blue-500" style="text-decoration:none"></a>
+    </div>
+</div>
+
+
+<form class="w-max mx-auto mb-2" [formGroup]="searchForm" (ngSubmit)="search()">
+    <label for="search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+    <div class="flex justify-center">
+        <select (change)="findByCategory($event)" formControlName="categoryID"
+            class="block me-2 p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-200 focus:border-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-200 dark:focus:border-blue-200">
+            <option selected value="0">All Categories</option>
+            <option *ngFor="let cat of listCategories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+
+        <div class="relative w-80">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                </svg>
+            </div>
+            <input formControlName="keyword" type="search" id="search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-200 focus:border-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-200 dark:focus:border-blue-200" placeholder="Search..." required />
+        </div>
+        <button type="submit" class="ms-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+        <button type="button" (click)="clear()" class="ms-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Clear</button>
+    </div>
+</form>
+
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-gray-400">
+        <thead class="text text-gray-900 uppercase bg-blue-200 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    <button type="button" (click)="sort('id')">
+                        Product ID
+                        <i *ngIf="sortField == 'id' && sortDir == 'desc'" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sortField == 'id' && sortDir == 'asc'" class="fa-solid fa-sort-down"></i>
+                    </button>
+                </th>
+                <th scope="col" class="px-6 py-3" style="text-transform: capitalize;">
+                    Main Image
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <button type="button" (click)="sort('name')">
+                        Name
+                        <i *ngIf="sortField == 'name' && sortDir == 'desc'" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sortField == 'name' && sortDir == 'asc'" class="fa-solid fa-sort-down"></i>
+                    </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <button type="button" (click)="sort('brand')">
+                        Brand
+                        <i *ngIf="sortField == 'brand' && sortDir == 'desc'" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sortField == 'brand' && sortDir == 'asc'" class="fa-solid fa-sort-down"></i>
+                    </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <button type="button" (click)="sort('category')">
+                        Category
+                        <i *ngIf="sortField == 'category' && sortDir == 'desc'" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sortField == 'category' && sortDir == 'asc'" class="fa-solid fa-sort-down"></i>
+                    </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <button type="button" (click)="sort('enabled')">
+                        Enabled
+                        <i *ngIf="sortField == 'enabled' && sortDir == 'desc'" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sortField == 'enabled' && sortDir == 'asc'" class="fa-solid fa-sort-down"></i>
+                    </button>
+                </th>
+                <th scope="col" class="px-6 py-3" style="text-transform: capitalize;">
+                    Action
+                </th>
+            </tr>
+        </thead>
+
+        <tbody *ngFor="let product of listProducts">
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td class="px-6 py-4">
+                    {{ product.id }}
+                </td>
+                <td class="px-6 py-4">
+                    <img class="h-32 w-32" src="{{ product.mainImagePath }}" alt="Product Main Image" />
+                </td>
+                <td class="px-6 py-4">
+                    {{ product.name }}
+                </td>
+                <td class="px-6 py-4">
+                    {{ product.brand.name }}
+                </td>
+                <td class="px-6 py-4">
+                    {{ product.category.name }}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <button type="button" (click)="changeEnabledStatus(product.id, product.enabled)" *ngIf="product.enabled" class="h-3.5 w-3.5 rounded-full bg-green-500 ms-4"></button>
+                        <button type="button" (click)="changeEnabledStatus(product.id, product.enabled)" *ngIf="!product.enabled" class="h-3.5 w-3.5 rounded-full bg-red-500 ms-4"></button>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <a routerLink="/staff/products/edit/{{product.id}}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        <span class="sr-only">Edit this product</span>
+                        <i class="fa-solid fa-pen-to-square fa-xl"></i>
+                    </a>
+                    &nbsp;
+                    <button type="button" (click)="deleteProduct(deleteModal, product.id)" 
+                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        <span class="sr-only">Delete this product</span>
+                        <i class="fa-solid fa-trash-can fa-xl"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <nav class="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4" aria-label="Table navigation">
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">Showing <span class="font-semibold text-gray-900 dark:text-white">{{ startCount }}-{{ endCount }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ totalItems }} products</span></span>
+        
+
+        <div class="flex items-center ms-auto me-2">
+            <span class="text-sm font-medium dark:text-white">
+                Products per page: &nbsp; 
+            </span>
+            <select (change)="changePageSize($event)"
+                class="h-8 text-sm pt-2 leading-none transition duration-75 border-gray-300 rounded-lg shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-inset focus:ring-blue-500 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+
+        <ul class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
+            <li>
+                <button type="button" (click)="goToPage(1)" [class]="pageNum > 1 ? '' : 'disabled'" title="First" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <span class="sr-only">First</span>
+                    <i class="fa-solid fa-angles-left"></i>
+                </button>
+            </li>
+            <li>
+                <button type="button" (click)="goToPage(pageNum - 1)" [class]="pageNum > 1 ? '' : 'disabled'" title="Previous" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <span class="sr-only">Previous</span>
+                    <i class="fa-solid fa-angle-left"></i>
+                </button>
+            </li>
+            <li *ngIf="pageNum > 3">
+                <button type="button" title="Previous" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" disabled>...</button>
+            </li>
+            <li *ngFor="let pageNumber of [].constructor(totalPages); let i = index">
+                <button type="button" *ngIf="i + 1 != pageNum && pageNum - 4 < i && i < pageNum + 2" 
+                    (click)="goToPage(i + 1)"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">{{ i + 1 }}</button>
+                <button type="button" *ngIf="i + 1 == pageNum" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" disabled>{{i + 1}}</button>
+            </li>
+            <li *ngIf="pageNum + 2 < totalPages">
+                <button type="button" title="Previous" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" disabled>...</button>
+            </li>
+            <li>
+                <button type="button" (click)="goToPage(pageNum + 1)" [class]="pageNum < totalPages ? '' : 'disabled'" title="Next" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <span class="sr-only">Next</span>
+                    <i class="fa-solid fa-angle-right"></i>
+                </button>
+            </li>
+            <li>
+                <button type="button" (click)="goToPage(totalPages)" [class]="pageNum < totalPages ? '' : 'disabled'" title="Last" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <span class="sr-only">Last</span>
+                    <i class="fa-solid fa-angles-right"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<ng-template #deleteModal>
+    <div class="p-4 md:p-5 text-center">
+        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this product?</h3>
+    </div>
+</ng-template>

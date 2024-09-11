@@ -1,0 +1,73 @@
+<div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
+    <h2 class="mb-2 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Checkout</h2>
+
+    <div class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+        <div class="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-3xl">
+            <!-- Shipping Information -->
+            <div class="space-y-6 rounded-lg text-gray-900 dark:text-white border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white border-b border-gray-400">Shipping information:</p>
+
+                <div class="space-y-4">
+                    <span class="font-semibold">Ship to: </span>
+                    <span class="text-base font-normal text-gray-700 dark:text-gray-400">{{ address }}</span>
+                    <a href="/address-book?redirect=checkout" class="text-blue-600"> [Ship to another address]</a>
+                </div>
+
+                <div class="space-y-4">
+                    <span class="font-semibold">Days to deliver: </span>
+                    <span class="text-base font-normal text-gray-700 dark:text-gray-400">{{ deliverDays }} day(s)</span>
+                </div>
+
+                <div class="space-y-4">
+                    <span class="font-semibold">Expected Deliver Date: </span>
+                    <span class="text-base font-normal text-gray-700 dark:text-gray-400">{{ deliverDate | date }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="mt-4 space-y-6 rounded-lg text-gray-900 dark:text-white border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white border-b border-gray-400">Payment Method:</p>
+                
+                <div class="w-full">
+                    <div *ngIf="codSupported" class="pb-2">
+                        <button type="button" (click)="placeOrder('COD')" class="w-full text-lg text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded px-5 py-4 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Place order with COD (Cash on Delivery)</button>
+                    </div>
+                    <div id="paypal-button-container" class="w-full bg-white rounded"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="mx-auto mt-6 w-full flex-1 space-y-6 lg:mt-0">
+            <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">Order Summary:</p>
+
+                <!-- Details -->
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <div *ngFor="let item of listItems" class="flex items-center text-gray-900 dark:text-white justify-between gap-4 border-b border-gray-200 pb-2 dark:border-gray-700">
+                            <span class="w-10">{{ item.quantity }} x </span>
+                            <span class="w-full">{{ getShortName(item.productName) }}. Ship: {{ settingService.getFormatMoney(item.shippingCost) }}</span>
+                            <span class="w-1/6">{{ settingService.getFormatMoney(item.subtotal) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <dl class="flex items-center justify-between gap-4">
+                            <dt class="text-base font-semibold text-gray-900 dark:text-white">Product total:</dt>
+                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.getFormatMoney(productTotal) }}</dd>
+                        </dl>
+                        <dl class="flex items-center justify-between gap-4">
+                            <dt class="text-base font-semibold text-gray-900 dark:text-white">Shipping total:</dt>
+                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.getFormatMoney(shippingCostTotal) }}</dd>
+                        </dl>
+                        <dl class="flex items-center justify-between gap-4">
+                            <dt class="text-base font-semibold text-gray-900 dark:text-white">Payment total:</dt>
+                            <dd class="text-base font-bold text-gray-900 dark:text-white">{{ settingService.getFormatMoney(paymentTotal) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

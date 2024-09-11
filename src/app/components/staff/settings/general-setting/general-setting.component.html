@@ -1,0 +1,60 @@
+<form [formGroup]="generalSettingForm" (ngSubmit)="saveGeneralSettings()" id="general-settings-tab-content">
+    <div class="z-0 w-full mb-5 group">
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="site_logo">Site Logo:</label>
+        <img id='preview_logo' for="site_logo" class="mx-auto mb-2 h-[40px] w-auto object-cover" src="{{ logoPreviewSrc }}" alt="Preview site logo" />
+        <input (change)="onSelectLogo($event)" required
+        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="site_logo" id="site_logo" type="file">
+    </div>
+
+    <div class="z-0 mb-5 w-full group">
+        <label for="currency_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Currency Type:</label>
+        <select id="currency_type" [formControl]="CURRENCY_ID" required
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option *ngFor="let currency of listCurrencies" [value]="currency.id">{{ currency.name }} - {{ currency.code }} - {{ currency.symbol }}</option>
+        </select>
+    </div>
+
+    <div class="mb-5">
+        <label for="currency_symbol_position" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Currency Symbol Position:</label>
+        <select id="currency_symbol_position" [formControl]="CURRENCY_SYMBOL_POSITION" required
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="before">Before Value</option>
+            <option value="after">After Value</option>
+        </select>
+    </div>
+
+    <div class="mb-5">
+        <label for="decimal_point_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Decimal Point Type:</label>
+        <select id="decimal_point_type" [formControl]="DECIMAL_POINT_TYPE" required
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="POINT">Point(.)</option>
+            <option value="COMMA">Comma(,)</option>
+        </select>
+    </div>
+
+    <div class="mb-5">
+        <label for="decimal_digits" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Decimal Digits:</label>
+        <select id="decimal_digits" [formControl]="DECIMAL_DIGITS" required
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
+    </div>
+
+    <div class="mb-5">
+        <label for="thousands_point_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thousands  Point Type:</label>
+        <select id="thousands_point_type" [formControl]="THOUSANDS_POINT_TYPE" required
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="POINT">Point(.)</option>
+            <option value="COMMA">Comma(,)</option>
+        </select>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center justify-content-center">
+        <button type="submit" [disabled]="generalSettingForm.invalid"
+        class="text-white w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save General Settings</button>
+    </div>
+</form>

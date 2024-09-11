@@ -1,0 +1,40 @@
+<label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Use this page to manage countries which will displayed in the customer registration form.</label>
+
+<div class="my-4">
+    <button type="button" (click)="onReloadCountryList()"
+    class="text-white w-48 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Reload Country List</button>
+
+    <div class="my-2">
+        <label class="block mb-2 text-gray-900 dark:text-white">Selected Country:</label>
+
+        <select id="select-country" (change)="onSelectCountry($event)"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option *ngFor="let country of listCountries" [value]="country.id">{{ country.name }} - {{ country.code }}</option>
+        </select>
+    </div>
+
+    <div class="my-2">
+        <label class="block mb-2 text-gray-900 dark:text-white">All States/Provinces:</label>
+
+        <select id="select-state" style="height: 175px" size="3" (change)="onSelectState($event)"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option *ngFor="let state of listStates" [value]="state.id">{{ state.name }}</option>
+        </select>
+    </div>
+
+    <form [formGroup]="stateForm" class="flex flex-wrap justify-center items-center py-8">
+        <input hidden type="hidden" formControlName="id">
+
+        <label class="mx-2 text-base text-gray-900 dark:text-white">State/Province Name:</label>
+        <input formControlName="name" type="text"
+        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 md:w-72 lg:w-96 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+        required />
+
+        <button type="button" [disabled]="isChanging || stateForm.invalid" (click)="saveState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mx-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Add</button>
+        <button type="button" [disabled]="!isChanging || stateForm.invalid" (click)="saveState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Update</button>
+        <button type="button" [disabled]="!isChanging" (click)="deleteState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Delete</button>
+    </form>
+</div>

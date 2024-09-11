@@ -1,0 +1,57 @@
+<div class="mb-4 mx-auto w-fit border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap text-sm font-medium text-center justify-center" id="mail-templates-tab"
+        data-tabs-toggle="#mail-templates-tab-content" role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-3 border-b-2 rounded-t-lg" id="customer-verification-tab" data-tabs-target="#customer-verification" type="button" role="tab" aria-controls="customer-verification" aria-selected="false">Customer Verification</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="order-confirmation-tab" data-tabs-target="#order-confirmation" type="button" role="tab" aria-controls="order-confirmation" aria-selected="false">Order confirmation</button>
+        </li>
+    </ul>
+</div>
+<form [formGroup]="mailTemplatesForm" (ngSubmit)="saveMailTemplatesSettings()" id="mail-templates-tab-content">
+    <!-- Tab Customer Verification -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="customer-verification" role="tabpanel" aria-labelledby="customer-verification-tab">
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail Subject:</label>
+            <app-input class="w-full" [control]="CUSTOMER_VERIFY_SUBJECT" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail Content:</label>
+            <div class="w-full">
+                <editor id="customer-verification-content" class="w-full" [init]="{plugins: 'link'}" apiKey="th474spuudpxmju6zc8oif37cw8k5609ouk8ytonewvqqiza" formControlName="CUSTOMER_VERIFY_CONTENT" required></editor>
+                <div *ngIf="CUSTOMER_VERIFY_CONTENT.touched || CUSTOMER_VERIFY_CONTENT.dirty">
+                    <p *ngIf="CUSTOMER_VERIFY_CONTENT.errors?.['required']" class="text-red-400">
+                        Field is required.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Order confirmation -->
+    <div class="hidden p-4 rounded-lg w-full mx-auto" id="order-confirmation" role="tabpanel" aria-labelledby="order-confirmation-tab">
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail Subject:</label>
+            <app-input class="w-full" [control]="ORDER_CONFIRMATION_SUBJECT" [type]="'text'" [required]="true"></app-input>
+        </div>
+
+        <div class="flex justify-center items-center z-0 w-full mb-5 group">
+            <label class="block w-1/5 mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail Content:</label>
+            <div class="w-full">
+                <editor id="order-confirmation-content" class="w-full" apiKey="th474spuudpxmju6zc8oif37cw8k5609ouk8ytonewvqqiza" formControlName="ORDER_CONFIRMATION_CONTENT" required></editor>
+                <div *ngIf="ORDER_CONFIRMATION_CONTENT.touched || ORDER_CONFIRMATION_CONTENT.dirty">
+                    <p *ngIf="ORDER_CONFIRMATION_CONTENT.errors?.['required']" class="text-red-400">
+                        Field is required.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center justify-content-center">
+        <button type="submit" [disabled]="mailTemplatesForm.invalid"
+        class="text-white w-1/4 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save Mail Templates</button>
+    </div>
+</form>

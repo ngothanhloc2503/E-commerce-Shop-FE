@@ -1,0 +1,63 @@
+<div class="my-4 text-center justify-center">
+    <h2 class="text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">{{ title }}</h2>
+</div>
+<form class="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mx-auto" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+    <input type="hidden" id="id" name="id" formControlName="id"/>
+    <div class="grid md:grid-cols-2 md:gap-6">
+        <div class="relative z-0 w-full mb-5 group">
+            <label for="firstName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
+            <app-input [control]="firstName" [type]="'text'" [required]="true"></app-input>
+        </div>
+        <div class="relative z-0 w-full mb-5 group">
+            <label for="lastName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
+            <app-input [control]="lastName" [type]="'text'" [required]="true"></app-input>
+        </div>
+    </div>
+    
+    <div class="w-full mb-5 group">
+        <label for="phoneNumber" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone number</label>
+        <app-input [control]="phoneNumber" [type]="'text'" [required]="true"></app-input>
+    </div>
+
+    <div class="mb-5">
+        <label for="addressLine1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 1</label>
+        <app-input [control]="addressLine1" [type]="'text'" [required]="true"></app-input>
+    </div>
+
+    <div class="mb-5">
+        <label for="addressLine2" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 2</label>
+        <app-input [control]="addressLine2" [type]="'text'"></app-input>
+    </div>
+
+    <div class="grid md:grid-cols-2 md:gap-6 mb-5">
+        <div class="relative z-0 w-full group">
+            <label for="country" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Country</label>
+            <select id="country" formControlName="country" (change)="getStateByCountryName()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option *ngFor="let c of listCountries" value="{{ c.name }}">{{ c.name }}</option>
+            </select>
+        </div>
+        <div class="relative z-0 w-full group">
+            <label for="state" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">State</label>
+            <select id="state" formControlName="state" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option *ngFor="let s of listStates" value="{{ s.name }}">{{ s.name }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="grid md:grid-cols-2 md:gap-6">
+        <div class="relative z-0 w-full mb-5 group">
+            <label for="city" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">City</label>
+            <app-input [control]="city" [type]="'text'"></app-input>
+        </div>
+        <div class="relative z-0 w-full mb-5 group">
+            <label for="postalCode" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Postal Code</label>
+            <app-input [control]="postalCode" [type]="'text'" [required]="true"></app-input>
+        </div>
+    </div>
+    
+    <div class="text-center justify-content-center">
+        <button (click)="cancel()" type="button"
+        class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
+        <button type="submit" [disabled]="addressForm.invalid"
+        class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+    </div>
+</form>

@@ -1,0 +1,45 @@
+<div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
+    <h2 class="mb-4 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Address Book</h2>
+    <div class="mb-4">
+        <a routerLink="/address-book/new" class="fa-solid fa-square-plus fa-2xl icon-dark dark:text-blue-500" title="Add New Address" style="text-decoration:none"></a>
+    </div>
+
+    <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-gray-800">
+        <div [class]="userPrimaryAddressAsDefault ? 'bg-yellow-400 dark:bg-yellow-500' : ''" class="w-full max-w-sm  border border-gray-200 rounded-lg shadow dark:border-gray-700">
+            <div class="flex pt-4 px-4 justify-between">
+                <b class="mb-1 text-lg me-2 text-gray-900 dark:text-white">Your primary address:</b>
+            </div>
+            <div class="flex flex-col p-4">
+                <h5 class="mb-1 text-lg me-2 text-gray-900 dark:text-white">{{ getAddress(user) }}</h5>
+                <div class="flex mt-4 md:mt-6">
+                    <button *ngIf="!userPrimaryAddressAsDefault" type="button" (click)="setDefault(0)"
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Set as Default</button>
+                    <a href="/account?redirect=address-book"
+                        class="py-2 px-4 ms-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Edit</a>
+                </div>
+            </div>
+        </div>
+
+        <div *ngFor="let address of addressBook; index as idx"
+        [class]="address.defaultForShipping ? 'bg-yellow-400 dark:bg-yellow-500' : ''"
+        class="w-full max-w-sm border border-gray-200 rounded-lg shadow dark:border-gray-700">
+            <div class="flex pt-4 px-4 justify-between">
+                <b class="mb-1 text-lg me-2 text-gray-900 dark:text-white">Address #{{ idx + 1 }}:</b>
+                <button class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"
+                    type="button">
+                    <span class="sr-only">Delete Address</span>
+                    <i class="fa-solid fa-trash text-red-500"></i>
+                </button>
+            </div>
+            <div class="flex flex-col p-4">
+                <h5 class="mb-1 text-lg me-2 text-gray-900 dark:text-white">{{ getAddress(address) }}</h5>
+                <div class="flex mt-4 md:mt-6">
+                    <button *ngIf="!address.defaultForShipping" type="button" (click)="setDefault(address.id)"
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Set as Default</button>
+                    <button (click)="editAddressWithId(address.id)"
+                        class="py-2 px-4 ms-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
