@@ -2,14 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    credentialsId: 'gitlab-credentials',
-                    url: 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 echo 'Building...'
