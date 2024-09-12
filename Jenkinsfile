@@ -1,18 +1,27 @@
 pipeline {
     agent any
-
+    tools {
+        nodejs "NodeJS 20.17.0"  // Use the name you configured in the Global Tool Configuration
+    }
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building...'
-                // Add your build commands here, e.g., npm build, mvn clean install
+                git branch: 'master',
+                    credentialsId: 'gitlab-token',
+                    url: 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
             }
         }
 
-        stage('Test') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Testing...'
-                // Add your testing commands here, e.g., npm test, mvn test
+                sh 'npm install'
+                sh 'npm install -g @angular/cli'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'ng build --configuration production'
             }
         }
 
