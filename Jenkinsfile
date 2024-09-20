@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools {
-        nodejs "NodeJS 20.17.0"  // Use the name you configured in the Global Tool Configuration
-    }
     stages {
         stage('Checkout') {
             steps {
@@ -12,16 +9,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build') {
             steps {
                 sh 'npm install'
                 sh 'npm install -g @angular/cli'
+                sh 'ng build --configuration production'
+                sh 'docker build -t ecommerce-shop-fe .'
             }
         }
 
-        stage('Build') {
+        stage('Push to Docker Hub') {
             steps {
-                sh 'ng build --configuration production'
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
+                        sh 'docker push ecommerce-shop-fe'
+                    }
+                }
             }
         }
 
@@ -30,18 +33,6 @@ pipeline {
                 echo 'Deploying...'
                 // Add your deployment steps here, e.g., docker build, kubectl apply
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline completed'
-        }
-        success {
-            echo 'Pipeline succeeded'
-        }
-        failure {
-            echo 'Pipeline failed'
         }
     }
 }
