@@ -4,7 +4,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master',
-                    credentialsId: 'gitlab-token',
+                    credentialsId: 'jenkins-gitlab',
                     url: 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
             }
         }
@@ -14,19 +14,19 @@ pipeline {
                 sh 'npm install'
                 sh 'npm install -g @angular/cli'
                 sh 'ng build --configuration production'
-                sh 'docker build -t ecommerce-shop-fe .'
+                // sh 'docker build -t ecommerce-shop-fe .'
             }
         }
 
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
-                        sh 'docker push ecommerce-shop-fe'
-                    }
-                }
-            }
-        }
+        // stage('Push to Docker Hub') {
+        //     steps {
+        //         script {
+        //             docker.withRegistry('https://registry.hub.docker.com', 'DOCKERHUB_CREDENTIALS') {
+        //                 sh 'docker push ecommerce-shop-fe'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Deploy') {
             steps {
