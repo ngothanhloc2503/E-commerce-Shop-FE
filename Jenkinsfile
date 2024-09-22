@@ -1,5 +1,10 @@
 pipeline {
     agent any
+
+    tools {
+        nodejs 'NodeJS 20.x'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -12,7 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm install'
-                sh 'npm install -g @angular/cli --save-dev'
+                sh 'npm install -g @angular/cli'
                 sh 'ng build --configuration production'
                 // sh 'docker build -t ecommerce-shop-fe .'
             }
