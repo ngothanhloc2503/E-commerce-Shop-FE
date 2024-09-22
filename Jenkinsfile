@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm install'
-                sh 'npm install -g @angular/cli'
+                sh 'npm install -g @angular/cli --unsafe-perm'
                 sh 'ng build --configuration production'
                 // sh 'docker build -t ecommerce-shop-fe .'
             }
