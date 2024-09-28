@@ -6,10 +6,9 @@ pipeline {
     }
 
     environment {
-        HARBOR_REGISTRY = 'https://registry-ntloc.ddns.net'
+        HARBOR_REGISTRY = 'registry-ntloc.ddns.net'
         GITLAB_REPO = 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
-        APP_NAME = 'e-commerce-shop-fe'
-        DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/${APP_NAME}:lastest"
+        DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/e-commerce-shop-fe:latest"
     }
 
     stages {
