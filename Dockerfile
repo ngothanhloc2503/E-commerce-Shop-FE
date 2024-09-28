@@ -2,7 +2,7 @@
 FROM node:20.4.0-alpine3.17 as build
 WORKDIR /app
 COPY . .
-RUN npm install && npm run build --prod
+RUN npm install && npm run build --configuration=production
 
 # Stage 2: Serve Angular App using NGINX
 FROM nginx:alpine

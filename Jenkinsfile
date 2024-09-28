@@ -9,7 +9,6 @@ pipeline {
         HARBOR_REGISTRY = 'https://registry-ntloc.ddns.net' // e.g., harbor.mycompany.com
         HARBOR_CREDENTIALS = credentials('harbor-credentials-id')
         GITLAB_REPO = 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
-        GITLAB_CREDENTIALS = credentials('jenkins-gitlab')
         APP_NAME = 'e-commerce-shop-fe'
     }
 
@@ -17,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master',
-                    credentialsId: "${GITLAB_CREDENTIALS}",
+                    credentialsId: 'jenkins-gitlab',
                     url: "${GITLAB_REPO}"
             }
         }
@@ -25,8 +24,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm install'
-                sh 'npm install -g @angular/cli'
-                sh 'ng build --configuration production'
+                sh 'npm run build --configuration=production'
             }
         }
 
@@ -45,7 +43,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
-                // Add your deployment steps here, e.g., docker build, kubectl apply
             }
         }
     }
