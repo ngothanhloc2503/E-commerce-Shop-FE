@@ -6,8 +6,7 @@ pipeline {
     }
 
     environment {
-        HARBOR_REGISTRY = 'https://registry-ntloc.ddns.net' // e.g., harbor.mycompany.com
-        HARBOR_CREDENTIALS = credentials('harbor-credentials-id')
+        HARBOR_REGISTRY = 'https://registry-ntloc.ddns.net'
         GITLAB_REPO = 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
         APP_NAME = 'e-commerce-shop-fe'
         DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/${APP_NAME}:lastest"
@@ -17,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master',
-                    credentialsId: 'jenkins-gitlab',
+                    credentialsId: 'gitlab-credentials-id',
                     url: "${GITLAB_REPO}"
             }
         }
@@ -32,10 +31,12 @@ pipeline {
         stage('Push to Harbor') {
             steps {
                 script {
-                    docker.withRegistry("${HARBOR_REGISTRY}", "${HARBOR_CREDENTIALS}") {
+                    // Log in to the Harbor registry
+                    withCredentials([usernamePassword(credentialsId: 'harbor-credentials-id', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
+                        sh "echo ${HARBOR_PASSWORD} | docker login ${HARBOR_REGISTRY} -u ${HARBOR_USERNAME} --password-stdin"
                         sh "docker build -t ${DOCKER_IMAGE} ."
                         sh "docker push ${DOCKER_IMAGE}"
-                    }
+                    } 
                 }
             }
         }
