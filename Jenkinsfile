@@ -10,6 +10,7 @@ pipeline {
         HARBOR_CREDENTIALS = credentials('harbor-credentials-id')
         GITLAB_REPO = 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
         APP_NAME = 'e-commerce-shop-fe'
+        DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/${APP_NAME}:lastest"
     }
 
     stages {
@@ -32,9 +33,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("${HARBOR_REGISTRY}", "${HARBOR_CREDENTIALS}") {
-                        sh 'docker build -t ecommerce-shop-fe .'
-                        sh 'docker push ecommerce-shop-fe'
-                        echo "Login successed"
+                        sh "docker build -t ${DOCKER_IMAGE} ."
+                        sh "docker push ${DOCKER_IMAGE}"
                     }
                 }
             }
