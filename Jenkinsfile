@@ -32,8 +32,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("${HARBOR_REGISTRY}", "${HARBOR_CREDENTIALS}") {
-                        // sh 'docker build -t ecommerce-shop-fe .'
-                        // sh 'docker push ecommerce-shop-fe'
+                        sh 'docker build -t ecommerce-shop-fe .'
+                        sh 'docker push ecommerce-shop-fe'
                         echo "Login successed"
                     }
                 }
