@@ -7,16 +7,24 @@ pipeline {
 
     environment {
         HARBOR_REGISTRY = 'registry-ntloc.ddns.net'
+        APP_NAME='e-commerce-shop-fe'
         GITLAB_REPO = 'https://gitlab.com/ntloc2503/e-commerce-shop-fe.git'
-        DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/e-commerce-shop-fe:latest"
+        DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/${APP_NAME}:latest"
+        COMMIT_HASH = ''
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                    credentialsId: 'gitlab-credentials-id',
-                    url: "${GITLAB_REPO}"
+                script {
+                    git branch: 'master',
+                        credentialsId: 'gitlab-credentials-id',
+                        url: "${GITLAB_REPO}"
+
+                    // Get the short GitLab commit hash
+                    COMMIT_HASH = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    DOCKER_IMAGE = "${HARBOR_REGISTRY}/e-commerce-shop/${APP_NAME}:${COMMIT_HASH}"
+                }
             }
         }
 
