@@ -6,6 +6,6 @@ RUN npm install && npm run build --configuration=production
 
 # Stage 2: Serve Angular App using NGINX
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist/ecommerce /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
