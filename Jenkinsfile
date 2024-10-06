@@ -41,7 +41,7 @@ pipeline {
                     // Log in to the Harbor registry
                     withCredentials([usernamePassword(credentialsId: 'harbor-credentials-id', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
                         sh "echo ${HARBOR_PASSWORD} | docker login ${HARBOR_REGISTRY} -u ${HARBOR_USERNAME} --password-stdin"
-                        sh "docker build --no-cache --rm -t ${DOCKER_IMAGE} ." // Build the image with --rm to remove intermediate containers
+                        sh "docker build --no-cache --rm -t ${DOCKER_IMAGE} ." // Build the image with --no-cache and --rm to remove intermediate containers
                         sh "docker push ${DOCKER_IMAGE}"
                         sh "docker rmi ${DOCKER_IMAGE}" // Remove the image after pushing to save disk space
                     } 
