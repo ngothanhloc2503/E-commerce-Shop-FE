@@ -1,0 +1,22 @@
+# Node modules and build artifacts
+node_modules
+dist
+build
+
+# Environment variables
+*.env
+
+# Logs and temporary files
+*.log
+.DS_Store
+Thumbs.db
+
+# Ignore other unnecessary files
+.git
+.gitignore
+README.md
+
+Dockerfile 
+.npm/
+*.local
+*.properties

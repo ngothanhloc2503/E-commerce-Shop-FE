@@ -49,6 +49,12 @@ pipeline {
             }
         }
 
+        stage('Cleanup') {
+            steps {
+                sh 'docker system prune -f --volumes'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 script {
@@ -59,7 +65,7 @@ pipeline {
                                 docker pull ${DOCKER_IMAGE} &&
                                 docker stop ${APP_NAME} || true &&
                                 docker rm -f ${APP_NAME} || true &&
-                                docker run -d --name ${APP_NAME} -p 80:80 ${DOCKER_IMAGE}
+                                docker run -d --name ${APP_NAME} -p 8080:80 ${DOCKER_IMAGE}
                             '
                         """
                     }
