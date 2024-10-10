@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CategoryService } from '../../../services/customer/category/category.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AlertService } from '../../../services/alert/alert.service';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../services/customer/product/product.service';
 import { GeneralSettingService } from '../../../services/general-setting/general-setting.service';
@@ -27,7 +26,6 @@ export class CategoryDetailComponent {
     private productService: ProductService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private alertService: AlertService,
     public settingService: GeneralSettingService,
     public cartService: CartService,
     private utilsService: UtilsService,

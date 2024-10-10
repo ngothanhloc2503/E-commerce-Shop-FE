@@ -40,7 +40,7 @@
                 </form>
 
                 <div class="px-4" *ngIf="listProducts.length > 0">
-                    <div class="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 py-4">
+                    <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4 py-4">
                         <div *ngFor="let product of listProducts"
                             class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                             <a [href]="'/products/' + product.alias" class="h-[250px] md:h-[300px] lg:h-[350px]">
