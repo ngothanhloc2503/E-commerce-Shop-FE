@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostBinding, Input, effect, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { StorageService } from '../../services/storage/storage.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GeneralSettingService } from '../../services/general-setting/general-setting.service';
 import { CartService } from '../../services/customer/cart/cart.service';
-import { AlertService } from '../../services/alert/alert.service';
 
 @Component({
   selector: 'app-nav',
@@ -41,7 +40,6 @@ export class NavComponent {
   
   constructor(
     public cartService: CartService,
-    private alertService: AlertService,
     private router: Router,
     private authService: AuthService,
     private fb: FormBuilder,
@@ -79,8 +77,6 @@ export class NavComponent {
       }
     }); 
   }
-
-  
 
   search() {
     let keyword = this.keyword.value ? this.keyword.value : '';

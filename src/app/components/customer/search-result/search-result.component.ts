@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
-import { AlertService } from '../../../services/alert/alert.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ProductService } from '../../../services/customer/product/product.service';
 import { FormsModule } from '@angular/forms';
 import { SearchService } from '../../../services/customer/search/search.service';
 import { GeneralSettingService } from '../../../services/general-setting/general-setting.service';
@@ -28,22 +26,34 @@ export class SearchResultComponent {
   listRecommendedBrands: any[] = [];
 
   constructor(
-    private alertService: AlertService,
     private searchService: SearchService,
     private activatedRoute: ActivatedRoute,
     public settingService: GeneralSettingService,
     public cartService: CartService,
     private utilsService: UtilsService,
+    private router: Router,
   ) { }
 
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe(s => this.keyword = s['keyword']);
 
+    // Search first time from another view
     this.searchProduct();
     this.getListRecommendedBrands();
+
+    // Search in this view
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.searchProduct();
+        this.getListRecommendedBrands();
+      }
+    });
   }
 
   searchProduct() {
+    this.listProduct = [];
+    this.listRecommendedBrands = [];
+    this.totalPages = 0;
     this.searchService.searchProduct(this.keyword, this.pageNum, this.sortField, this.rating, this.brandIDs).subscribe({
       next: (res) => {
         this.listProduct = res.content;
