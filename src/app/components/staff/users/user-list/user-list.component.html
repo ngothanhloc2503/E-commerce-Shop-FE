@@ -3,7 +3,7 @@
     <div>
         <a routerLink="/staff/users/new" class="fa-solid fa-user-plus fa-xl icon-dark dark:text-blue-500" style="text-decoration:none"></a>
         <span class="dark:text-white">&nbsp;|&nbsp;</span>
-        <a routerLink="/staff/users/export/csv" class="fa-solid fa-file-csv fa-xl icon-dark dark:text-blue-500" style="text-decoration:none"></a>
+        <button (click)="exportToCSV()" class="fa-solid fa-file-csv fa-xl icon-dark dark:text-blue-500" style="text-decoration:none" title="Export to CSV"></button>
         <span class="dark:text-white">&nbsp;|&nbsp;</span>
         <a routerLink="/staff/users/export/excel" class="fa-solid fa-file-excel fa-xl icon-dark dark:text-blue-500" style="text-decoration:none"></a>
         <span class="dark:text-white">&nbsp;|&nbsp;</span>

@@ -1,7 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { StorageService } from '../../storage/storage.service';
 import { API_URL } from '../../../constants';
 import { UtilsService } from '../../utils/utils.service';
 
@@ -42,11 +41,9 @@ export class UserService {
     const formData = new FormData();
     formData.append('user', new Blob([JSON.stringify(user)] , {type: 'application/json'}));
     formData.append('filePhoto', userPhoto)
-    // let parameters: HttpParams = new HttpParams();
-    // parameters = parameters.append("filePhoto", userPhoto);
+    
     return this.httpClient.post(BASE_URL + '/save', formData, {
       headers: this.utilsService.createAuthorizationHeader(),
-      // params: parameters
     })
   }
 
@@ -56,10 +53,18 @@ export class UserService {
     })
   }
 
+  exportToCSV(): Observable<any> {
+    return this.httpClient.get(BASE_URL + '/export/csv', {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'blob'
+    });
+  }
+
   isEmailUnique(id: any, email: any): Observable<any> {
     let parameters: HttpParams = new HttpParams();
     parameters = parameters.append("id", id);
     parameters = parameters.append("email", email);
+
     return this.httpClient.get(BASE_URL + '/check-email', {
       headers: this.utilsService.createAuthorizationHeader(),
       params: parameters
