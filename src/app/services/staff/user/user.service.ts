@@ -60,6 +60,13 @@ export class UserService {
     });
   }
 
+  exportToPdf(): Observable<any> {
+    return this.httpClient.get(BASE_URL + '/export/pdf', {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'blob'
+    });
+  }
+
   isEmailUnique(id: any, email: any): Observable<any> {
     let parameters: HttpParams = new HttpParams();
     parameters = parameters.append("id", id);
