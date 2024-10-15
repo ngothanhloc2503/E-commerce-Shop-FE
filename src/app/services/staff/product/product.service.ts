@@ -66,6 +66,13 @@ export class ProductService {
     });
   }
 
+  exportToCsv(): Observable<any> {
+    return this.httpClient.get(BASE_URL + '/export/csv', {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'blob'
+    });
+  }
+
   changeEnabledStatus(id: number, status: boolean): Observable<any> {
     return this.httpClient.get(BASE_URL + `/${id}/enabled/${status}`, {
       headers: this.utilsService.createAuthorizationHeader(),

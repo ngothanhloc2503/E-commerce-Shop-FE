@@ -52,6 +52,13 @@ export class BrandService {
     })
   }
 
+  exportToCsv(): Observable<any> {
+    return this.httpClient.get(BASE_URL + '/export/csv', {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'blob'
+    });
+  }
+
   isNameUnique(brandID: number, name: string): Observable<any> {
     let parameters: HttpParams = new HttpParams();
     parameters = parameters.append('id', brandID);
