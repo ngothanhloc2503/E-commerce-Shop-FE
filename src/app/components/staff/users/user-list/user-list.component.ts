@@ -98,7 +98,7 @@ export class UserListComponent {
   exportToExcel() {
     this.userService.exportToExcel().subscribe({
       next: (response: Blob) => {
-        const blob = new Blob([response], { type: 'application/octet-stream;charset=utf-8' });
+        const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         
         // Create a link element
         const link = document.createElement('a');
