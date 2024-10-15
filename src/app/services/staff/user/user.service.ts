@@ -53,8 +53,15 @@ export class UserService {
     })
   }
 
-  exportToCSV(): Observable<any> {
+  exportToCsv(): Observable<any> {
     return this.httpClient.get(BASE_URL + '/export/csv', {
+      headers: this.utilsService.createAuthorizationHeader(),
+      responseType: 'blob'
+    });
+  }
+
+  exportToExcel(): Observable<any> {
+    return this.httpClient.get(BASE_URL + '/export/excel', {
       headers: this.utilsService.createAuthorizationHeader(),
       responseType: 'blob'
     });

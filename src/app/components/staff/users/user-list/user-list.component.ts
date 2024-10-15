@@ -70,8 +70,8 @@ export class UserListComponent {
     this.getUsersByPage();
   }
 
-  exportToCSV() {
-    this.userService.exportToCSV().subscribe({
+  exportToCsv() {
+    this.userService.exportToCsv().subscribe({
       next: (response: Blob) => {
         const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
         
@@ -80,6 +80,31 @@ export class UserListComponent {
         const url = window.URL.createObjectURL(blob);
         link.href = url;
         link.download = 'users_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.csv';
+
+        // Append to the DOM and trigger the download
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up and remove the link
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.alertService.showAndCloseAlertAfterXSecond('Error downloading the file', 'red', 5000);
+      }
+    });
+  }
+
+  exportToExcel() {
+    this.userService.exportToExcel().subscribe({
+      next: (response: Blob) => {
+        const blob = new Blob([response], { type: 'application/octet-stream;charset=utf-8' });
+        
+        // Create a link element
+        const link = document.createElement('a');
+        const url = window.URL.createObjectURL(blob);
+        link.href = url;
+        link.download = 'users_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.xlsx';
 
         // Append to the DOM and trigger the download
         document.body.appendChild(link);
