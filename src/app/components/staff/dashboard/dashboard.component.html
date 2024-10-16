@@ -1,1 +1,17 @@
-<router-outlet></router-outlet>
+<div class="mb-4">
+    <h2 class="mb-4 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-3xl dark:text-white">Sales Report</h2>
+</div>
+
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="settings-tab" data-tabs-toggle="#settings-tab-content" role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="date-tab" data-tabs-target="#date" type="button" role="tab" aria-controls="date" aria-selected="false">Sales by Date</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="category-tab" data-tabs-target="#category" type="button" role="tab" aria-controls="category" aria-selected="false">Sales by Category</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="product-tab" data-tabs-target="#product" type="button" role="tab" aria-controls="product" aria-selected="false">Sales by Product</button>
+        </li>
+    </ul>
+</div>

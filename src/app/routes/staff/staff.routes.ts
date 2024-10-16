@@ -34,12 +34,12 @@ export const STAFF_ROUTES: Routes = [
         component: SettingsComponent
     },
     {
-        path: '',
-        title: "Manage E-commerce Shop",
+        path: 'dashboard',
+        title: "Dashboard - E-commerce Shop",
         component: DashboardComponent
     },
     {
         path: '**',
-        redirectTo: '/staff'
+        redirectTo: '/staff/dashboard'
     },
 ];
