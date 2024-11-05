@@ -21,6 +21,7 @@
     "@auth0/angular-jwt": "^5.2.0",
     "@tinymce/tinymce-angular": "^8.0.0",
     "angular-oauth2-oidc": "^17.0.2",
+    "apexcharts": "^3.54.1",
     "flowbite": "^2.3.0",
     "jquery": "^3.7.1",
     "rxjs": "~7.8.0",
