@@ -14,6 +14,12 @@ declare var $: any;
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
+  totalGrossSales = 0;
+  totalNetSales = 0;
+  avgGrossSales = 0;
+  avgNetSales = 0;
+  totalItemCount = 0;
+
   constructor(
     private reportService: ReportService,
     private utilsService: UtilsService,
@@ -32,7 +38,7 @@ export class DashboardComponent {
         if (response == null) {
           this.renderNoSales();
         } else {
-          this.renderSalesReportByDateChart(response);
+          this.renderSalesReportByDateChart(response, this.getDenominator(period));
         }
       },
       error: (err: any) => {
@@ -48,7 +54,7 @@ export class DashboardComponent {
         if (response == null) {
           this.renderNoSales();
         } else {
-          this.renderSalesReportByCategoryChart(response);
+          this.renderSalesReportByCategoryChart(response, this.getDenominator(period));
         }
       },
       error: (err: any) => {
@@ -64,7 +70,7 @@ export class DashboardComponent {
         if (response == null) {
           this.renderNoSales();
         } else {
-          this.renderSalesReportByProductChart(response);
+          this.renderSalesReportByProductChart(response, this.getDenominator(period));
         }
       },
       error: (err: any) => {
@@ -82,16 +88,19 @@ export class DashboardComponent {
 
     this.reportService.getReportDataByDateRange(groupBy, fromDate, toDate).subscribe({
       next: (response: any) => {
-        console.log(response);
         if (response.length === 0) {
           this.renderNoSales();
         } else {
+          const from = new Date(fromDate);
+          const to = new Date(toDate);
+          const diffDays = (to.getTime() - from.getTime()) / (1000 * 3600 * 24);
+
           if (groupBy === 'date') {
-            this.renderSalesReportByDateChart(response);
+            this.renderSalesReportByDateChart(response, diffDays);
           } else if (groupBy === 'category') {
-            this.renderSalesReportByCategoryChart(response);
+            this.renderSalesReportByCategoryChart(response, diffDays);
           } else {
-            this.renderSalesReportByProductChart(response);
+            this.renderSalesReportByProductChart(response, diffDays);
           }
         }
       },
@@ -135,7 +144,7 @@ export class DashboardComponent {
     return true;
   }
 
-  renderSalesReportByDateChart(response: any) {
+  renderSalesReportByDateChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
     let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
     let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
@@ -221,13 +230,17 @@ export class DashboardComponent {
       this.chart = new ApexCharts(chartElement, options);
       this.chart.render();
     }
+
+    this.calculateTotalAmount(grossSales, netSales, ordersCount, denominator);
+    $('thead .totalItemCount').text('Total Orders');
+    $('.tableTotalAmount').removeClass('hidden');
   }
 
-  renderSalesReportByCategoryChart(response: any) {
+  renderSalesReportByCategoryChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
     let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
-    // let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
-    // let productsCount = response.map((d: any) => d.productsCount);
+    let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
+    let productsCount = response.map((d: any) => d.productsCount);
 
     let options = {
       chart: {
@@ -263,9 +276,13 @@ export class DashboardComponent {
       this.chart = new ApexCharts(chartElement, options);
       this.chart.render();
     }
+
+    this.calculateTotalAmount(grossSales, netSales, productsCount, denominator);
+    $('thead .totalItemCount').text('Total Products');
+    $('.tableTotalAmount').removeClass('hidden');
   }
 
-  renderSalesReportByProductChart(response: any) {
+  renderSalesReportByProductChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
     let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
     let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
@@ -325,6 +342,10 @@ export class DashboardComponent {
 
       chartTableElement.html(htmlTable);
     }
+
+    this.calculateTotalAmount(grossSales, netSales, productsCount, denominator);
+    $('thead .totalItemCount').text('Total Products');
+    $('.tableTotalAmount').removeClass('hidden');
   }
 
   renderNoSales() {
@@ -332,6 +353,8 @@ export class DashboardComponent {
       <h4 class="text-center pt-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">No sales this period.</h4>
     `;
     $("#salesReportChart").html(html);
+
+    $('.tableTotalAmount').addClass('hidden');
   }
 
   showCustomDateRangeForm(groupBy: string) {
@@ -341,5 +364,25 @@ export class DashboardComponent {
 
   hiddenCustomDateRangeForm() {
     $('#customDateRangeForm').addClass('hidden');
+  }
+
+  getDenominator(period: string) {
+    if (period == "last-7-days") return 7;
+    if (period == "last-28-days") return 28;
+    if (period == "last-6-months") return 6;
+    if (period == "last-12-months") return 12;
+    return 1;
+  }
+
+  calculateTotalAmount(grossSales: any, netSales: any, totalItem: any, denominator: number) {
+    this.totalGrossSales = this.utilsService.roundNumber(
+      grossSales.reduce((accumulator: number, currentValue: number) => accumulator + currentValue));
+    this.avgGrossSales = this.utilsService.roundNumber(this.totalGrossSales / denominator);
+
+    this.totalNetSales = this.utilsService.roundNumber(
+      netSales.reduce((accumulator: number, currentValue: number) => accumulator + currentValue));
+    this.avgNetSales = this.utilsService.roundNumber(this.totalNetSales / denominator);
+
+    this.totalItemCount = totalItem.reduce((accumulator: number, currentValue: number) => accumulator + currentValue);
   }
 }
