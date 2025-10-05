@@ -14,6 +14,7 @@ import { UtilsService } from '../../../services/utils/utils.service';
   styleUrl: './checkout.component.css'
 })
 export class CheckoutComponent {
+  isClicked: boolean = false;
   address: string = '';
   listItems: any[] = [];
   deliverDays: number = 0;
@@ -79,11 +80,14 @@ export class CheckoutComponent {
   }
 
   placeOrder(paymentMethod: string) {
+    this.isClicked = true;
     this.checkoutService.placeOrder(paymentMethod).subscribe({
       next: (res) => {
-        console.log(res);
+        this.isClicked = false;
+        this.router.navigateByUrl("/orders");
       },
       error: (err) => {
+        this.isClicked = false;
         this.router.navigateByUrl("/cart");
         this.utilsService.handleError(err);
       }
