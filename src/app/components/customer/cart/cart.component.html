@@ -1,7 +1,7 @@
 <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
     <h2 class="mb-2 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Shopping Cart</h2>
 
-    <div *ngIf="cartService.cart.items != null && cartService.cart.items.length > 0" class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+    <div *ngIf="cartService.cart?.items != null && cartService.cart?.items.length > 0" class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
         <!-- Cart Items -->
         <div class="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
             <div class="space-y-6">

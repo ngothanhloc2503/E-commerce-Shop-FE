@@ -13,7 +13,7 @@
             <a *ngIf="!isAuth || isCustomerLoggedIn" href="/cart" class="px-14">
                 <button data-popover-target="popover-bottom" data-popover-placement="bottom" type="button">
                     <div class="relative p-2">
-                        <div *ngIf="cartService.cart.items != null && cartService.cart.items.length > 0" class="absolute bottom-0 right-0">
+                        <div *ngIf="cartService.cart?.items != null && cartService.cart?.items.length > 0" class="absolute bottom-0 right-0">
                           <p class="flex h-2 w-2 items-center justify-center rounded-full bg-red-500 p-2 text-xs text-white">{{ cartService.cart.items.length }}</p>
                         </div>
                         <i class="fa-solid text-blue-500 dark:text-blue-500 fa-xl fa-cart-shopping"></i>
@@ -23,25 +23,31 @@
 
             <!-- Popover Cart Content -->
             <div data-popover id="popover-bottom" role="tooltip" class="absolute z-10 invisible inline-block w-80 text-sm text-gray-900 transition-opacity duration-300 bg-white border border-gray-300 opacity-0 dark:text-white dark:border-gray-600 dark:bg-gray-700">
-                <div *ngIf="cartService.cart.items == null || cartService.cart.items.length == 0" class="p-4 justify-center flex bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
-                        <h3 class="font-semibold text-gray-900 dark:text-white">No item</h3>
-                </div>
-                <div *ngFor="let item of cartService.cart.items" class="w-full">
-                    <div class="w-full p-2 flex bg-white dark:bg-gray-700 border-b border-gray-200">
-                        <a [href]="'/products/' + item.productAlias" class="p-2 w-20 h-20">
-                            <img [src]="item.productImagePath" alt="img product">
-                        </a>
-                        <a [href]="'/products/' + item.productAlias" class="flex-auto text-sm w-auto">
-                            <div class="font-bold">{{ getShortName(item.productName) }}</div>
-                            <div>Quantity: {{ item.quantity }}</div>
-                        </a>
-                        <div class="flex flex-col w-16 font-medium items-end">
-                            <button type="button" (click)="cartService.removeItem(item.id)" class="mb-6 px-1 hover:bg-red-300 cursor-pointer text-red-700">
-                                <i class="fa-regular fa-trash-can fa-lg"></i>
-                            </button>
-                            {{ settingService.getFormatMoney(item.subtotal) }}</div>
+                <ng-container *ngIf="cartService.cart?.items == null || cartService.cart?.items.length == 0; else emptyCart">
+                    <div class="p-4 justify-center flex bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
+                            <h3 class="font-semibold text-gray-900 dark:text-white">No item</h3>
                     </div>
-                </div>
+                </ng-container>
+                
+                <ng-template #emptyCart>
+                    <div *ngFor="let item of cartService.cart.items" class="w-full">
+                        <div class="w-full p-2 flex bg-white dark:bg-gray-700 border-b border-gray-200">
+                            <a [href]="'/products/' + item.productAlias" class="p-2 w-20 h-20">
+                                <img [src]="item.productImagePath" alt="img product">
+                            </a>
+                            <a [href]="'/products/' + item.productAlias" class="flex-auto text-sm w-auto">
+                                <div class="font-bold">{{ getShortName(item.productName) }}</div>
+                                <div>Quantity: {{ item.quantity }}</div>
+                            </a>
+                            <div class="flex flex-col w-16 font-medium items-end">
+                                <button type="button" (click)="cartService.removeItem(item.id)" class="mb-6 px-1 hover:bg-red-300 cursor-pointer text-red-700">
+                                    <i class="fa-regular fa-trash-can fa-lg"></i>
+                                </button>
+                                {{ settingService.getFormatMoney(item.subtotal) }}</div>
+                        </div>
+                    </div>
+                </ng-template>
+                
                 <div class="p-4 justify-center flex">
                     <a href="/cart" class="text-base focus:outline-none flex justify-center px-4 py-2 rounded font-bold cursor-pointer hover:bg-teal-700 hover:text-teal-100 bg-teal-100  text-teal-700 border duration-200 ease-in-out border-teal-600 transition">Go to Card</a>
                 </div>

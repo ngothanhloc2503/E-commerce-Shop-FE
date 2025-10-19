@@ -2,9 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { StorageService } from '../storage/storage.service';
-import { API_URL } from '../../constants';
+import { BASE_URL, API_URL } from '../../constants';
 
-const BASE_URL = API_URL + '/auth';
+const URL = API_URL + '/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -18,29 +18,29 @@ export class AuthService {
     let data = new FormData();
     data.append("token", token);
     data.append("password", password);
-    return this.httpClient.post(BASE_URL + '/reset-password', data);
+    return this.httpClient.post(URL + '/reset-password', data);
   }
 
   forgotPassword(email: any): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/forgot-password', email);
+    return this.httpClient.post(URL + '/forgot-password', email);
   }
 
   verifyAccount(code: string): Observable<any> {
     let parameters = new HttpParams;
     parameters = parameters.append('code', code);
-    return this.httpClient.get(`${BASE_URL}/verify`, {
+    return this.httpClient.get(`${URL}/verify`, {
       params: parameters,
     });
   }
 
   signUp(registerData: any): Observable<any> {
-    return this.httpClient.post<any>(`${BASE_URL}/register`, registerData);
+    return this.httpClient.post<any>(`${URL}/register`, registerData);
   }
 
   getInfoAfterSignInWithOauth2(token: any) : Observable<any> {
     let parameters = new HttpParams();
-    parameters = parameters.append("token", token);
-    return this.httpClient.get(`${BASE_URL}/login-oauth2`, {
+    parameters = parameters.append("token", "Bearer " + token);
+    return this.httpClient.get(`${URL}/login-oauth2`, {
       params: parameters
     }).pipe(
       map((res: any) => {
@@ -61,7 +61,7 @@ export class AuthService {
   }
 
   signIn(userData: any): Observable<any> {
-    return this.httpClient.post<any>(`${BASE_URL}/login`, userData).pipe(
+    return this.httpClient.post<any>(`${URL}/login`, userData).pipe(
       map((res) => {
         if (res.accessToken != null) {
           const user = {
@@ -79,11 +79,11 @@ export class AuthService {
   }
 
   signInWithGoogle() {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = BASE_URL + '/oauth2/authorization/google';
   }
 
   signInWithFacebook() {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
+    window.location.href = BASE_URL + '/oauth2/authorization/facebook';
   }
 
   signOut() {
