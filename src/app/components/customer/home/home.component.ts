@@ -37,11 +37,16 @@ export class HomeComponent {
   ngOnInit() {
     this.getAllCategories();
     this.getTopFifteenRatedProduct();
+    this.handleOAuthToken();
+  }
 
-    this.activatedRoute.queryParamMap.subscribe(params => this.token = params.get('token'));
-    if (this.token != null) {
-      this.getInfoAfterSignInWithOauth2();
-    }
+  handleOAuthToken() {
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      this.token = params.get('token');
+      if (this.token) {
+        this.getInfoAfterSignInWithOauth2();
+      }
+    });
   }
 
   getInfoAfterSignInWithOauth2() {
