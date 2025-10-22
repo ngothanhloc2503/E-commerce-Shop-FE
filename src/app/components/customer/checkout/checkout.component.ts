@@ -24,6 +24,7 @@ export class CheckoutComponent {
   paymentTotal: number = 0;
   codSupported: boolean = false;
   currencyCode: string = '';
+  paypalLoaded: boolean = false;
 
   constructor(
     private alertService: AlertService,
@@ -35,63 +36,6 @@ export class CheckoutComponent {
 
   ngOnInit() {
     this.getCheckoutInformation();
-    this.loadPayPalScript();
-  }
-
-  loadPayPalScript() {
-    window.paypal.Buttons({
-      enableStandardCardFields: true,
-      createOrder: (data: any, actions: any) => {
-        return actions.order.create({
-          intent: 'CAPTURE',
-          purchase_units: [{
-            amount: {
-              value: Math.round(this.paymentTotal * 100) / 100,
-              currency_code: this.currencyCode,
-            }
-          }],
-          application_context: {
-            shipping_preference: "NO_SHIPPING",
-          }
-        });
-      },
-      onApprove: (data: any, actions: any) => {
-        return actions.order.capture().then((details: any) => {
-          this.checkoutService.processPaypalOrder(details.id).subscribe({
-            next: (res) => {
-              this.router.navigateByUrl("/cart");
-              this.alertService.showAlert("Your order has been paid successfully.", "green");
-              this.alertService.closeAlert(3000);
-            }, 
-            error: (err) => {
-              this.router.navigateByUrl("/checkout");
-              this.utilsService.handleError(err);
-            },
-          });
-        });
-      },
-      onCancel: (data: any) => {
-        console.log("Payment cancelled by the buyer");
-      },
-      onError: (err: any) => {
-        this.alertService.showAndCloseAlertAfterXSecond("PayPal checkout error " + err.message, "red", 3000);
-      }
-    }).render('#paypal-button-container');
-  }
-
-  placeOrder(paymentMethod: string) {
-    this.isClicked = true;
-    this.checkoutService.placeOrder(paymentMethod).subscribe({
-      next: (res) => {
-        this.isClicked = false;
-        this.router.navigateByUrl("/orders");
-      },
-      error: (err) => {
-        this.isClicked = false;
-        this.router.navigateByUrl("/cart");
-        this.utilsService.handleError(err);
-      }
-    })
   }
 
   getCheckoutInformation() {
@@ -106,8 +50,88 @@ export class CheckoutComponent {
         this.paymentTotal = res.paymentTotal;
         this.codSupported = res.codSupported;
         this.currencyCode = res.currencyCode;
+
+        this.addPayPalScript().then(() => {
+          this.renderPayPalButtons();
+        });
       },
       error: (err: any) => {
+        this.router.navigateByUrl("/cart");
+        this.utilsService.handleError(err);
+      }
+    })
+  }
+
+  addPayPalScript(): Promise<void> {
+    return new Promise((resolve) => {
+      if ((window as any).paypal) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=ASnP1016V0N54WwTz40Kiw5EiKJrTag8kD9ERI4EXuvoPJdbJTRisC1DoF-W_2ACMQJm_4OZW3RRiqR1&currency=${this.currencyCode}`;
+      script.onload = () => {
+        resolve();
+      };
+      document.body.appendChild(script);
+    });
+  }
+
+  renderPayPalButtons() {
+    if ((window as any).paypal && !this.paypalLoaded) {
+      this.paypalLoaded = true;
+
+      (window as any).paypal.Buttons({
+        createOrder: (data: any, actions: any) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: this.paymentTotal.toFixed(2),
+                currency_code: this.currencyCode
+              }
+            }],
+            application_context: {
+              shipping_preference: "NO_SHIPPING",
+            }
+          });
+        },
+        onApprove: (data: any, actions: any) => {
+          return actions.order.capture().then((details: any) => {
+            this.checkoutService.processPaypalOrder(details.id).subscribe({
+              next: () => {
+                this.router.navigateByUrl("/orders");
+                this.alertService.showAlert("Your order has been paid successfully.", "green");
+                this.alertService.closeAlert(3000);
+              },
+              error: (err) => {
+                this.router.navigateByUrl("/checkout");
+                this.utilsService.handleError(err);
+              },
+            });
+          });
+        },
+        onCancel: () => {
+          console.log("Payment cancelled by the buyer");
+        },
+        onError: (err: any) => {
+          this.alertService.showAndCloseAlertAfterXSecond("PayPal checkout error " + err.message, "red", 3000);
+        }
+      }).render('#paypal-button-container');
+    }
+  }
+
+  placeOrder(paymentMethod: string) {
+    this.isClicked = true;
+    this.checkoutService.placeOrder(paymentMethod).subscribe({
+      next: (res) => {
+        this.isClicked = false;
+        this.router.navigateByUrl("/orders");
+        this.alertService.showAlert("Your order has been created successfully.", "green");
+        this.alertService.closeAlert(3000);
+      },
+      error: (err) => {
+        this.isClicked = false;
         this.router.navigateByUrl("/cart");
         this.utilsService.handleError(err);
       }
