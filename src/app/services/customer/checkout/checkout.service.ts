@@ -32,9 +32,8 @@ export class CheckoutService {
   }
 
   processPaypalOrder(orderId: string): Observable<any> {
-    let data = new FormData();
-    data.append("orderId", orderId);
-    return this.httpClient.post(BASE_URL + '/process-paypal-order', data, {
+    const body = { orderId };
+    return this.httpClient.post(BASE_URL + '/process-paypal-order?', body, {
       headers: this.utilsService.createAuthorizationHeader(),
     });
   }
