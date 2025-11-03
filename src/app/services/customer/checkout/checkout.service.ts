@@ -32,7 +32,7 @@ export class CheckoutService {
     });
   }
 
-  processPaypalOrder(orderId: string) {
+  processPaypalOrder(orderId: string): Observable<any> {
     let data = new FormData();
     data.append("orderId", orderId);
     return this.httpClient.post(BASE_URL + '/process-paypal-order', data, {
