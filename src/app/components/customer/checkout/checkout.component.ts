@@ -11,10 +11,11 @@ import { UtilsService } from '../../../services/utils/utils.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.css'
+  styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent {
   isClicked: boolean = false;
+  isLoading: boolean = false;
   address: string = '';
   listItems: any[] = [];
   deliverDays: number = 0;
@@ -36,6 +37,14 @@ export class CheckoutComponent {
 
   ngOnInit() {
     this.getCheckoutInformation();
+  }
+
+  ngOnDestroy() {
+    const paypalScript = document.querySelector('script[src^="https://www.paypal.com/sdk/js"]');
+    if (paypalScript) {
+      paypalScript.remove();
+      this.paypalLoaded = false;
+    }
   }
 
   getCheckoutInformation() {
@@ -97,14 +106,17 @@ export class CheckoutComponent {
           });
         },
         onApprove: (data: any, actions: any) => {
+          this.isLoading = true;
           return actions.order.capture().then((details: any) => {
             this.checkoutService.processPaypalOrder(details.id).subscribe({
               next: () => {
+                this.isLoading = false;
                 this.router.navigateByUrl("/orders");
                 this.alertService.showAlert("Your order has been paid successfully.", "green");
                 this.alertService.closeAlert(3000);
               },
               error: (err) => {
+                this.isLoading = false;
                 this.router.navigateByUrl("/checkout");
                 this.utilsService.handleError(err);
               },
@@ -115,6 +127,7 @@ export class CheckoutComponent {
           console.log("Payment cancelled by the buyer");
         },
         onError: (err: any) => {
+          this.isLoading = false;
           this.alertService.showAndCloseAlertAfterXSecond("PayPal checkout error " + err.message, "red", 3000);
         }
       }).render('#paypal-button-container');
