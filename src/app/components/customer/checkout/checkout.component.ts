@@ -40,6 +40,7 @@ export class CheckoutComponent {
   }
 
   ngOnDestroy() {
+    this.isLoading = false;
     const paypalScript = document.querySelector('script[src^="https://www.paypal.com/sdk/js"]');
     if (paypalScript) {
       paypalScript.remove();
@@ -48,6 +49,7 @@ export class CheckoutComponent {
   }
 
   getCheckoutInformation() {
+    this.isLoading = true;
     this.checkoutService.getCheckoutInformation().subscribe({
       next: (res: any) => {
         this.address = res.address;
@@ -60,9 +62,15 @@ export class CheckoutComponent {
         this.codSupported = res.codSupported;
         this.currencyCode = res.currencyCode;
 
-        this.addPayPalScript().then(() => {
-          this.renderPayPalButtons();
-        });
+        if (this.listItems.length <= 0) {
+          this.router.navigateByUrl("/cart");
+        } else {
+          this.addPayPalScript().then(() => {
+            this.renderPayPalButtons();
+          });
+        }
+
+        this.isLoading = false;
       },
       error: (err: any) => {
         this.router.navigateByUrl("/cart");
@@ -136,15 +144,18 @@ export class CheckoutComponent {
 
   placeOrder(paymentMethod: string) {
     this.isClicked = true;
+    this.isLoading = true;
     this.checkoutService.placeOrder(paymentMethod).subscribe({
       next: (res) => {
         this.isClicked = false;
+        this.isLoading = false;
         this.router.navigateByUrl("/orders");
         this.alertService.showAlert("Your order has been created successfully.", "green");
         this.alertService.closeAlert(3000);
       },
       error: (err) => {
         this.isClicked = false;
+        this.isLoading = false;
         this.router.navigateByUrl("/cart");
         this.utilsService.handleError(err);
       }
