@@ -57,7 +57,6 @@ export class UtilsService {
   }
 
   createAuthorizationHeader(): HttpHeaders {
-    console.log(StorageService.getToken());
     return new HttpHeaders().set(
       'Authorization', 'Bearer ' + StorageService.getToken()
     );
