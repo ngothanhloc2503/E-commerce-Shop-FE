@@ -6,6 +6,7 @@ import { SearchService } from '../../../services/customer/search/search.service'
 import { GeneralSettingService } from '../../../services/general-setting/general-setting.service';
 import { CartService } from '../../../services/customer/cart/cart.service';
 import { UtilsService } from '../../../services/utils/utils.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-search-result',
@@ -24,6 +25,7 @@ export class SearchResultComponent {
   brandIDs: any[] = [];
   listProduct: any[] = [];
   listRecommendedBrands: any[] = [];
+  isLoading: boolean = false;
 
   constructor(
     private searchService: SearchService,
@@ -38,40 +40,45 @@ export class SearchResultComponent {
     this.activatedRoute.queryParams.subscribe(s => this.keyword = s['keyword']);
 
     // Search first time from another view
-    this.searchProduct();
-    this.getListRecommendedBrands();
+    this.loadAll();
 
     // Search in this view
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.searchProduct();
-        this.getListRecommendedBrands();
+        this.loadAll();
       }
     });
   }
 
   searchProduct() {
+    this.isLoading = true;
+
     this.listProduct = [];
-    this.listRecommendedBrands = [];
     this.totalPages = 0;
     this.searchService.searchProduct(this.keyword, this.pageNum, this.sortField, this.rating, this.brandIDs).subscribe({
       next: (res) => {
         this.listProduct = res.content;
         this.totalPages = res.totalPages;
+        this.isLoading = false;
       },
       error: (err) => {
         this.utilsService.handleError(err);
+        this.isLoading = false;
       }
     })
   }
 
   getListRecommendedBrands() {
+    this.isLoading = true;
+
     this.searchService.getRecommendedBrands(this.keyword).subscribe({
       next: (res) => {
         this.listRecommendedBrands = res;
+        this.isLoading = false;
       },
       error: (err) => {
         this.utilsService.handleError(err);
+        this.isLoading = false;
       }
     })
   }
@@ -111,5 +118,30 @@ export class SearchResultComponent {
     this.pageNum = pageNumber;
 
     this.searchProduct();
+  }
+
+  loadAll() {
+    this.isLoading = true;
+
+    const api1 = this.searchService.searchProduct(
+      this.keyword, this.pageNum, this.sortField, this.rating, this.brandIDs
+    );
+
+    const api2 = this.searchService.getRecommendedBrands(this.keyword);
+
+    forkJoin([api1, api2]).subscribe({
+      next: ([searchResult, brandResult]) => {
+        this.listProduct = searchResult.content;
+        this.totalPages = searchResult.totalPages;
+
+        this.listRecommendedBrands = brandResult;
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.utilsService.handleError(err);
+        this.isLoading = false;
+      }
+    });
   }
 }

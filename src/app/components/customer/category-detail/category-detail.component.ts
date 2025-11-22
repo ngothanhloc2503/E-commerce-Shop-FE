@@ -6,6 +6,7 @@ import { ProductService } from '../../../services/customer/product/product.servi
 import { GeneralSettingService } from '../../../services/general-setting/general-setting.service';
 import { CartService } from '../../../services/customer/cart/cart.service';
 import { UtilsService } from '../../../services/utils/utils.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-category-detail',
@@ -20,6 +21,7 @@ export class CategoryDetailComponent {
   pageNum: number = 1;
   totalPages: number = 0;
   listProduct: any[] = [];
+  isLoading: boolean = false;
 
   constructor(
     private categoryService: CategoryService,
@@ -36,31 +38,47 @@ export class CategoryDetailComponent {
     if (this.name == '') {
       this.router.navigateByUrl("/");
     }
-    this.getCategoryByName();
-    this.getProductByCategoryName();
+
+    this.loadAll();
+  }
+  
+  loadAll() {
+    this.isLoading = true;
+
+    const apiCategory = this.categoryService.getCategoryByName(this.name);
+    const apiProducts = this.productService.getProductByCategoryName(this.name, this.pageNum);
+
+    forkJoin([apiCategory, apiProducts]).subscribe({
+      next: ([categoryRes, productRes]) => {
+        this.category = categoryRes;
+
+        this.listProduct = productRes.content;
+        this.totalPages = productRes.totalPages;
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        // Nếu category lỗi -> về trang chủ
+        this.router.navigateByUrl("/");
+        this.utilsService.handleError(err);
+
+        this.isLoading = false;
+      }
+    });
   }
 
   getProductByCategoryName() {
+    this.isLoading = true;
     this.productService.getProductByCategoryName(this.name, this.pageNum).subscribe({
       next: (res) => {
         this.listProduct = res.content;
         this.totalPages = res.totalPages;
+        this.isLoading = false;
       },
       error: (err) => {
         this.utilsService.handleError(err);
+        this.isLoading = false;
       }
-    })
-  }
-
-  getCategoryByName() {
-    this.categoryService.getCategoryByName(this.name).subscribe({
-      next: (res) => {
-        this.category = res;
-      },
-      error: (err) => {
-        this.router.navigateByUrl("/");
-        this.utilsService.handleError(err);
-      },
     })
   }
 
@@ -69,8 +87,7 @@ export class CategoryDetailComponent {
   }
 
   getShortName(name: string): string {
-    if (name.length < 40) return name;
-    else return name.substring(0, 40) + "...";
+    return name.length < 40 ? name : name.slice(0, 40) + "...";
   }
 
   goToPage(pageNumber: number) {

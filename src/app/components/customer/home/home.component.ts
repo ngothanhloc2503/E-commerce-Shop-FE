@@ -9,6 +9,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { StorageService } from '../../../services/storage/storage.service';
 import { CartService } from '../../../services/customer/cart/cart.service';
 import { UtilsService } from '../../../services/utils/utils.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,7 @@ export class HomeComponent {
   listCategories: any[] = [];
   listProduct: any[] = [];
   private token: any = null;
+  isLoading = false;
 
   constructor(
     private authService: AuthService,
@@ -35,8 +37,22 @@ export class HomeComponent {
   ) {}
 
   ngOnInit() {
-    this.getAllCategories();
-    this.getTopFifteenRatedProduct();
+    this.isLoading = true;
+    forkJoin({
+      categories: this.categoryService.getAllCategories(),
+      products: this.productService.getTopFifteenRatedProduct()
+    }).subscribe({
+      next: (res) => {
+        this.listCategories = res.categories;
+        this.listProduct = res.products;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.utilsService.handleError(err);
+        this.isLoading = false;
+      }
+    });
+    
     this.handleOAuthToken();
   }
 
@@ -75,23 +91,11 @@ export class HomeComponent {
     })
   }
 
-  getAllCategories() {
-    this.categoryService.getAllCategories().subscribe({
-      next: (res) => {
-        this.listCategories = res;
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
-    })
-  }
-
   getLinkCategory(name: string): string {
     return 'categories/' + name.replace(/ /g, '-');
   }
 
   getShortName(name: string): string {
-    if (name.length < 40) return name;
-    else return name.substring(0, 40) + "...";
+    return name.length < 40 ? name : name.slice(0, 40) + "...";
   }
 }
