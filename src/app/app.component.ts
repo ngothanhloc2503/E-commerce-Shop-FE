@@ -1,14 +1,13 @@
+import { CommonModule } from '@angular/common';
 import { Component, HostBinding } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { NavComponent } from './components/nav/nav.component';
-import { initFlowbite } from 'flowbite';
-import { AlertService } from './services/alert/alert.service';
-import { AlertComponent } from './components/alert/alert.component';
-import { FooterComponent } from './components/footer/footer.component';
 import 'flowbite';
-import { Flowbite, InitFlowbiteFix } from './flowbite.component';
-import { GeneralSettingService } from './services/general-setting/general-setting.service';
+import { AlertService } from './core/services/alert/alert.service';
+import { GeneralSettingService } from './core/services/general-setting/general-setting.service';
+import { AlertComponent } from './shared/components/alert/alert.component';
+import { Flowbite, InitFlowbiteFix } from './shared/components/flowbite.component';
+import { FooterComponent } from './shared/components/footer/footer.component';
+import { NavComponent } from './shared/components/nav/nav.component';
 
 @Component({
   selector: 'app-root',
