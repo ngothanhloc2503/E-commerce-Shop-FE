@@ -5,9 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService } from '../../../core/services/account/account.service';
 import { AlertService } from '../../../core/services/alert/alert.service';
 import { CountryService } from '../../../core/services/country/country.service';
-import { StorageService } from '../../../core/services/storage/storage.service';
 import { InputComponent } from '../input/input.component';
-import { UtilsService } from '../../utils/utils.service';
+import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
 
 @Component({
   selector: 'app-account-detail',
@@ -30,11 +29,11 @@ export class AccountDetailComponent {
     Validators.email
   ]);
   firstName = new FormControl('', [
-    Validators.required, 
+    Validators.required,
     Validators.minLength(2)
   ]);
   lastName = new FormControl('', [
-    Validators.required, 
+    Validators.required,
     Validators.minLength(2)
   ]);
   password = new FormControl('', [
@@ -64,8 +63,8 @@ export class AccountDetailComponent {
     private alertService: AlertService,
     private accountService: AccountService,
     private countryService: CountryService,
-    private utilsService: UtilsService,
-  ) {}
+    private authState: AuthStateService,
+  ) { }
 
   ngOnInit() {
     this.accountForm = this.fb.group({
@@ -97,20 +96,24 @@ export class AccountDetailComponent {
   saveAccount() {
     this.accountService.updateAccountDetails(this.accountForm.value, this.userPhoto).subscribe({
       next: (res) => {
+        this.accountForm.patchValue(res);
+        this.photoPreviewSrc = res.imagePath;
+
+        this.authState.updateUser({
+          fullName: res.firstName + ' ' + res.lastName,
+          image: res.imagePath
+        });
+
         if (this.redirect) {
-          this.router.navigate(["/address-book"], {queryParams: {redirect: "cart"}});
+          this.router.navigate(
+            ["/address-book"],
+            { queryParams: { redirect: "cart" } }
+          );
         } else {
-          this.accountForm.patchValue(res);
-          this.photoPreviewSrc = res.imagePath;
-          StorageService.updateUserPhoto(res.imagePath);
-  
-          this.router.navigateByUrl("/account")
-          this.alertService.showAndCloseAlertAfterXSecond("Your account details have been updated.", "green", 3000);
+          this.router.navigateByUrl("/account");
         }
-      }, 
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
+        this.alertService.showAndCloseAlertAfterXSecond("Your account details have been updated.", "green", 3000);
+      },
     })
   }
 
@@ -120,9 +123,6 @@ export class AccountDetailComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -132,9 +132,6 @@ export class AccountDetailComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -145,54 +142,52 @@ export class AccountDetailComponent {
         this.photoPreviewSrc = res.imagePath;
         this.getStateByCountryName();
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      },
     })
   }
 
   onSelectPhoto(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (!target.files?.length) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      this.alertService.showAndCloseAlertAfterXSecond("Invalid image file!", "red", 3000);
       return;
     }
-    const file = target.files[0];
-    if (file) {
-      if (file.type == 'image/png' || file.type == 'image/jpg' || file.type == 'image/jpeg') {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e: any) => {
-          this.photoPreviewSrc = e.target.result;
-        }
-        
-        this.accountForm.patchValue({photo: file.name});
-        this.userPhoto = file;
-      } else {
-        target.value = '';
-        this.alertService.showAndCloseAlertAfterXSecond("Image should be png, jpg, or jpeg extension!", "red", 3000);
-      }
-    }
+
+    this.userPhoto = file;
+
+    const reader = new FileReader();
+    reader.onload = () => this.photoPreviewSrc = reader.result;
+    reader.readAsDataURL(file);
+
+    this.accountForm.patchValue({ photo: file.name });
   }
 
   cancel() {
-    this.router.navigateByUrl("/staff/users");
+    if (this.redirect) {
+      this.router.navigateByUrl("/address-book");
+    } else {
+      this.router.navigateByUrl("/account");
+    }
   }
 
-  match(controlName: string, matchingControlName: string) : ValidatorFn {
-    return (group: AbstractControl) : ValidationErrors | null  => {
-        const control = group.get(controlName);
-        const matchingControl = group.get(matchingControlName);
+  match(controlName: string, matchingControlName: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const control = group.get(controlName);
+      const matchingControl = group.get(matchingControlName);
 
-        if (!control || !matchingControl) {
-            console.error('Form controls can not be found in the form group.');
-            return { controlNotFound: false };
-        }
+      if (!control || !matchingControl) {
+        return { controlNotFound: false };
+      }
 
-        const error = control.value === matchingControl.value ? null : { noMatch: true };
-        
-        matchingControl.setErrors(error);
+      const error = control.value === matchingControl.value ? null : { noMatch: true };
 
-        return error;
+      matchingControl.setErrors(error);
+
+      return error;
     }
   }
 }

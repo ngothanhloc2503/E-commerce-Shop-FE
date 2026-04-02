@@ -3,9 +3,9 @@ import { Component, effect, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { GeneralSettingService } from '../../../core/services/general-setting/general-setting.service';
-import { StorageService } from '../../../core/services/storage/storage.service';
-import { AuthService } from '../../../features/auth/services/auth-service/auth.service';
 import { CartService } from '../../../features/customer/services/cart/cart.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
 
 @Component({
   selector: 'app-nav',
@@ -15,58 +15,21 @@ import { CartService } from '../../../features/customer/services/cart/cart.servi
   styleUrl: './nav.component.css'
 })
 export class NavComponent {
-  isCustomerLoggedIn: boolean = false;
-  isStaffLoggedIn: boolean = false;
-  isAdminLoggedIn: boolean = false;
-  isSalesPersonLoggedIn: boolean = false;
-  isEditorLoggedIn: boolean = false;
-  isShipperLoggedIn: boolean = false;
-  isAssistantLoggedIn: boolean = false;
-
   searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ]);
+  keyword = new FormControl('', [Validators.required]);
 
-  isAuth = false;
-
-  userFullName = '';
-  userEmail = '';
-  userImage = '';
-
-  darkMode = signal<boolean>(
-    JSON.parse(window.localStorage.getItem('darkMode') ?? 'false')
-  );
+  darkMode = this.themeService.darkMode;
   
   constructor(
+    private themeService: ThemeService,
     public cartService: CartService,
     private router: Router,
-    private authService: AuthService,
     private fb: FormBuilder,
-    public settingService: GeneralSettingService
-  ) {
-    effect(() => {
-      window.localStorage.setItem('darkMode', JSON.stringify(this.darkMode()));
-    });
-  }
+    public settingService: GeneralSettingService,
+    private authState: AuthStateService,
+  ) { }
 
   ngOnInit() {
-    this.router.events.subscribe(event => {
-      this.isCustomerLoggedIn = StorageService.isCustomerLoggedIn();
-      this.isStaffLoggedIn  = StorageService.isStaffLoggedIn();
-      this.isAdminLoggedIn = StorageService.isAdminLoggedIn();
-      this.isSalesPersonLoggedIn = StorageService.isSalesPersonLoggedIn();
-      this.isEditorLoggedIn = StorageService.isEditorLoggedIn();
-      this.isShipperLoggedIn = StorageService.isShipperLoggedIn();
-      this.isAssistantLoggedIn = StorageService.isAssistantLoggedIn();
-
-      this.isAuth = this.isCustomerLoggedIn || this.isStaffLoggedIn;
-
-      this.userFullName = StorageService.getUserFullName();
-      this.userEmail = StorageService.getUserEmail();
-      this.userImage = StorageService.getUserImage();
-    })
-
     this.searchForm = this.fb.group({
       keyword: this.keyword
     })
@@ -75,7 +38,7 @@ export class NavComponent {
       if (event instanceof NavigationEnd) {
         this.cartService.getCart();
       }
-    }); 
+    });
   }
 
   search() {
@@ -85,7 +48,7 @@ export class NavComponent {
 
   signOut(event: any) {
     event.preventDefault();
-    this.authService.signOut();
+    this.authState.logout();
     this.cartService.cart = {};
     this.router.navigateByUrl("/");
   }
@@ -93,5 +56,26 @@ export class NavComponent {
   getShortName(name: string): string {
     if (name.length < 15) return name;
     else return name.substring(0, 40) + "...";
+  }
+
+  // Role helpers
+  isAdmin() { return this.authState.isAdmin(); }
+  isSalesPerson() { return this.authState.isSalesPerson(); }
+  isEditor() { return this.authState.isEditor(); }
+  isShipper() { return this.authState.isShipper(); }
+  isAssistant() { return this.authState.isAssistant(); }
+  isCustomer() { return this.authState.isCustomer(); }
+  isStaff() { return this.authState.isAuthenticated() && !this.authState.isCustomer(); }
+
+  toggleTheme() {
+    this.themeService.toggleDarkMode();
+  }
+
+  get isAuth() {
+    return this.authState.isAuthenticated();
+  }
+
+  get user() {
+    return this.authState.user();
   }
 }
