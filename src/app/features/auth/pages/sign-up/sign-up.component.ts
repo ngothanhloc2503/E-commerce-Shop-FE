@@ -3,10 +3,9 @@ import { Component } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertService } from '../../../../core/services/alert/alert.service';
-import { InputComponent } from '../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../shared/utils/utils.service';
-import { AuthService } from '../../services/auth-service/auth.service';
 import { CountryService } from '../../../../core/services/country/country.service';
+import { InputComponent } from '../../../../shared/components/input/input.component';
+import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-sign-up',
@@ -57,7 +56,6 @@ export class SignUpComponent {
     private alertService: AlertService,
     private router: Router,
     private countryService: CountryService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -108,9 +106,6 @@ export class SignUpComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -120,9 +115,6 @@ export class SignUpComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
