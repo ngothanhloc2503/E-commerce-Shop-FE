@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertService } from '../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 import { CheckoutService } from '../../services/checkout/checkout.service';
 
 @Component({
@@ -32,7 +31,6 @@ export class CheckoutComponent {
     public settingService: GeneralSettingService,
     private checkoutService: CheckoutService,
     private router: Router,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -74,7 +72,6 @@ export class CheckoutComponent {
       },
       error: (err: any) => {
         this.router.navigateByUrl("/cart");
-        this.utilsService.handleError(err);
       }
     })
   }
@@ -126,7 +123,6 @@ export class CheckoutComponent {
               error: (err) => {
                 this.isLoading = false;
                 this.router.navigateByUrl("/checkout");
-                this.utilsService.handleError(err);
               },
             });
           });
@@ -157,7 +153,6 @@ export class CheckoutComponent {
         this.isClicked = false;
         this.isLoading = false;
         this.router.navigateByUrl("/cart");
-        this.utilsService.handleError(err);
       }
     })
   }

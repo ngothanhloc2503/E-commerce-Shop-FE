@@ -2,14 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { AlertService } from '../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
-import { StorageService } from '../../../../core/services/storage/storage.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 import { AuthService } from '../../../auth/services/auth-service/auth.service';
 import { CartService } from '../../services/cart/cart.service';
 import { CategoryService } from '../../services/category/category.service';
 import { ProductService } from '../../services/product/product.service';
+import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
 
 @Component({
   selector: 'app-home',
@@ -29,11 +27,10 @@ export class HomeComponent {
     private categoryService: CategoryService,
     public cartService: CartService,
     private productService: ProductService,
-    private alertService: AlertService,
     private activatedRoute: ActivatedRoute,
-    private router: Router,
     public settingService: GeneralSettingService,
-    private utilsService: UtilsService,
+    private router: Router,
+    private authState: AuthStateService
   ) {}
 
   ngOnInit() {
@@ -48,7 +45,6 @@ export class HomeComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        this.utilsService.handleError(err);
         this.isLoading = false;
       }
     });
@@ -68,14 +64,27 @@ export class HomeComponent {
   getInfoAfterSignInWithOauth2() {
     this.authService.getInfoAfterSignInWithOauth2(this.token).subscribe({
       next: (res) => {
-        if (StorageService.isCustomerLoggedIn()) {
-          this.router.navigateByUrl("");
-        } else if (StorageService.isStaffLoggedIn()) {
-          this.router.navigateByUrl("/staff");
-        }
+        this.authState.login(
+          res.token,
+          {
+            email: res.email,
+            fullName: res.fullName,
+            roles: res.roles,
+            image: res.image
+          },
+          res.expireDuration
+        );
+
+        // clear token khỏi URL
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+
+        // redirect
+        this.router.navigateByUrl(
+          this.authState.isCustomer() ? "" : "/staff"
+        );
       },
       error: (err) => {
-        this.utilsService.handleError(err);
+        this.authState.logout();
       }
     })
   }
@@ -85,9 +94,6 @@ export class HomeComponent {
       next: (res) => {
         this.listProduct = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

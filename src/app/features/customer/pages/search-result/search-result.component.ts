@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 import { CartService } from '../../services/cart/cart.service';
 import { SearchService } from '../../services/search/search.service';
 
@@ -32,7 +31,6 @@ export class SearchResultComponent {
     private activatedRoute: ActivatedRoute,
     public settingService: GeneralSettingService,
     public cartService: CartService,
-    private utilsService: UtilsService,
     private router: Router,
   ) { }
 
@@ -61,10 +59,6 @@ export class SearchResultComponent {
         this.totalPages = res.totalPages;
         this.isLoading = false;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-        this.isLoading = false;
-      }
     })
   }
 
@@ -76,10 +70,6 @@ export class SearchResultComponent {
         this.listRecommendedBrands = res;
         this.isLoading = false;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-        this.isLoading = false;
-      }
     })
   }
 
@@ -138,10 +128,6 @@ export class SearchResultComponent {
 
         this.isLoading = false;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-        this.isLoading = false;
-      }
     });
   }
 }

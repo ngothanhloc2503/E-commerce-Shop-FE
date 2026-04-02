@@ -2,7 +2,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 
 const BASE_URL = API_URL + '/orders';
 
@@ -13,7 +12,6 @@ export class OrderService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
   ) { }
 
   getOrdersByPage(pageNum: number, pageSize: number, sortField: string, sortDir: string): Observable<any> {
@@ -24,18 +22,15 @@ export class OrderService {
     parameters = parameters.append('sortDir', sortDir);
 
     return this.httpClient.get(BASE_URL + '/my', {
-      headers: this.utilsService.createAuthorizationHeader(),
       params: parameters
     });
   }
 
   sendOrderReturnRequest(id: number, reason: string, note: string): Observable<any> {
-    let data = new FormData();
-    data.append('id', id.toString());
-    data.append('reason', reason);
-    data.append('note', note);
-    return this.httpClient.post<any>(BASE_URL + "/return", data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    });
+    const data = {
+      reason: reason,
+      note: note
+    };
+    return this.httpClient.post<any>(BASE_URL + `/${id}/return`, data);
   }
 }

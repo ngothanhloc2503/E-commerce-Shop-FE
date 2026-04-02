@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { OrderService } from '../../../services/order/order.service';
 
 @Component({
@@ -24,7 +23,6 @@ export class ReturnOrderRequestComponent {
   constructor(
     private alertService: AlertService,
     private orderService: OrderService,
-    private utilsService: UtilsService,
   ) {}
 
   sendReturnRequest() {
@@ -40,9 +38,6 @@ export class ReturnOrderRequestComponent {
           this.reason = '';
           this.returnRequestSuccessfulEmitter.emit();
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     } else {
       this.alertService.showAndCloseAlertAfterXSecond("Please choose reason before send return request.", "red", 3000);

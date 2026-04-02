@@ -52,23 +52,23 @@
                     <div class="space-y-2">
                         <div *ngFor="let item of listItems" class="flex items-center text-gray-900 dark:text-white justify-between gap-4 border-b border-gray-200 pb-2 dark:border-gray-700">
                             <span class="w-10">{{ item.quantity }} x </span>
-                            <span class="w-full">{{ getShortName(item.productName) }}. Ship: {{ settingService.getFormatMoney(item.shippingCost) }}</span>
-                            <span class="w-1/6">{{ settingService.getFormatMoney(item.subtotal) }}</span>
+                            <span class="w-full">{{ getShortName(item.productName) }}. Ship: {{ settingService.formatMoney(item.shippingCost) }}</span>
+                            <span class="w-1/6">{{ settingService.formatMoney(item.subtotal) }}</span>
                         </div>
                     </div>
 
                     <div class="space-y-2">
                         <dl class="flex items-center justify-between gap-4">
                             <dt class="text-base font-semibold text-gray-900 dark:text-white">Product total:</dt>
-                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.getFormatMoney(productTotal) }}</dd>
+                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.formatMoney(productTotal) }}</dd>
                         </dl>
                         <dl class="flex items-center justify-between gap-4">
                             <dt class="text-base font-semibold text-gray-900 dark:text-white">Shipping total:</dt>
-                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.getFormatMoney(shippingCostTotal) }}</dd>
+                            <dd class="text-base font-base text-gray-900 dark:text-white">{{ settingService.formatMoney(shippingCostTotal) }}</dd>
                         </dl>
                         <dl class="flex items-center justify-between gap-4">
                             <dt class="text-base font-semibold text-gray-900 dark:text-white">Payment total:</dt>
-                            <dd class="text-base font-bold text-gray-900 dark:text-white">{{ settingService.getFormatMoney(paymentTotal) }}</dd>
+                            <dd class="text-base font-bold text-gray-900 dark:text-white">{{ settingService.formatMoney(paymentTotal) }}</dd>
                         </dl>
                     </div>
                 </div>

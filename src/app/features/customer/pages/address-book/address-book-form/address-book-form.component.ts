@@ -1,13 +1,12 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
-import { InputComponent } from '../../../../../shared/components/input/input.component';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
+import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { AddressBookService } from '../../../services/address-book/address-book.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 
 @Component({
   selector: 'app-address-form',
@@ -54,7 +53,6 @@ export class AddressBookFormComponent {
     private countryService: CountryService,
     private addressBookService: AddressBookService,
     private titleService: Title,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -91,9 +89,6 @@ export class AddressBookFormComponent {
           this.alertService.showAndCloseAlertAfterXSecond("Address has been saved successfully.", "green", 3000);
         }
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -103,9 +98,6 @@ export class AddressBookFormComponent {
         this.addressForm.patchValue(res);
         this.getStateByCountryName();
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -115,9 +107,6 @@ export class AddressBookFormComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -127,9 +116,6 @@ export class AddressBookFormComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

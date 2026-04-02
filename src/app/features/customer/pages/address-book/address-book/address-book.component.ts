@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AccountService } from '../../../../../core/services/account/account.service';
-import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { AddressBookService } from '../../../services/address-book/address-book.service';
+import { AlertService } from '../../../../../core/services/alert/alert.service';
 
 @Component({
   selector: 'app-address-book',
@@ -21,11 +20,10 @@ export class AddressBookComponent {
 
   constructor(
     private accountService: AccountService,
-    private alertService: AlertService,
     private addressBookService: AddressBookService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private utilsService: UtilsService,
+    private alertService: AlertService,
   ) {}
 
   ngOnInit() {
@@ -42,9 +40,15 @@ export class AddressBookComponent {
         } else {
           this.getAddressBookDetails();
         }
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
+      }
+    })
+  }
+
+  deleteAddress(addressId: any) {
+    this.addressBookService.deleteAddress(addressId).subscribe({
+      next: (res) => {
+        this.addressBook = this.addressBook.filter(addr => addr.id !== addressId);
+        this.alertService.showAndCloseAlertAfterXSecond("Address has been deleted successfully.", "green", 3000);
       }
     })
   }
@@ -62,9 +66,6 @@ export class AddressBookComponent {
       next: (res) => {
         this.addressBook = res.addressBook;
         this.userPrimaryAddressAsDefault = res.primaryAddressAsDefault;
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
       }
     })
   }
@@ -73,9 +74,6 @@ export class AddressBookComponent {
     this.accountService.getAccountDetails().subscribe({
       next: (res) => {
         this.user = res;
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
       },
     })
   }

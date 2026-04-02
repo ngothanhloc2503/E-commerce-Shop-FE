@@ -3,8 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
 import { AlertService } from '../../../../core/services/alert/alert.service';
-import { StorageService } from '../../../../core/services/storage/storage.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
+import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
 
 const BASE_URL = API_URL + '/cart';
 
@@ -18,24 +17,19 @@ export class CartService {
   constructor(
     private httpClient: HttpClient,
     private alertService: AlertService,
-    private utilsService: UtilsService,
+    private authState: AuthStateService,
   ) { }
 
   removeItem(cartItemId: number) {
-    this.httpClient.delete(BASE_URL + `/items/${cartItemId}`, { 
-      headers: this.utilsService.createAuthorizationHeader(),
-    }).subscribe({
+    this.httpClient.delete(BASE_URL + `/items/${cartItemId}`).subscribe({
       next: (res: any) => {
         this.cart = res;
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
       }
     })
   }
 
   addProductToCart(productId: number, quantity: number, showAlert = true) {
-    if (!StorageService.isCustomerLoggedIn()) {
+    if (!this.authState.isCustomer()) {
       this.alertService.showAndCloseAlertAfterXSecond("Please login before add product to cart.", "red", 5000);
     } else {
       this.addItem(productId, quantity).subscribe({
@@ -45,9 +39,6 @@ export class CartService {
             this.alertService.showAndCloseAlertAfterXSecond("Item has been added to cart.", "green", 5000);
           }
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -57,31 +48,19 @@ export class CartService {
     data.append("productId", productId);
     data.append("quantity", quantity);
     
-    return this.httpClient.post(BASE_URL + '/add-item', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.post(BASE_URL + '/items', data)
   }
 
   getCart() {
-    if (StorageService.isCustomerLoggedIn()) {
-      this.getObservableCart().subscribe({
-        next: (res) => {
+    if (this.authState.isCustomer()) {
+      this.httpClient.get(BASE_URL).subscribe({
+        next: (res: any) => {
           this.cart = res;
           this.codSupported = res.shippingSupported;
-        },
-        error: (err) => {
-          this.cart = null;
-          this.utilsService.handleError(err);
         }
       })
     } else {
       this.cart = {};
     }
-  }
-
-  private getObservableCart(): Observable<any> {
-    return this.httpClient.get(BASE_URL, { 
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
   }
 }

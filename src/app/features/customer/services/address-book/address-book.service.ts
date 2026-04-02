@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 
 const BASE_URL = API_URL + '/address-book';
 
@@ -13,36 +12,29 @@ export class AddressBookService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
   ) { }
 
   getAddressBook(): Observable<any> {
-    return this.httpClient.get(BASE_URL, { 
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(BASE_URL,)
   }
 
   getDefaultAddress(): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/default`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    });
+    return this.httpClient.get(BASE_URL + `/default`);
   }
   
   getAddressById(addressId: any): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${addressId}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    });
+    return this.httpClient.get(BASE_URL + `/${addressId}`);
   }
 
   setDefault(addressId: any) {
-    return this.httpClient.get(BASE_URL + `/default/${addressId}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.put(BASE_URL + `/default/${addressId}`, {});
+  }
+
+  deleteAddress(addressId: any) {
+    return this.httpClient.delete(BASE_URL + `/${addressId}`);
   }
 
   saveAddressBook(address: any): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save', address, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.post(BASE_URL, address);
   }
 }

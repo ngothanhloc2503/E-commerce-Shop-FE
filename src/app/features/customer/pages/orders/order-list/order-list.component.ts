@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { OrderService } from '../../../services/order/order.service';
 import { OrderDetailsComponent } from '../order-details/order-details.component';
 import { ReturnOrderRequestComponent } from '../return-order-request/return-order-request.component';
@@ -32,7 +31,6 @@ export class OrderListComponent {
     private orderService: OrderService,
     private alertService: AlertService,
     public settingService: GeneralSettingService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -46,9 +44,6 @@ export class OrderListComponent {
         this.totalItems = res.totalItems;
         this.totalPages = res.totalPages;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

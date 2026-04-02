@@ -93,7 +93,7 @@
                 <div class="flex items-center justify-between sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                     <div *ngIf="product.discountPercent > 0">
                         <span>
-                            {{ settingService.getFormatMoney(product.discountPrice) }}
+                            {{ settingService.formatMoney(product.discountPrice) }}
                         </span>
                         <span *ngIf="product.discountPercent > 0" class="sm:text-sm md:text-base font-medium text-red-900">
                             (-{{ product.discountPercent }}%)
@@ -101,7 +101,7 @@
                     </div>
                     <div *ngIf="product.discountPercent <= 0">
                         <span>
-                            {{ settingService.getFormatMoney(product.price) }}
+                            {{ settingService.formatMoney(product.price) }}
                         </span>
                     </div>
                     <button type="button" (click)="cartService.addProductToCart(product.id, 1)"

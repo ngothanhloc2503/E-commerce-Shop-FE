@@ -35,7 +35,7 @@
                                 </button>
                             </div>
                             <div class="text-end md:order-4 md:w-32">
-                                <p class="text-base font-bold text-gray-900 dark:text-white">{{ settingService.getFormatMoney(item.subtotal) }}</p>
+                                <p class="text-base font-bold text-gray-900 dark:text-white">{{ settingService.formatMoney(item.subtotal) }}</p>
                             </div>
                         </div>
 
@@ -68,7 +68,7 @@
                 <div class="space-y-4">
                     <div class="space-y-2">
                         <dl class="flex items-center justify-between gap-4">
-                            <dd class="text-xl font-medium text-gray-900 dark:text-white">{{ settingService.getFormatMoney(cartService.cart.total) }}</dd>
+                            <dd class="text-xl font-medium text-gray-900 dark:text-white">{{ settingService.formatMoney(cartService.cart.total) }}</dd>
                         </dl>
                     </div>
                 </div>

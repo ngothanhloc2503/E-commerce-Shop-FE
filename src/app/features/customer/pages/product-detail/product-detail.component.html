@@ -31,17 +31,17 @@
                 <div>
                     List Price:
                     <span *ngIf="product.discountPercent <= 0">
-                        {{ settingService.getFormatMoney(product.price) }}
+                        {{ settingService.formatMoney(product.price) }}
                     </span>
                     <del *ngIf="product.discountPercent > 0"><span>
-                        {{ settingService.getFormatMoney(product.price) }}
+                        {{ settingService.formatMoney(product.price) }}
                     </span></del>
                 </div>
 
                 <div *ngIf="product.discountPercent > 0">
                     Price:
                     <span class="text-lg font-medium text-red-900">
-                        {{ settingService.getFormatMoney(product.discountPrice) }}
+                        {{ settingService.formatMoney(product.discountPrice) }}
                     </span>
                     ({{ product.discountPercent }}% off)
                 </div>

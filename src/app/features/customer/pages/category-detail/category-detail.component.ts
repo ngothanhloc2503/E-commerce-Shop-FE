@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 import { CartService } from '../../services/cart/cart.service';
 import { CategoryService } from '../../services/category/category.service';
 import { ProductService } from '../../services/product/product.service';
@@ -30,7 +29,6 @@ export class CategoryDetailComponent {
     private router: Router,
     public settingService: GeneralSettingService,
     public cartService: CartService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -60,7 +58,6 @@ export class CategoryDetailComponent {
       error: (err) => {
         // Nếu category lỗi -> về trang chủ
         this.router.navigateByUrl("/");
-        this.utilsService.handleError(err);
 
         this.isLoading = false;
       }
@@ -76,7 +73,6 @@ export class CategoryDetailComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        this.utilsService.handleError(err);
         this.isLoading = false;
       }
     })

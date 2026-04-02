@@ -15,16 +15,13 @@ export class ProductService {
   ) { }
 
   getProductByCategoryName(categoryName: string, pageNum: number): Observable<any> {
-    let parameters = new HttpParams();
-    parameters = parameters.append('categoryName', categoryName);
-    parameters = parameters.append('pageNum', pageNum);
-    return this.httpClient.get(BASE_URL + '/category', { 
-      params: parameters
+    return this.httpClient.get(BASE_URL + `/category/${categoryName}`, { 
+      params: { pageNum }
     })
   }
 
   getProductByAlias(alias: string): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${alias}`);
+    return this.httpClient.get(BASE_URL + `/alias/${alias}`);
   }
 
   getTopFifteenRatedProduct(): Observable<any> {

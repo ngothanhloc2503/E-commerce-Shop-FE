@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 import { CartService } from '../../services/cart/cart.service';
 import { ProductService } from '../../services/product/product.service';
 
@@ -26,7 +25,6 @@ export class ProductDetailComponent {
     private router: Router,
     public settingService: GeneralSettingService,
     public cartService: CartService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -49,7 +47,6 @@ export class ProductDetailComponent {
       },
       error: (err) => {
         this.router.navigateByUrl("/");
-        this.utilsService.handleError(err);
       },
     })
   }

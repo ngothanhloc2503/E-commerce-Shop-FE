@@ -15,7 +15,7 @@ export class CategoryService {
   ) { }
 
   getCategoryByName(name: string): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${name}`);
+    return this.httpClient.get(BASE_URL + `/by-name/${name}`);
   }
 
   getAllCategories(): Observable<any> {
