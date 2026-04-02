@@ -1,54 +1,78 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { API_URL } from '../../../constants';
 
-const BASE_URL = API_URL + '/settings';
+const BASE_URL = API_URL + '/settings/general-settings';
+
+export interface SiteSettings {
+  SITE_LOGO: string;
+  CURRENCY_SYMBOL: string;
+  CURRENCY_SYMBOL_POSITION: 'before' | 'after';
+  DECIMAL_DIGITS: number;
+  DECIMAL_POINT_TYPE: string;
+  THOUSANDS_POINT_TYPE: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GeneralSettingService {
-  public SITE_LOGO: string = '';
-  public CURRENCY_SYMBOL: string = '';
-  public CURRENCY_SYMBOL_POSITION: string = '';
-  public DECIMAL_DIGITS: number = 2;
-  public DECIMAL_POINT_TYPE: string = '';
-  public THOUSANDS_POINT_TYPE: string = '';
+  private _settings = signal<SiteSettings | null>(null);
 
-  constructor(
-    private httpClient: HttpClient
-  ) { }
+  settings = this._settings.asReadonly();
 
-  getSiteSettings() {
-    return this.httpClient.get(BASE_URL).subscribe(
-      (res: any) => {
-        this.SITE_LOGO = res.logoImageBaseURI + res.listSettings.SITE_LOGO;
-        this.CURRENCY_SYMBOL = res.listSettings.CURRENCY_SYMBOL;
-        this.CURRENCY_SYMBOL_POSITION = res.listSettings.CURRENCY_SYMBOL_POSITION;
-        this.DECIMAL_DIGITS = res.listSettings.DECIMAL_DIGITS;
-        this.DECIMAL_POINT_TYPE = (res.listSettings.DECIMAL_POINT_TYPE === 'COMMA' ? ',' : '.');
-        this.THOUSANDS_POINT_TYPE = (res.listSettings.THOUSANDS_POINT_TYPE === 'COMMA' ? ',' : '.');
-      }
-    )
+  siteLogo = computed(() => this._settings()?.SITE_LOGO || '');
+  currencySymbol = computed(() => this._settings()?.CURRENCY_SYMBOL || '');
+
+  constructor(private httpClient: HttpClient) {}
+
+  async loadSettings(): Promise<void> {
+    const res: any = await firstValueFrom(this.httpClient.get(BASE_URL));
+
+    const s: SiteSettings = {
+      SITE_LOGO: res.logoImageBaseURI + res.listSettings.SITE_LOGO,
+      CURRENCY_SYMBOL: res.listSettings.CURRENCY_SYMBOL,
+      CURRENCY_SYMBOL_POSITION: res.listSettings.CURRENCY_SYMBOL_POSITION === 'before' ? 'before' : 'after',
+      DECIMAL_DIGITS: res.listSettings.DECIMAL_DIGITS,
+      DECIMAL_POINT_TYPE: res.listSettings.DECIMAL_POINT_TYPE === 'COMMA' ? ',' : '.',
+      THOUSANDS_POINT_TYPE: res.listSettings.THOUSANDS_POINT_TYPE === 'COMMA' ? ',' : '.'
+    };
+
+    this._settings.set(s);
   }
 
-  getFormatMoney(num: number): string {
+  formatMoney(num: number): string {
+    const config = this._settings();
+    if (!config) return num.toFixed(2);
+
+    const {
+      CURRENCY_SYMBOL,
+      CURRENCY_SYMBOL_POSITION,
+      DECIMAL_DIGITS,
+      DECIMAL_POINT_TYPE,
+      THOUSANDS_POINT_TYPE
+    } = config;
+
     let result = '';
-    if (this.CURRENCY_SYMBOL_POSITION === "before") {
-      result += this.CURRENCY_SYMBOL;
+
+    if (CURRENCY_SYMBOL_POSITION === 'before') {
+      result += CURRENCY_SYMBOL;
     }
 
-    let i = parseInt(num.toFixed(this.DECIMAL_DIGITS)).toString();
+    let i = parseInt(num.toFixed(DECIMAL_DIGITS)).toString();
     let j = (i.length > 3) ? i.length % 3 : 0;
 
-    result += (j ? i.substring(0, j) + this.THOUSANDS_POINT_TYPE : '') +
-      i.substring(j).replace(/(\d{3})(?=\d)/g, "$1" + this.THOUSANDS_POINT_TYPE) +
-      (this.DECIMAL_DIGITS ? this.DECIMAL_POINT_TYPE + Math.abs(num - parseInt(i)).toFixed(this.DECIMAL_DIGITS).slice(2) : "");
-      
-    if (this.CURRENCY_SYMBOL_POSITION === "after") {
-      result += this.CURRENCY_SYMBOL;
+    result += (j ? i.substring(0, j) + THOUSANDS_POINT_TYPE : '') +
+      i.substring(j).replace(/(\d{3})(?=\d)/g, `$1${THOUSANDS_POINT_TYPE}`) +
+      (DECIMAL_DIGITS
+        ? DECIMAL_POINT_TYPE + Math.abs(num - parseInt(i)).toFixed(DECIMAL_DIGITS).slice(2)
+        : '');
+
+    if (CURRENCY_SYMBOL_POSITION === 'after') {
+      result += CURRENCY_SYMBOL;
     }
-      
+
     return result;
   }
 }

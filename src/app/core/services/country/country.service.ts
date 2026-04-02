@@ -17,6 +17,6 @@ export class CountryService {
   }
 
   getStateByCountryName(countryName: any): Observable<any> {
-    return this.httpClient.get(`${BASE_URL}/by-name/${countryName}/states`);
+    return this.httpClient.get(`${BASE_URL}/${countryName}/states`);
   }
 }
