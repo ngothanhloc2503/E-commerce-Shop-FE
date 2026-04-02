@@ -2,11 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { OrderService } from '../../../services/order/order.service';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
+import { OrderService } from '../../../services/order/order.service';
 
 @Component({
   selector: 'app-order-list',
@@ -35,7 +34,6 @@ export class OrderListComponent {
     private modalService: ModalService,
     public settingService: GeneralSettingService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -54,9 +52,6 @@ export class OrderListComponent {
         this.totalItems = res.totalItems;
         this.totalPages = res.totalPages;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -75,9 +70,6 @@ export class OrderListComponent {
 
             this.alertService.closeAlert(3000);
           },
-          error: (err) => {
-            this.utilsService.handleError(err);
-          }
         })
       }
     })

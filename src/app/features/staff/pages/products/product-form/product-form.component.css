@@ -1,0 +1,135 @@
+/* Container */
+:host {
+  display: block;
+}
+
+/* Tabs */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button.border-blue-500 {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* Form label */
+label {
+  font-weight: 500;
+  color: #374151; /* gray-700 */
+}
+
+/* Input spacing */
+input,
+select,
+textarea {
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+/* Focus effect */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Error text */
+.text-red-400 {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Image cards */
+.grid > div {
+  transition: all 0.25s ease;
+}
+
+.grid > div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+/* Image */
+img {
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Buttons */
+button[type="submit"],
+button[type="button"] {
+  transition: all 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #1d4ed8; /* darker blue */
+}
+
+button[type="button"]:hover {
+  opacity: 0.9;
+}
+
+/* Remove button */
+button.bg-red-500 {
+  background-color: #ef4444;
+}
+
+button.bg-red-500:hover {
+  background-color: #dc2626;
+}
+
+/* Add button */
+button.bg-green-500 {
+  background-color: #22c55e;
+}
+
+button.bg-green-500:hover {
+  background-color: #16a34a;
+}
+
+/* Disabled button */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form section animation */
+.p-4 {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scroll fix for large forms */
+form {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+}

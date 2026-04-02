@@ -14,9 +14,6 @@
             <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="states-tab" data-tabs-target="#states" type="button" role="tab" aria-controls="states" aria-selected="false">States</button>
         </li>
         <li role="presentation">
-            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="mail-server-tab" data-tabs-target="#mail-server" type="button" role="tab" aria-controls="mail-server" aria-selected="false">Mail Server</button>
-        </li>
-        <li role="presentation">
             <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="mail-templates-tab" data-tabs-target="#mail-templates" type="button" role="tab" aria-controls="mail-templates" aria-selected="false">Mail Templates</button>
         </li>
         <li role="presentation">
@@ -39,11 +36,6 @@
     <!-- Tab States -->
     <div class="hidden p-4 rounded-lg" id="states" role="tabpanel" aria-labelledby="states-tab">
         <app-state-setting></app-state-setting>
-    </div>
-
-    <!-- Tab Mail Server -->
-    <div class="hidden p-4 rounded-lg w-auto mx-auto" id="mail-server" role="tabpanel" aria-labelledby="mail-server-tab">
-        <app-mail-server-setting [listAllSettings]="listAllSettings"></app-mail-server-setting>
     </div>
 
     <!-- Tab Mail Templates -->

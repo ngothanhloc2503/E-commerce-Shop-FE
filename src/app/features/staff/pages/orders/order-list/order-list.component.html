@@ -79,7 +79,7 @@
                     {{ order.userFullName}}
                 </td>
                 <td class="px-6 py-4">
-                    {{ settingService.getFormatMoney(order.total) }}
+                    {{ settingService.formatMoney(order.total) }}
                 </td>
                 <td class="px-6 py-4">
                     {{ order.orderTime | date:'medium' }}

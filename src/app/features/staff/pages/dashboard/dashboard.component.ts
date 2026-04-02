@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import ApexCharts from 'apexcharts';
 import { AlertService } from '../../../../core/services/alert/alert.service';
-import { UtilsService } from '../../../../shared/utils/utils.service';
+import { NumberUtilService } from '../../../../shared/utils/number-util.service';
 import { ReportService } from '../../services/report/report.service';
 declare var $: any;
 
@@ -21,8 +20,8 @@ export class DashboardComponent {
 
   constructor(
     private reportService: ReportService,
-    private utilsService: UtilsService,
     private alertService: AlertService,
+    private numberUtil: NumberUtilService
   ) {}
 
   ngOnInit() {
@@ -40,9 +39,6 @@ export class DashboardComponent {
           this.renderSalesReportByDateChart(response, this.getDenominator(period));
         }
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -56,9 +52,6 @@ export class DashboardComponent {
           this.renderSalesReportByCategoryChart(response, this.getDenominator(period));
         }
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -72,9 +65,6 @@ export class DashboardComponent {
           this.renderSalesReportByProductChart(response, this.getDenominator(period));
         }
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -103,9 +93,6 @@ export class DashboardComponent {
           }
         }
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -145,8 +132,8 @@ export class DashboardComponent {
 
   renderSalesReportByDateChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
-    let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
-    let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
+    let grossSales = response.map((d: any) => this.numberUtil.round(d.grossSales));
+    let netSales = response.map((d: any) => this.numberUtil.round(d.netSales));
     let ordersCount = response.map((d: any) => d.ordersCount);
 
     let options = {
@@ -237,8 +224,8 @@ export class DashboardComponent {
 
   renderSalesReportByCategoryChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
-    let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
-    let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
+    let grossSales = response.map((d: any) => this.numberUtil.round(d.grossSales));
+    let netSales = response.map((d: any) => this.numberUtil.round(d.netSales));
     let productsCount = response.map((d: any) => d.productsCount);
 
     let options = {
@@ -283,8 +270,8 @@ export class DashboardComponent {
 
   renderSalesReportByProductChart(response: any, denominator: number) {
     let identifier = response.map((d: any) => d.identifier);
-    let grossSales = response.map((d: any) => this.utilsService.roundNumber(d.grossSales));
-    let netSales = response.map((d: any) => this.utilsService.roundNumber(d.netSales));
+    let grossSales = response.map((d: any) => this.numberUtil.round(d.grossSales));
+    let netSales = response.map((d: any) => this.numberUtil.round(d.netSales));
     let productsCount = response.map((d: any) => d.productsCount);
 
     const chartElement = document.getElementById("salesReportChart");
@@ -374,13 +361,13 @@ export class DashboardComponent {
   }
 
   calculateTotalAmount(grossSales: any, netSales: any, totalItem: any, denominator: number) {
-    this.totalGrossSales = this.utilsService.roundNumber(
+    this.totalGrossSales = this.numberUtil.round(
       grossSales.reduce((accumulator: number, currentValue: number) => accumulator + currentValue));
-    this.avgGrossSales = this.utilsService.roundNumber(this.totalGrossSales / denominator);
+    this.avgGrossSales = this.numberUtil.round(this.totalGrossSales / denominator);
 
-    this.totalNetSales = this.utilsService.roundNumber(
+    this.totalNetSales = this.numberUtil.round(
       netSales.reduce((accumulator: number, currentValue: number) => accumulator + currentValue));
-    this.avgNetSales = this.utilsService.roundNumber(this.totalNetSales / denominator);
+    this.avgNetSales = this.numberUtil.round(this.totalNetSales / denominator);
 
     this.totalItemCount = totalItem.reduce((accumulator: number, currentValue: number) => accumulator + currentValue);
   }

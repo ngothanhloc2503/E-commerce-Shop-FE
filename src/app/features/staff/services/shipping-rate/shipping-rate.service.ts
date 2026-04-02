@@ -1,11 +1,10 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { StorageService } from '../../../../core/services/storage/storage.service';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
+import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
-const BASE_URL = API_URL + '/staff/shipping-rates';
+const BASE_URL = API_URL + '/shipping-rates';
 
 @Injectable({
   providedIn: 'root'
@@ -14,39 +13,30 @@ export class ShippingRateService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
+    private utilsService: HttpUtilService,
   ) { }
 
   getShippingRatesByPage(pageNum: number, pageSize: number, sortField: string, sortDir: string, keyword: string): Observable<any> {
-    let parameters = this.utilsService.createPagingAndSortingParams(pageNum, pageSize, sortField, sortDir, keyword);
+    let parameters = this.utilsService.createPagingParams(pageNum, pageSize, sortField, sortDir, keyword);
 
     return this.httpClient.get(BASE_URL, {
-      headers: this.utilsService.createAuthorizationHeader(),
       params: parameters
     })
   }
 
   getShippingRateById(id: number): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${id}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(BASE_URL + `/${id}`)
   }
 
   saveShippingRate(data: any): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.post(BASE_URL, data)
   }
 
   changeCodSupportedStatus(id: number, supported: boolean): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/cod/${id}/enabled/${supported}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.patch(BASE_URL + `/${id}/cod`, { supported })
   }
 
   deleteShippingRate(shippingRateId: number): Observable<any> {
-    return this.httpClient.delete(BASE_URL +`/delete/${shippingRateId}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.delete(BASE_URL +`/${shippingRateId}`)
   }
 }

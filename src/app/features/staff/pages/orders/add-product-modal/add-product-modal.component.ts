@@ -3,7 +3,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { CategoryService } from '../../../services/category/category.service';
 import { ProductService } from '../../../services/product/product.service';
 
@@ -40,7 +39,6 @@ export class AddProductModalComponent {
     private categoryService: CategoryService,
     private alertService: AlertService,
     public settingService: GeneralSettingService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -75,9 +73,6 @@ export class AddProductModalComponent {
         this.totalPages = res.totalPages;
         this.totalItems = res.totalItems;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

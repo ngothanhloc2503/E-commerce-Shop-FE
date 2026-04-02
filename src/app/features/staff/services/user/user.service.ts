@@ -2,9 +2,9 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
+import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
-const BASE_URL = API_URL + '/staff/users';
+const BASE_URL = API_URL + '/users';
 
 @Injectable({
   providedIn: 'root'
@@ -13,28 +13,21 @@ export class UserService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
+    private httpUtil: HttpUtilService
   ) { }
 
   getAllRoles(): Observable<any> {
-    return this.httpClient.get(API_URL + '/staff/roles', {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(API_URL + '/roles')
   }
 
   getUsersByPage(pageNum: number, pageSize: number, keyword: string, sortField: string, sortDir: string): Observable<any> {
-    let parameters = this.utilsService.createPagingAndSortingParams(pageNum, pageSize, sortField, sortDir, keyword);
+    let parameters = this.httpUtil.createPagingParams(pageNum, pageSize, sortField, sortDir, keyword);
     
-    return this.httpClient.get(BASE_URL, {
-      headers: this.utilsService.createAuthorizationHeader(),
-      params: parameters
-    })
+    return this.httpClient.get(BASE_URL, { params: parameters })
   }
 
   changeEnabledStatus(id: number, status: boolean): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${id}/enabled/${status}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.patch(BASE_URL + `/${id}/enabled`, { status });
   }
 
   saveUser(user: any, userPhoto: File): Observable<any> {
@@ -42,34 +35,28 @@ export class UserService {
     formData.append('user', new Blob([JSON.stringify(user)] , {type: 'application/json'}));
     formData.append('filePhoto', userPhoto)
     
-    return this.httpClient.post(BASE_URL + '/save', formData, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.post(BASE_URL, formData)
   }
 
   deleteUser(userID: number): Observable<any> {
-    return this.httpClient.delete(BASE_URL + `/delete/${userID}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
+    return this.httpClient.delete(BASE_URL + `/${userID}`, {
     })
   }
 
   exportToCsv(): Observable<any> {
     return this.httpClient.get(BASE_URL + '/export/csv', {
-      headers: this.utilsService.createAuthorizationHeader(),
       responseType: 'blob'
     });
   }
 
   exportToExcel(): Observable<any> {
     return this.httpClient.get(BASE_URL + '/export/excel', {
-      headers: this.utilsService.createAuthorizationHeader(),
       responseType: 'blob'
     });
   }
 
   exportToPdf(): Observable<any> {
     return this.httpClient.get(BASE_URL + '/export/pdf', {
-      headers: this.utilsService.createAuthorizationHeader(),
       responseType: 'blob'
     });
   }
@@ -79,15 +66,12 @@ export class UserService {
     parameters = parameters.append("id", id);
     parameters = parameters.append("email", email);
 
-    return this.httpClient.get(BASE_URL + '/check-email', {
-      headers: this.utilsService.createAuthorizationHeader(),
+    return this.httpClient.get(BASE_URL + '/email-unique', {
       params: parameters
     })
   }
 
   getUserById(userId: any): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${userId}`, { 
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(BASE_URL + `/${userId}`);
   }
 }

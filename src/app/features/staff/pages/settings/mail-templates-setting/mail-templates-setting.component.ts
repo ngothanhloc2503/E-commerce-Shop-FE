@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { SettingService } from '../../../services/setting/setting.service';
 
 @Component({
@@ -27,7 +26,6 @@ export class MailTemplatesSettingComponent {
     private alertService: AlertService,
     private fb: FormBuilder,
     private settingService: SettingService,
-    private utilsService: UtilsService,
   ) {
     this.mailTemplatesForm = this.fb.group({
       CUSTOMER_VERIFY_SUBJECT: this.CUSTOMER_VERIFY_SUBJECT,
@@ -55,9 +53,6 @@ export class MailTemplatesSettingComponent {
       next: (res) => {
         this.alertService.showAndCloseAlertAfterXSecond("Mail templates has been saved successfully.", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 }

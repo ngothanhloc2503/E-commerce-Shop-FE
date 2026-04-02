@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, 
 import { RouterModule } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { BrandService } from '../../../services/brand/brand.service';
 
 @Component({
@@ -34,7 +33,6 @@ export class BrandListComponent {
     private alertService: AlertService,
     private modalService: ModalService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -53,9 +51,6 @@ export class BrandListComponent {
         this.totalPages = res.totalPages;
         this.totalItems = res.totalItems;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -74,9 +69,6 @@ export class BrandListComponent {
 
             this.alertService.closeAlert(3000);
           },
-          error: (err) => {
-            this.utilsService.handleError(err);
-          }
         })
       }
     })

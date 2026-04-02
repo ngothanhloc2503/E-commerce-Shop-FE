@@ -2,9 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
 
-const BASE_URL = API_URL + '/staff/settings';
+const BASE_URL = API_URL + '/settings';
 
 @Injectable({
   providedIn: 'root'
@@ -13,42 +12,25 @@ export class SettingService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
   ) { }
 
   getAllSettings(): Observable<any> {
-    return this.httpClient.get(BASE_URL, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(BASE_URL)
   }
 
   getAllCurrencies(): Observable<any> {
-    return this.httpClient.get(API_URL + '/staff/currencies', {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(API_URL + '/currencies')
   }
 
   saveGeneralSettings(data: FormData): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save-general-settings', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
-  }
-
-  saveMailServerSettings(data: FormData): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save-mail-server-settings', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.put(BASE_URL + '/general-settings', data)
   }
 
   saveMailTemplatesSettings(data: FormData): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save-mail-templates-settings', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.put(BASE_URL + '/mail-templates-settings', data)
   }
 
   savePaymentSettings(data: FormData): Observable<any> {
-    return this.httpClient.post(BASE_URL + '/save-payment-settings', data, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.put(BASE_URL + '/payment-settings', data)
   }
 }

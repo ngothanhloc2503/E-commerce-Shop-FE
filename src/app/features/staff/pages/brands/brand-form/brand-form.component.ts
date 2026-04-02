@@ -6,7 +6,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map, of, timer } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { BrandService } from '../../../services/brand/brand.service';
 import { CategoryService } from '../../../services/category/category.service';
 
@@ -43,7 +42,6 @@ export class BrandFormComponent {
     private titleService: Title,
     private router: Router,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -78,9 +76,6 @@ export class BrandFormComponent {
           this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
         }
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -113,9 +108,6 @@ export class BrandFormComponent {
         this.brandForm.patchValue(res);
         this.logoPreviewSrc = res.logoImagePath;
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -124,9 +116,6 @@ export class BrandFormComponent {
       next: (res) => {
         this.listCategories = res;
       },
-      error: (err: any) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

@@ -6,7 +6,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map, of, timer } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { CategoryService } from '../../../services/category/category.service';
 
 @Component({
@@ -41,7 +40,6 @@ export class CategoryFormComponent {
     private categoryService: CategoryService,
     private fb: FormBuilder,
     private router: Router,
-    private utilsService: UtilsService,
   ) {
 
   }
@@ -82,10 +80,7 @@ export class CategoryFormComponent {
         } else {
           this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
         }
-      }, 
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
+      },
     })
   }
 
@@ -117,9 +112,6 @@ export class CategoryFormComponent {
       next: (res) => {
         this.listCategories = res.filter((cat: any) => cat.id != this.categoryID);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -131,9 +123,6 @@ export class CategoryFormComponent {
           this.imagePreviewSrc = res.imagePath;
         };
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

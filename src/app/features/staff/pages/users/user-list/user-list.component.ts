@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { RouterLink } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { UserService } from '../../../services/user/user.service';
 
 @Component({
@@ -33,7 +32,6 @@ export class UserListComponent {
     private userService: UserService,
     private modalService: ModalService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -165,9 +163,6 @@ export class UserListComponent {
         }
 
         this.alertService.closeAlert(3000);
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
       }
     })
   }
@@ -188,9 +183,6 @@ export class UserListComponent {
               }
 
               this.alertService.closeAlert(3000);
-            },
-            error: (err) => {
-              this.utilsService.handleError(err);
             }
           })
         }
@@ -207,9 +199,6 @@ export class UserListComponent {
           this.goToPage(res.totalPages);
         }
         this.totalItems = res.totalItems;
-      },
-      error: (err) => {
-        this.utilsService.handleError(err);
       }
     })
   }

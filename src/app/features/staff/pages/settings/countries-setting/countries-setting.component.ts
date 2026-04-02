@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { CountryService } from '../../../services/setting/country.service';
 
 @Component({
@@ -29,7 +28,6 @@ export class CountriesSettingComponent {
     private fb: FormBuilder,
     private alertService: AlertService,
     private countryService: CountryService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -49,9 +47,6 @@ export class CountriesSettingComponent {
         this.onReloadCountryList();
         this.alertService.showAndCloseAlertAfterXSecond("Country has been deleted successfully!", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -61,9 +56,6 @@ export class CountriesSettingComponent {
         this.onReloadCountryList();
         this.alertService.showAndCloseAlertAfterXSecond("Country has been saved successfully!", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -72,9 +64,6 @@ export class CountriesSettingComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

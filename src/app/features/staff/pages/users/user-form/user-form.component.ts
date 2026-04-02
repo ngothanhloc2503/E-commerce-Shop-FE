@@ -7,7 +7,6 @@ import { map, of, timer } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { UserService } from '../../../services/user/user.service';
 
 @Component({
@@ -71,7 +70,6 @@ export class UserFormComponent {
     private userService: UserService,
     private alertService: AlertService,
     private countryService: CountryService,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -145,9 +143,6 @@ export class UserFormComponent {
           this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
         }
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -181,9 +176,6 @@ export class UserFormComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -193,9 +185,6 @@ export class UserFormComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -204,9 +193,6 @@ export class UserFormComponent {
       next: (res) => {
         this.listRoles = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -223,9 +209,6 @@ export class UserFormComponent {
         });
         this.getStateByCountryName();
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

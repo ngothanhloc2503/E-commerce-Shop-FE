@@ -3,12 +3,12 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { timer } from 'rxjs';
-import { AddProductModalComponent } from '../add-product-modal/add-product-modal.component';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
-import { OrderService } from '../../../services/order/order.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
+import { InputComponent } from '../../../../../shared/components/input/input.component';
+import { OrderService } from '../../../services/order/order.service';
+import { AddProductModalComponent } from '../add-product-modal/add-product-modal.component';
+import { NumberUtilService } from '../../../../../shared/utils/number-util.service';
 
 @Component({
   selector: 'app-order-details',
@@ -59,7 +59,7 @@ export class OrderDetailsComponent {
     private activatedRoute: ActivatedRoute,
     private countryService: CountryService,
     private router: Router,
-    private utilsService: UtilsService,
+    private numberUtil: NumberUtilService
   ) {}
 
   ngOnInit() {
@@ -118,9 +118,6 @@ export class OrderDetailsComponent {
           this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
         }
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -132,9 +129,6 @@ export class OrderDetailsComponent {
         this.listOrderTrack = res.orderTrack;
         this.listOrderDetails = res.orderDetails;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -161,11 +155,11 @@ export class OrderDetailsComponent {
         productName: productInfo.name,
         productImagePath: productInfo.mainImagePath,
         quantity: 1,
-        productCost: this.utilsService.roundNumber(productInfo.cost),
-        productCostTotal: this.utilsService.roundNumber(productInfo.cost),
+        productCost: this.numberUtil.round(productInfo.cost),
+        productCostTotal: this.numberUtil.round(productInfo.cost),
         shippingCost: 0,
-        unitPrice: this.utilsService.roundNumber(productInfo.discountPrice),
-        subtotal: this.utilsService.roundNumber(productInfo.discountPrice),
+        unitPrice: this.numberUtil.round(productInfo.discountPrice),
+        subtotal: this.numberUtil.round(productInfo.discountPrice),
       }
   
       this.listOrderDetails.push(orderDetailInfo);
@@ -218,7 +212,7 @@ export class OrderDetailsComponent {
 
   updateShippingCost() {
     let totalShippingCost = this.listOrderDetails.reduce((accumulator, current) => accumulator + current.shippingCost, 0);
-    this.orderForm.patchValue({'shippingCost': this.utilsService.roundNumber(totalShippingCost)});
+    this.orderForm.patchValue({'shippingCost': this.numberUtil.round(totalShippingCost)});
 
     this.updateTotal();
   }
@@ -230,7 +224,7 @@ export class OrderDetailsComponent {
 
   updateSubtotal() {
     let subtotal = this.listOrderDetails.reduce((accumulator, current) => accumulator + current.subtotal, 0);
-    this.orderForm.patchValue({'subtotal': this.utilsService.roundNumber(subtotal)});
+    this.orderForm.patchValue({'subtotal': this.numberUtil.round(subtotal)});
 
     this.updateTotal();
   }
@@ -240,16 +234,16 @@ export class OrderDetailsComponent {
     let productCost = 0;
     this.listOrderDetails.forEach(orderDetail => {
       if(orderDetail.id == orderDetailId) {
-        orderDetail.productCostTotal = this.utilsService.roundNumber(orderDetail.quantity * orderDetail.productCost);
-        orderDetail.subtotal = this.utilsService.roundNumber(orderDetail.quantity * orderDetail.unitPrice);
+        orderDetail.productCostTotal = this.numberUtil.round(orderDetail.quantity * orderDetail.productCost);
+        orderDetail.subtotal = this.numberUtil.round(orderDetail.quantity * orderDetail.unitPrice);
       }
       subtotal += orderDetail.subtotal;
       productCost += orderDetail.productCostTotal;
     })
 
     this.orderForm.patchValue({
-      'subtotal': this.utilsService.roundNumber(subtotal), 
-      'productCost': this.utilsService.roundNumber(productCost)
+      'subtotal': this.numberUtil.round(subtotal), 
+      'productCost': this.numberUtil.round(productCost)
     });
     this.updateTotal();
   }
@@ -258,7 +252,7 @@ export class OrderDetailsComponent {
     let subtotal = this.subtotal.value ? this.subtotal.value : 0;
     let shippingCost = this.shippingCost.value ? this.shippingCost.value : 0;
     let tax = this.tax.value ? this.tax.value : 0;
-    this.orderForm.patchValue({"total": this.utilsService.roundNumber(subtotal + shippingCost + tax)});
+    this.orderForm.patchValue({"total": this.numberUtil.round(subtotal + shippingCost + tax)});
   }
 
   getStateByCountryName() {
@@ -267,9 +261,6 @@ export class OrderDetailsComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -279,9 +270,6 @@ export class OrderDetailsComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

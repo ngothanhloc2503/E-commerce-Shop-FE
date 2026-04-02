@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../../../constants';
-import { UtilsService } from '../../../../shared/utils/utils.service';
+import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
-const BASE_URL = API_URL + '/staff/orders';
+const BASE_URL = API_URL + '/orders';
 
 @Injectable({
   providedIn: 'root'
@@ -13,33 +13,26 @@ export class OrderService {
 
   constructor(
     private httpClient: HttpClient,
-    private utilsService: UtilsService,
+    private httpUtil: HttpUtilService
   ) { }
 
   getOrdersByPage(pageNum: number, pageSize: number, sortField: string, sortDir: string, keyword: string): Observable<any> {
-    let parameters = this.utilsService.createPagingAndSortingParams(pageNum, pageSize, sortField, sortDir, keyword);
+    let parameters = this.httpUtil.createPagingParams(pageNum, pageSize, sortField, sortDir, keyword);
     
     return this.httpClient.get(BASE_URL, {
-      headers: this.utilsService.createAuthorizationHeader(),
       params: parameters
     })
   }
 
   getOrderById(orderId: number): Observable<any> {
-    return this.httpClient.get(BASE_URL + `/${orderId}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.get(BASE_URL + `/${orderId}`)
   }
 
   saveOrder(orderData: any): Observable<any> {
-    return this.httpClient.post(BASE_URL + `/save`, orderData, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.post(BASE_URL, orderData)
   }
 
   deleteOrder(orderID: number): Observable<any> {
-    return this.httpClient.delete(BASE_URL +`/delete/${orderID}`, {
-      headers: this.utilsService.createAuthorizationHeader(),
-    })
+    return this.httpClient.delete(BASE_URL +`/${orderID}`)
   }
 }

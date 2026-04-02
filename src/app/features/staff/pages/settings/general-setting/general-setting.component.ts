@@ -3,7 +3,6 @@ import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { SettingService } from '../../../services/setting/setting.service';
 
 @Component({
@@ -49,7 +48,6 @@ export class GeneralSettingComponent {
     private alertService: AlertService,
     private fb: FormBuilder,
     private generalSettingService: GeneralSettingService,
-    private utilsService: UtilsService,
   ) {
     this.generalSettingForm = this.fb.group({
       CURRENCY_ID: this.CURRENCY_ID,
@@ -83,13 +81,10 @@ export class GeneralSettingComponent {
     data.append("logoFile", this.siteLogoFile);
     
     this.settingService.saveGeneralSettings(data).subscribe({
-      next: (res) => {
-        this.generalSettingService.getSiteSettings();
+      next: async (res) => {
+        await this.generalSettingService.loadSettings();
         this.alertService.showAndCloseAlertAfterXSecond("General settings has been saved successfully.", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -98,9 +93,6 @@ export class GeneralSettingComponent {
       next: (res) => {
         this.listCurrencies = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

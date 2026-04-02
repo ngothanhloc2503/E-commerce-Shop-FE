@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { RouterModule } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { CategoryService } from '../../../services/category/category.service';
 
 @Component({
@@ -33,7 +32,6 @@ export class CategoryListComponent {
     private alertService: AlertService,
     private modalService: ModalService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -55,9 +53,6 @@ export class CategoryListComponent {
         }
         this.totalItems = res.totalItems;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -133,9 +128,6 @@ export class CategoryListComponent {
 
         this.alertService.closeAlert(3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     });
   }
 
@@ -156,9 +148,6 @@ export class CategoryListComponent {
 
               this.alertService.closeAlert(3000);
             },
-            error: (err) => {
-              this.utilsService.handleError(err);
-            }
           })
         }
       });

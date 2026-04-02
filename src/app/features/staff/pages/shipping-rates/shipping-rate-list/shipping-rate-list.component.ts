@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { RouterModule } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { ShippingRateService } from '../../../services/shipping-rate/shipping-rate.service';
 
 @Component({
@@ -33,7 +32,6 @@ export class ShippingRateListComponent {
     private alertService: AlertService,
     private modalService: ModalService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -52,9 +50,6 @@ export class ShippingRateListComponent {
         this.totalPages = res.totalPages;
         this.totalItems = res.totalItems;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -64,9 +59,6 @@ export class ShippingRateListComponent {
         this.getShippingRatesByPage();
         this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + id + " has been " + (supported ? "disabled" : "enabled"), "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -79,9 +71,6 @@ export class ShippingRateListComponent {
             this.getShippingRatesByPage();
             this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + shippingRateId + " has been deleted successfully.", "green", 3000);
           },
-          error: (err) => {
-            this.utilsService.handleError(err);
-          }
         })
       }
     })

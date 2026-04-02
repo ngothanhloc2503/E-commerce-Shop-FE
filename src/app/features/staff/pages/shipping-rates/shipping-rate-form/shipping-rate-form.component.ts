@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { ShippingRateService } from '../../../services/shipping-rate/shipping-rate.service';
 
 @Component({
@@ -38,7 +37,6 @@ export class ShippingRateFormComponent {
     private titleService: Title,
     private router: Router,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {}
 
   ngOnInit() {
@@ -70,9 +68,6 @@ export class ShippingRateFormComponent {
         this.router.navigateByUrl("/staff/shipping-rates");
         this.alertService.showAndCloseAlertAfterXSecond("Shipping rate has been saved successfully.", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -82,9 +77,6 @@ export class ShippingRateFormComponent {
         this.shippingRateForm.patchValue(res);
         this.getStateByCountryName();
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 
@@ -94,9 +86,6 @@ export class ShippingRateFormComponent {
         next: (res) => {
           this.listStates = res;
         },
-        error: (err) => {
-          this.utilsService.handleError(err);
-        }
       })
     }
   }
@@ -106,9 +95,6 @@ export class ShippingRateFormComponent {
       next: (res) => {
         this.listCountries = res;
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 

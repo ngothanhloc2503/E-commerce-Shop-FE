@@ -2,7 +2,6 @@ import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
-import { UtilsService } from '../../../../../shared/utils/utils.service';
 import { SettingService } from '../../../services/setting/setting.service';
 
 @Component({
@@ -24,7 +23,6 @@ export class PaymentSettingComponent {
     private settingService: SettingService,
     private alertService: AlertService,
     private fb: FormBuilder,
-    private utilsService: UtilsService,
   ) {
     this.paymentSettingForm = this.fb.group({
       PAYPAL_API_BASE_URL: this.PAYPAL_API_BASE_URL,
@@ -51,9 +49,6 @@ export class PaymentSettingComponent {
       next: (res) => {
         this.alertService.showAndCloseAlertAfterXSecond("Payment settings has been saved successfully.", "green", 3000);
       },
-      error: (err) => {
-        this.utilsService.handleError(err);
-      }
     })
   }
 }
