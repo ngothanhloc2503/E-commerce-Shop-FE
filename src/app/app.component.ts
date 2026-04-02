@@ -8,6 +8,7 @@ import { AlertComponent } from './shared/components/alert/alert.component';
 import { Flowbite, InitFlowbiteFix } from './shared/components/flowbite.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { NavComponent } from './shared/components/nav/nav.component';
+import { ThemeService } from './core/services/theme/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -23,8 +24,14 @@ export class AppComponent {
 
   constructor(
     public alertService: AlertService,
+    private themeService: ThemeService,
     public settingService: GeneralSettingService, 
     private router: Router) {
+  }
+
+  // Reactive dark mode
+  @HostBinding('class.dark') get mode() {
+    return this.themeService.darkMode();
   }
 
   ngOnInit() {
@@ -33,11 +40,5 @@ export class AppComponent {
         InitFlowbiteFix();
       }
     });
-
-    this.settingService.getSiteSettings();
-  }
-  
-  @HostBinding('class.dark') get mode() {
-    return JSON.parse(window.localStorage.getItem('darkMode') ?? 'false');
   }
 }
