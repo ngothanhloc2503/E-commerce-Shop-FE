@@ -20,33 +20,17 @@ const STORAGE_KEY = 'auth_data';
 export class AuthStateService {
   private state = signal<AuthState>(this.loadFromStorage());
 
-  isAuthenticated = computed(() => {
-    const { token, expiredAt } = this.state();
-    if (!token || !expiredAt) return false;
-    return Date.now() < expiredAt;
-  });
-
   user = computed(() => this.state().user);
   token = computed(() => this.state().token);
+  isAuthenticated = computed(() => !!this.state().token);
 
   init() {
     const saved = this.loadFromStorage();
     this.state.set(saved);
-
-    if (saved.expiredAt) {
-      const remaining = saved.expiredAt - Date.now();
-
-      if (remaining <= 0) {
-        this.logout();
-      } else {
-        // auto logout khi hết hạn
-        setTimeout(() => this.logout(), remaining);
-      }
-    }
   }
 
-  login(token: string, user: User, expireDuration: number) {
-    const expiredAt = Date.now() + expireDuration;
+  login(token: string, user: User, expiresIn: number) {
+    const expiredAt = Date.now() + expiresIn;
 
     const newState: AuthState = { token, user, expiredAt };
     this.state.set(newState);
@@ -75,17 +59,13 @@ export class AuthStateService {
   }
 
   private loadFromStorage(): AuthState {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { token: null, user: null, expiredAt: null };
-
     try {
-      const parsed: AuthState = JSON.parse(raw);
-
-      if (parsed.expiredAt && Date.now() > parsed.expiredAt) {
-        localStorage.removeItem(STORAGE_KEY);
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (!data) {
         return { token: null, user: null, expiredAt: null };
       }
-      return parsed;
+
+      return JSON.parse(data);
     } catch {
       return { token: null, user: null, expiredAt: null };
     }

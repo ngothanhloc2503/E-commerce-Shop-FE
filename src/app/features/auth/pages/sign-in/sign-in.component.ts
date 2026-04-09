@@ -72,7 +72,7 @@ export class SignInComponent {
     this.authService.signInWithGoogle();
   }
 
-  signInWithFacebook() {
-    this.authService.signInWithFacebook();
-  }
+  // signInWithFacebook() {
+  //   this.authService.signInWithFacebook();
+  // }
 }

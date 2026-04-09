@@ -38,25 +38,14 @@ export class AuthService {
     return this.http.post<any>(`${URL}/register`, registerData);
   }
 
-  getInfoAfterSignInWithOauth2(token: any) : Observable<any> {
+  getInfoAfterSignInWithOauth2(token: any): Observable<any> {
     let parameters = new HttpParams();
     parameters = parameters.append("token", "Bearer " + token);
     return this.http.get(`${URL}/login-oauth2`, {
       params: parameters
     }).pipe(
       map((res: any) => {
-        console.log(res);
-        if (res.accessToken != null) {
-          const user = {
-            email: res.email,
-            fullName: res.fullName,
-            image: res.imagePath,
-            roles: res.roles
-          }
-          this.authState.login(res.accessToken, user, res.expireDuration);
-          return true;
-        }
-        return false;
+        this.handleSaveDateToStorage(res);
       })
     );
   }
@@ -64,26 +53,30 @@ export class AuthService {
   signIn(userData: any): Observable<any> {
     return this.http.post<any>(`${URL}/login`, userData).pipe(
       map((res) => {
-        if (res.accessToken != null) {
-          const user = {
-            email: res.email,
-            fullName: res.fullName,
-            image: res.imagePath,
-            roles: res.roles
-          }
-          this.authState.login(res.accessToken, user, res.expireDuration);
-          return true;
-        }
-        return false;
+        this.handleSaveDateToStorage(res);
       })
     );
+  }
+
+  handleSaveDateToStorage(res: any): boolean {
+    if (res.accessToken != null) {
+      const user = {
+        email: res.email,
+        fullName: res.fullName,
+        image: res.imagePath,
+        roles: res.roles
+      }
+      this.authState.login(res.accessToken, user, res.expiresIn);
+      return true;
+    }
+    return false;
   }
 
   signInWithGoogle() {
     window.location.href = BASE_URL + '/oauth2/authorization/google';
   }
 
-  signInWithFacebook() {
-    window.location.href = BASE_URL + '/oauth2/authorization/facebook';
-  }
+  // signInWithFacebook() {
+  //   window.location.href = BASE_URL + '/oauth2/authorization/facebook';
+  // }
 }

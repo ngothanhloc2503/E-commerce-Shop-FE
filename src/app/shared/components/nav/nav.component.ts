@@ -6,6 +6,8 @@ import { GeneralSettingService } from '../../../core/services/general-setting/ge
 import { CartService } from '../../../features/customer/services/cart/cart.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
+import { HttpClient } from '@angular/common/http';
+import { BASE_URL } from '../../../constants';
 
 @Component({
   selector: 'app-nav',
@@ -19,7 +21,7 @@ export class NavComponent {
   keyword = new FormControl('', [Validators.required]);
 
   darkMode = this.themeService.darkMode;
-  
+
   constructor(
     private themeService: ThemeService,
     public cartService: CartService,
@@ -27,6 +29,7 @@ export class NavComponent {
     private fb: FormBuilder,
     public settingService: GeneralSettingService,
     private authState: AuthStateService,
+    private http: HttpClient,
   ) { }
 
   ngOnInit() {
@@ -48,9 +51,20 @@ export class NavComponent {
 
   signOut(event: any) {
     event.preventDefault();
+    this.http.post(`${BASE_URL}/api/auth/logout`, {}).subscribe({
+      next: () => {
+        this.afterLogout();
+      },
+      error: () => {
+        this.afterLogout();
+      }
+    });
+  }
+
+  private afterLogout() {
     this.authState.logout();
     this.cartService.cart = {};
-    this.router.navigateByUrl("/");
+    this.router.navigateByUrl('/');
   }
 
   getShortName(name: string): string {
