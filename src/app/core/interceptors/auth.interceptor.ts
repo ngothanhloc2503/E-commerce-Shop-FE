@@ -45,7 +45,7 @@ export const authInterceptor: HttpInterceptorFn = (
     catchError((error: HttpErrorResponse) => {
 
       // Ignore if response status is 401 or refresh API
-      if (error.status !== 401 || req.url.includes('/api/auth/refresh')) {
+      if ((error.status !== 401 && error.status !== 403) || req.url.includes('/api/auth/refresh')) {
         return throwError(() => error);
       }
 

@@ -19,8 +19,8 @@ export class ErrorHandlerService {
       case 400:
         message = 'Bad request. Please check your input.';
         break;
+      case 401:
       case 403:
-        message = 'Access denied.';
         break;
       case 404:
       case 409:
