@@ -1,17 +1,17 @@
 <form [formGroup]="paymentSettingForm" (ngSubmit)="savePaymentSetting()" id="payment-settings-tab-content">
     <div class="flex justify-center items-center z-0 w-full mb-5 group">
         <label class="block w-1/6 mb-2 text-sm font-medium text-gray-900 dark:text-white">Paypal API URL:</label>
-        <app-input class="w-4/6" [control]="PAYPAL_API_BASE_URL" [type]="'text'" [required]="true"></app-input>
+        <app-input class="w-4/6" [control]="paymentSettingForm.get('PAYPAL_API_BASE_URL')!" [type]="'text'" [required]="true"></app-input>
     </div>
 
     <div class="flex justify-center items-center z-0 w-full mb-5 group">
         <label class="block w-1/6 mb-2 text-sm font-medium text-gray-900 dark:text-white">Paypal Client ID:</label>
-        <app-input class="w-4/6" [control]="PAYPAL_API_CLIENT_ID" [type]="'text'" [required]="true"></app-input>
+        <app-input class="w-4/6" [control]="paymentSettingForm.get('PAYPAL_API_CLIENT_ID')!" [type]="'text'" [required]="true"></app-input>
     </div>
 
     <div class="flex justify-center items-center z-0 w-full mb-5 group">
         <label class="block w-1/6 mb-2 text-sm font-medium text-gray-900 dark:text-white">Paypal Client Secret:</label>
-        <app-input class="w-4/6" [control]="PAYPAL_API_CLIENT_SECRET" [type]="'text'" [required]="true"></app-input>
+        <app-input class="w-4/6" [control]="paymentSettingForm.get('PAYPAL_API_CLIENT_SECRET')!" [type]="'text'" [required]="true"></app-input>
     </div>
 
     <!-- Footer -->

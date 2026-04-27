@@ -1,8 +1,15 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, Input, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { SettingService } from '../../../services/setting/setting.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+interface PaymentSettingForm {
+  PAYPAL_API_BASE_URL: FormControl<string>;
+  PAYPAL_API_CLIENT_ID: FormControl<string>;
+  PAYPAL_API_CLIENT_SECRET: FormControl<string>;
+}
 
 @Component({
   selector: 'app-payment-setting',
@@ -12,43 +19,55 @@ import { SettingService } from '../../../services/setting/setting.service';
   styleUrl: './payment-setting.component.css'
 })
 export class PaymentSettingComponent {
-  @Input() listAllSettings: any[] = [];
+  private destroyRef = inject(DestroyRef);
 
-  paymentSettingForm!: FormGroup;
-  PAYPAL_API_BASE_URL = new FormControl('', [Validators.required]);
-  PAYPAL_API_CLIENT_ID = new FormControl('', [Validators.required]);
-  PAYPAL_API_CLIENT_SECRET = new FormControl('', [Validators.required]);
+  // Inputs
+  listAllSettings = input<any>();
+
+  isSubmitting = false;
+
+  paymentSettingForm: FormGroup<PaymentSettingForm> = this.fb.group({
+    PAYPAL_API_BASE_URL: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    PAYPAL_API_CLIENT_ID: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    PAYPAL_API_CLIENT_SECRET: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+  });
+
 
   constructor(
     private settingService: SettingService,
     private alertService: AlertService,
     private fb: FormBuilder,
-  ) {
-    this.paymentSettingForm = this.fb.group({
-      PAYPAL_API_BASE_URL: this.PAYPAL_API_BASE_URL,
-      PAYPAL_API_CLIENT_ID: this.PAYPAL_API_CLIENT_ID,
-      PAYPAL_API_CLIENT_SECRET: this.PAYPAL_API_CLIENT_SECRET
-    })
-  }
+  ) { }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if ('listAllSettings' in changes) {
-      if (changes['listAllSettings'].currentValue != undefined) {
-        this.paymentSettingForm.patchValue(changes['listAllSettings'].currentValue);
-      }
+  private syncFormEffect = effect(() => {
+    const settings = this.listAllSettings();
+
+    if (settings) {
+      this.paymentSettingForm.patchValue(settings);
     }
-  }
+  }, {
+    allowSignalWrites: true
+  });
 
   savePaymentSetting() {
-    let data: FormData = new FormData();
-    for(let item of Object.keys(this.paymentSettingForm.controls)) {
-      data.append(item, this.paymentSettingForm.get(item)?.value);
-    }
-    
-    this.settingService.savePaymentSettings(data).subscribe({
-      next: (res) => {
-        this.alertService.showAndCloseAlertAfterXSecond("Payment settings has been saved successfully.", "green", 3000);
-      },
-    })
+    this.isSubmitting = true;
+
+    this.settingService.savePaymentSettings(this.paymentSettingForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting = false;
+          this.alertService.showAndCloseAlertAfterXSecond("Payment settings has been saved successfully.", "green", 3000);
+        },
+      })
   }
 }

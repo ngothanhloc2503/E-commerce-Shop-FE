@@ -3,7 +3,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_URL } from '../../../constants';
 
-const BASE_URL = API_URL + '/settings/general-settings';
+const BASE_URL = API_URL + '/settings/general';
 
 export interface SiteSettings {
   SITE_LOGO: string;

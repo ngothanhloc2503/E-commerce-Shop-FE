@@ -23,14 +23,14 @@ export class SettingService {
   }
 
   saveGeneralSettings(data: FormData): Observable<any> {
-    return this.httpClient.put(BASE_URL + '/general-settings', data)
+    return this.httpClient.put(BASE_URL + '/general', data)
   }
 
-  saveMailTemplatesSettings(data: FormData): Observable<any> {
-    return this.httpClient.put(BASE_URL + '/mail-templates-settings', data)
+  saveMailTemplatesSettings(data: any): Observable<any> {
+    return this.httpClient.put(BASE_URL + '/mail-templates', data)
   }
 
-  savePaymentSettings(data: FormData): Observable<any> {
-    return this.httpClient.put(BASE_URL + '/payment-settings', data)
+  savePaymentSettings(data: any): Observable<any> {
+    return this.httpClient.put(BASE_URL + '/payment', data)
   }
 }
