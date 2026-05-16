@@ -1,0 +1,15 @@
+/* Force legend items onto one line */
+::ng-deep .apexcharts-legend-group {
+  display: inline-flex !important;
+  flex-direction: row !important;
+}
+
+::ng-deep .apexcharts-legend-group-vertical {
+  flex-direction: row !important;
+}
+
+::ng-deep .apexcharts-legend {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+}

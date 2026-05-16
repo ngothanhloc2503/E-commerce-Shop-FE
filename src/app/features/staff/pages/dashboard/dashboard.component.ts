@@ -1,5 +1,5 @@
-import { Component, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import ApexCharts from 'apexcharts';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
 import { AlertService } from '../../../../core/services/alert/alert.service';
 import { ReportService } from '../../services/report/report.service';
 import { round } from '../../../../shared/utils/number.util';
@@ -7,10 +7,11 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-    selector: 'app-staff-dashboard',
-    imports: [ReactiveFormsModule],
-    templateUrl: './dashboard.component.html',
-    styleUrl: './dashboard.component.css'
+  selector: 'app-staff-dashboard',
+  standalone: true,
+  imports: [ReactiveFormsModule, NgApexchartsModule],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
   // Inject
@@ -19,9 +20,8 @@ export class DashboardComponent {
   private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
 
-  // ViewChild
-  @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
-  private chart: ApexCharts | null = null;
+  // Chart options — bind vào <apx-chart>
+  chartOptions: Partial<ApexOptions> = {};
 
   // UI signals
   activeTab = signal<'date' | 'category' | 'product'>('date');
@@ -65,7 +65,7 @@ export class DashboardComponent {
         },
       });
   }
-  // Trigger Custom Date Range
+
   applyCustomDateRange() {
     const { fromDate, toDate } = this.dateRangeForm.value;
     
@@ -101,7 +101,6 @@ export class DashboardComponent {
     const netSales = response.map((d: any) => round(d.netSales));
     const counts = response.map((d: any) => type === 'date' ? d.ordersCount : d.productsCount);
 
-    // Chuẩn hóa dữ liệu cho bảng (dùng cho cả Bar, Pie, và Product Table)
     this.reportData.set(response.map((d: any, i: string | number) => ({
       identifier: identifiers[i],
       gross: grossSales[i],
@@ -115,72 +114,99 @@ export class DashboardComponent {
       this.chartType.set('bar');
       this.chartTitle.set('Sales By Date');
       this.tableHeader.set('Total Orders');
-      this.renderBarChart(identifiers, grossSales, netSales, counts);
+      this.setBarChartOptions(identifiers, grossSales, netSales, counts);
     } else if (type === 'category') {
       this.chartType.set('pie');
       this.chartTitle.set('Sales By Category');
       this.tableHeader.set('Total Products');
-      this.renderPieChart(identifiers, grossSales);
+      this.setPieChartOptions(identifiers, grossSales);
     } else {
       this.chartType.set('table');
       this.chartTitle.set('Sales By Product');
       this.tableHeader.set('Total Products');
-      if (this.chart) { this.chart.destroy(); this.chart = null; }
+      this.chartOptions = {};
     }
   }
 
   private resetState() {
     this.noSales.set(true);
     this.reportData.set([]);
-    if (this.chart) { this.chart.destroy(); this.chart = null; }
+    this.chartOptions = {};
   }
 
-  // --- APEX CHARTS RENDERING ---
-  private initChart(options: any) {
-    if (this.chart) this.chart.destroy();
-    if (this.chartContainer?.nativeElement) {
-      this.chart = new ApexCharts(this.chartContainer.nativeElement, options);
-      this.chart.render();
-    }
-  }
-
-  private renderBarChart(categories: string[], grossSales: number[], netSales: number[], ordersCount: number[]) {
-    const options = {
-      chart: { type: "bar", height: "320px", fontFamily: "Inter, sans-serif", toolbar: { show: true } },
-      title: { text: this.chartTitle(), align: "left", style: { fontSize: "16px", color: "#666" } },
-      colors: ["#FDBA8C", "#31C48D", "#1A56DB"],
+  private setBarChartOptions(categories: string[], grossSales: number[], netSales: number[], ordersCount: number[]) {
+    this.chartOptions = {
+      chart: {
+        type: 'bar',
+        height: 320,
+        width: '100%',
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: true }
+      },
+      title: {
+        text: this.chartTitle(),
+        align: 'left',
+        style: { fontSize: '16px', color: '#666' }
+      },
+      colors: ['#FDBA8C', '#31C48D', '#1A56DB'],
       series: [
-        { name: "Gross Sales", data: grossSales },
-        { name: "Net Sales", data: netSales },
-        { name: "Orders", data: ordersCount },
+        { name: 'Gross Sales', data: grossSales },
+        { name: 'Net Sales', data: netSales },
+        { name: 'Orders', data: ordersCount }
       ],
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '60%',
+          borderRadius: 2
+        }
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        floating: false,
+        fontSize: '14px',
+      },
       xaxis: { categories: categories },
       yaxis: [
-        { seriesName: "Gross Sales", title: { text: "Sales Amount" }, labels: { formatter: (value: number) => `$${value}` } },
-        { seriesName: "Gross Sales", show: false },
-        { opposite: true, title: { text: "Order Count" }, labels: { formatter: (value: number) => `${value}` } },
+        { seriesName: 'Gross Sales', title: { text: 'Sales Amount' }, labels: { formatter: (value: number) => `$${value}` } },
+        { seriesName: 'Gross Sales', show: false },
+        { opposite: true, title: { text: 'Order Count' }, labels: { formatter: (value: number) => `${value}` } }
       ],
-      tooltip: { y: [{ formatter: (value: number) => `$${value}` }, { formatter: (value: number) => `$${value}` }, { formatter: (value: number) => `${value} orders` }] },
-      fill: { opacity: 1 },
+      tooltip: {
+        y: [
+          { formatter: (value: number) => `$${value}` },
+          { formatter: (value: number) => `$${value}` },
+          { formatter: (value: number) => `${value} orders` }
+        ]
+      },
+      fill: { opacity: 1 }
     };
-    this.initChart(options);
   }
 
-  private renderPieChart(labels: string[], series: number[]) {
-    const options = {
-      chart: { type: "pie", height: 420, width: "100%", fontFamily: "Inter, sans-serif", toolbar: { show: true } },
-      title: { text: this.chartTitle(), align: "left", style: { fontSize: "16px", color: "#666" } },
+  private setPieChartOptions(labels: string[], series: number[]) {
+    this.chartOptions = {
+      chart: {
+        type: 'pie',
+        height: 420,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: true }
+      },
+      title: {
+        text: this.chartTitle(),
+        align: 'left',
+        style: { fontSize: '16px', color: '#666' }
+      },
       series: series,
       labels: labels,
-      yaxis: { labels: { formatter: (value: number) => `$${value}` } },
+      yaxis: { labels: { formatter: (value: number) => `$${value}` } }
     };
-    this.initChart(options);
   }
 
   private validateDates(fromDate: string, toDate: string): boolean {
     const from = new Date(fromDate);
     const to = new Date(toDate);
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
 
     if (to <= from) {
       this.alertService.showAndCloseAlertAfterXSecond('The "To Date" must be after the "From Date".', 'red', 3000); return false;
@@ -196,7 +222,7 @@ export class DashboardComponent {
   }
 
   private getDenominator(period: string): number {
-    const map: any = { "last-7-days": 7, "last-28-days": 28, "last-6-months": 6, "last-12-months": 12 };
+    const map: any = { 'last-7-days': 7, 'last-28-days': 28, 'last-6-months': 6, 'last-12-months': 12 };
     return map[period] || 1;
   }
 

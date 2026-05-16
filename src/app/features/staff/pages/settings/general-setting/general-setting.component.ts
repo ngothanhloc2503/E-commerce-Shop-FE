@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, DestroyRef, effect, inject, input, Input, signal, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
@@ -18,7 +18,7 @@ interface GeneralSettingsForm {
 
 @Component({
     selector: 'app-general-setting',
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './general-setting.component.html',
     styleUrl: './general-setting.component.css'
 })

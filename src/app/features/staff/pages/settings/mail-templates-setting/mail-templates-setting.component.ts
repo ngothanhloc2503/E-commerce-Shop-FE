@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,7 +16,7 @@ interface MailTemplatesForm {
 
 @Component({
     selector: 'app-mail-templates-setting',
-    imports: [CommonModule, ReactiveFormsModule, InputComponent, EditorModule],
+    imports: [ReactiveFormsModule, InputComponent, EditorModule],
     templateUrl: './mail-templates-setting.component.html',
     styleUrl: './mail-templates-setting.component.css'
 })

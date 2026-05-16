@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SettingService } from '../../../services/setting/setting.service';
@@ -12,9 +12,7 @@ import { map } from 'rxjs';
 
 @Component({
     selector: 'app-settings',
-    imports: [ReactiveFormsModule, CommonModule,
-        GeneralSettingComponent, CountriesSettingComponent, StateSettingComponent,
-        MailTemplatesSettingComponent, PaymentSettingComponent],
+    imports: [ReactiveFormsModule, GeneralSettingComponent, CountriesSettingComponent, StateSettingComponent, MailTemplatesSettingComponent, PaymentSettingComponent],
     templateUrl: './settings.component.html',
     styleUrl: './settings.component.css'
 })

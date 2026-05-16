@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
@@ -6,7 +6,7 @@ import { CountryService } from '../../../services/setting/country.service';
 
 @Component({
     selector: 'app-countries-setting',
-    imports: [ReactiveFormsModule, CommonModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './countries-setting.component.html',
     styleUrl: './countries-setting.component.css'
 })
