@@ -3,11 +3,10 @@ import { Component, input, Input } from '@angular/core';
 import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-input',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './input.component.html',
-  styleUrl: './input.component.css'
+    selector: 'app-input',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './input.component.html',
+    styleUrl: './input.component.css'
 })
 export class InputComponent {
   @Input() control: AbstractControl | null = null;

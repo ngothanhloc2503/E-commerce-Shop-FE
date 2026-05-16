@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer } from '@angular/core';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
@@ -20,11 +20,9 @@ export const appConfig: ApplicationConfig = {
     GeneralSettingService,
 
     // APP_INITIALIZER chỉ cho settings
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (settings: GeneralSettingService) => () => settings.loadSettings(),
-      deps: [GeneralSettingService],
-      multi: true,
-    },
+    provideAppInitializer(() => {
+        const initializerFn = ((settings: GeneralSettingService) => () => settings.loadSettings())(inject(GeneralSettingService));
+        return initializerFn();
+      }),
   ],
 };

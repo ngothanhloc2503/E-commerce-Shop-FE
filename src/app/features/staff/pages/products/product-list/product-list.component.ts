@@ -11,11 +11,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { downloadBlob } from '../../../../../shared/utils/file-download.util';
 
 @Component({
-  selector: 'app-product-list',
-  standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, PaginationComponent],
-  templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css'
+    selector: 'app-product-list',
+    imports: [RouterModule, ReactiveFormsModule, PaginationComponent],
+    templateUrl: './product-list.component.html',
+    styleUrl: './product-list.component.css'
 })
 export class ProductListComponent {
   // Inject

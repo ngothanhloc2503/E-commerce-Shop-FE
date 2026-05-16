@@ -36,11 +36,10 @@ interface Brand {
 }
 
 @Component({
-  selector: 'app-product-form',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, EditorModule],
-  templateUrl: './product-form.component.html',
-  styleUrls: ['./product-form.component.css']
+    selector: 'app-product-form',
+    imports: [ReactiveFormsModule, InputComponent, EditorModule],
+    templateUrl: './product-form.component.html',
+    styleUrls: ['./product-form.component.css']
 })
 export class ProductFormComponent implements OnInit {
   // Inject

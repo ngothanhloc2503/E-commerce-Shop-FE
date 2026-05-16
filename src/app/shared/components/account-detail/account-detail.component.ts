@@ -10,11 +10,10 @@ import { AuthStateService } from '../../../core/services/auth-state/auth-state.s
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-account-detail',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent],
-  templateUrl: './account-detail.component.html',
-  styleUrl: './account-detail.component.css'
+    selector: 'app-account-detail',
+    imports: [ReactiveFormsModule, InputComponent],
+    templateUrl: './account-detail.component.html',
+    styleUrl: './account-detail.component.css'
 })
 export class AccountDetailComponent {
   // Signals

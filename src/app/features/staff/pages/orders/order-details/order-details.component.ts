@@ -12,11 +12,10 @@ import { AddProductModalComponent } from '../add-product-modal/add-product-modal
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-order-details',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, AddProductModalComponent, DatePipe],
-  templateUrl: './order-details.component.html',
-  styleUrl: './order-details.component.css'
+    selector: 'app-order-details',
+    imports: [ReactiveFormsModule, InputComponent, AddProductModalComponent, DatePipe],
+    templateUrl: './order-details.component.html',
+    styleUrl: './order-details.component.css'
 })
 export class OrderDetailsComponent {
   // Inject

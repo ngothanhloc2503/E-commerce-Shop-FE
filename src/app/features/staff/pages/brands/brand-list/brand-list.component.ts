@@ -10,11 +10,10 @@ import { BrandService } from '../../../services/brand/brand.service';
 import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 
 @Component({
-  selector: 'app-brand-list',
-  standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterModule, PaginationComponent],
-  templateUrl: './brand-list.component.html',
-  styleUrl: './brand-list.component.css'
+    selector: 'app-brand-list',
+    imports: [ReactiveFormsModule, FormsModule, RouterModule, PaginationComponent],
+    templateUrl: './brand-list.component.html',
+    styleUrl: './brand-list.component.css'
 })
 export class BrandListComponent {
   // Inject

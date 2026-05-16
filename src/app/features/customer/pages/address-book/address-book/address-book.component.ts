@@ -13,11 +13,10 @@ import { AddressBookService } from '../../../services/address-book/address-book.
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 
 @Component({
-  selector: 'app-address-book',
-  standalone: true,
-  imports: [RouterModule],
-  templateUrl: './address-book.component.html',
-  styleUrl: './address-book.component.css',
+    selector: 'app-address-book',
+    imports: [RouterModule],
+    templateUrl: './address-book.component.html',
+    styleUrl: './address-book.component.css'
 })
 export class AddressBookComponent implements OnInit {
   // Inject

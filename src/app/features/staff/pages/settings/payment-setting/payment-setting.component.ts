@@ -12,11 +12,10 @@ interface PaymentSettingForm {
 }
 
 @Component({
-  selector: 'app-payment-setting',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent],
-  templateUrl: './payment-setting.component.html',
-  styleUrl: './payment-setting.component.css'
+    selector: 'app-payment-setting',
+    imports: [ReactiveFormsModule, InputComponent],
+    templateUrl: './payment-setting.component.html',
+    styleUrl: './payment-setting.component.css'
 })
 export class PaymentSettingComponent {
   // Injects

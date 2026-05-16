@@ -7,11 +7,10 @@ import { CategoryService } from '../../../services/category/category.service';
 import { ProductService } from '../../../services/product/product.service';
 
 @Component({
-  selector: 'app-add-product-modal',
-  standalone: true,
-  imports: [ReactiveFormsModule],
-  templateUrl: './add-product-modal.component.html',
-  styleUrl: './add-product-modal.component.css'
+    selector: 'app-add-product-modal',
+    imports: [ReactiveFormsModule],
+    templateUrl: './add-product-modal.component.html',
+    styleUrl: './add-product-modal.component.css'
 })
 export class AddProductModalComponent {
   // Signal Inputs & Outputs

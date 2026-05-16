@@ -11,11 +11,10 @@ import { GeneralSettingService } from '../../../../../core/services/general-sett
 import { DatePipe } from '@angular/common';
 
 @Component({
-  selector: 'app-order-list',
-  standalone: true,
-  imports: [PaginationComponent, ReactiveFormsModule, RouterLink, DatePipe],
-  templateUrl: './order-list.component.html',
-  styleUrl: './order-list.component.css'
+    selector: 'app-order-list',
+    imports: [PaginationComponent, ReactiveFormsModule, RouterLink, DatePipe],
+    templateUrl: './order-list.component.html',
+    styleUrl: './order-list.component.css'
 })
 export class OrderListComponent {
   // Inject

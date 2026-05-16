@@ -5,11 +5,10 @@ import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../services/setting/country.service';
 
 @Component({
-  selector: 'app-countries-setting',
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './countries-setting.component.html',
-  styleUrl: './countries-setting.component.css'
+    selector: 'app-countries-setting',
+    imports: [ReactiveFormsModule, CommonModule],
+    templateUrl: './countries-setting.component.html',
+    styleUrl: './countries-setting.component.css'
 })
 export class CountriesSettingComponent {
   // Injects

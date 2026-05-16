@@ -11,13 +11,12 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
 @Component({
-  selector: 'app-settings',
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule,
-    GeneralSettingComponent, CountriesSettingComponent, StateSettingComponent,
-    MailTemplatesSettingComponent, PaymentSettingComponent],
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.css'
+    selector: 'app-settings',
+    imports: [ReactiveFormsModule, CommonModule,
+        GeneralSettingComponent, CountriesSettingComponent, StateSettingComponent,
+        MailTemplatesSettingComponent, PaymentSettingComponent],
+    templateUrl: './settings.component.html',
+    styleUrl: './settings.component.css'
 })
 export class SettingsComponent {
   // Inject

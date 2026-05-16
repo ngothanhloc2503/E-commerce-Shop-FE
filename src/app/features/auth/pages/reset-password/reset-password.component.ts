@@ -6,12 +6,11 @@ import { InputComponent } from '../../../../shared/components/input/input.compon
 import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
-  selector: 'app-reset-password',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, RouterModule],
-  templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-reset-password',
+    imports: [ReactiveFormsModule, InputComponent, RouterModule],
+    templateUrl: './reset-password.component.html',
+    styleUrl: './reset-password.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResetPasswordComponent {
   // Inject

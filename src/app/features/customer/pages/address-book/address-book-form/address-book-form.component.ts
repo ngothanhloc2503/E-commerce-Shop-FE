@@ -20,11 +20,10 @@ import { InputComponent } from '../../../../../shared/components/input/input.com
 import { AddressBookService } from '../../../services/address-book/address-book.service';
 
 @Component({
-  selector: 'app-address-form',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent],
-  templateUrl: './address-book-form.component.html',
-  styleUrl: './address-book-form.component.css',
+    selector: 'app-address-form',
+    imports: [ReactiveFormsModule, InputComponent],
+    templateUrl: './address-book-form.component.html',
+    styleUrl: './address-book-form.component.css'
 })
 export class AddressBookFormComponent implements OnInit {
   // Inject

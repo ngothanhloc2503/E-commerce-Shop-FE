@@ -15,11 +15,10 @@ interface MailTemplatesForm {
 }
 
 @Component({
-  selector: 'app-mail-templates-setting',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, EditorModule],
-  templateUrl: './mail-templates-setting.component.html',
-  styleUrl: './mail-templates-setting.component.css'
+    selector: 'app-mail-templates-setting',
+    imports: [CommonModule, ReactiveFormsModule, InputComponent, EditorModule],
+    templateUrl: './mail-templates-setting.component.html',
+    styleUrl: './mail-templates-setting.component.css'
 })
 export class MailTemplatesSettingComponent {
   // Injects

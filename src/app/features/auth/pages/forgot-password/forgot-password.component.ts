@@ -7,12 +7,11 @@ import { InputComponent } from '../../../../shared/components/input/input.compon
 import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
-  selector: 'app-forgot-password',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, RouterModule],
-  templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-forgot-password',
+    imports: [ReactiveFormsModule, InputComponent, RouterModule],
+    templateUrl: './forgot-password.component.html',
+    styleUrl: './forgot-password.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForgotPasswordComponent {
   // Inject

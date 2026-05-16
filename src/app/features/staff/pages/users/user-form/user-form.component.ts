@@ -10,11 +10,10 @@ import { UserService } from '../../../services/user/user.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-user-form',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent],
-  templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.css'
+    selector: 'app-user-form',
+    imports: [ReactiveFormsModule, InputComponent],
+    templateUrl: './user-form.component.html',
+    styleUrl: './user-form.component.css'
 })
 export class UserFormComponent {
   // Inject

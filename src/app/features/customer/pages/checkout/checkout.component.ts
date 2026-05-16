@@ -10,12 +10,11 @@ import { CheckoutService } from '../../services/checkout/checkout.service';
 declare var paypal: any;
 
 @Component({
-  selector: 'app-checkout',
-  standalone: true,
-  imports: [DatePipe, RouterModule],
-  templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-checkout',
+    imports: [DatePipe, RouterModule],
+    templateUrl: './checkout.component.html',
+    styleUrl: './checkout.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckoutComponent {
   // Inject

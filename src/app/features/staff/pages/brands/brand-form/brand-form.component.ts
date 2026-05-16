@@ -11,11 +11,10 @@ import { CategoryService } from '../../../services/category/category.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-brand-form',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, InputComponent],
-  templateUrl: './brand-form.component.html',
-  styleUrl: './brand-form.component.css'
+    selector: 'app-brand-form',
+    imports: [ReactiveFormsModule, RouterModule, InputComponent],
+    templateUrl: './brand-form.component.html',
+    styleUrl: './brand-form.component.css'
 })
 export class BrandFormComponent {
   // Inject

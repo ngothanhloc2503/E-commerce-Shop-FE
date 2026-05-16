@@ -7,12 +7,11 @@ import { CartService } from '../../services/cart/cart.service';
 import { ProductService } from '../../services/product/product.service';
 
 @Component({
-  selector: 'app-product-detail',
-  standalone: true,
-  imports: [RouterModule],
-  templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-product-detail',
+    imports: [RouterModule],
+    templateUrl: './product-detail.component.html',
+    styleUrl: './product-detail.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductDetailComponent {
   // Inject

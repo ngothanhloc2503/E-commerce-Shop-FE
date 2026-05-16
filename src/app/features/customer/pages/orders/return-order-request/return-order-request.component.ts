@@ -18,11 +18,10 @@ interface ReturnReason {
 }
 
 @Component({
-  selector: 'app-return-order-request',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './return-order-request.component.html',
-  styleUrl: './return-order-request.component.css',
+    selector: 'app-return-order-request',
+    imports: [FormsModule],
+    templateUrl: './return-order-request.component.html',
+    styleUrl: './return-order-request.component.css'
 })
 export class ReturnOrderRequestComponent {
   // Inject

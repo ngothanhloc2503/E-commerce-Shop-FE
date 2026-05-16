@@ -13,12 +13,11 @@ interface LoginForm {
 }
 
 @Component({
-  selector: 'app-sign-in',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterModule],
-  templateUrl: './sign-in.component.html',
-  styleUrl: './sign-in.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-sign-in',
+    imports: [ReactiveFormsModule, RouterModule],
+    templateUrl: './sign-in.component.html',
+    styleUrl: './sign-in.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignInComponent {
   // Inject

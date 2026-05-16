@@ -7,11 +7,10 @@ import { StateService } from '../../../services/setting/state.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-state-setting',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './state-setting.component.html',
-  styleUrl: './state-setting.component.css'
+    selector: 'app-state-setting',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './state-setting.component.html',
+    styleUrl: './state-setting.component.css'
 })
 export class StateSettingComponent {
   // Inject

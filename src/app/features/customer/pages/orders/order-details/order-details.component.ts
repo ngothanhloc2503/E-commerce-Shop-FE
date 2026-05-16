@@ -15,11 +15,10 @@ interface TabDef {
 }
 
 @Component({
-  selector: 'app-order-details',
-  standalone: true,
-  imports: [DatePipe],
-  templateUrl: './order-details.component.html',
-  styleUrl: './order-details.component.css',
+    selector: 'app-order-details',
+    imports: [DatePipe],
+    templateUrl: './order-details.component.html',
+    styleUrl: './order-details.component.css'
 })
 export class OrderDetailsComponent {
   // Input

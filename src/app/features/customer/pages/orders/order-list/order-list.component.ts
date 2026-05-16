@@ -11,11 +11,10 @@ import { OrderDetailsComponent } from '../order-details/order-details.component'
 import { ReturnOrderRequestComponent } from '../return-order-request/return-order-request.component';
 
 @Component({
-  selector: 'app-order-list',
-  standalone: true,
-  imports: [ReactiveFormsModule, DatePipe, OrderDetailsComponent, ReturnOrderRequestComponent, PaginationComponent],
-  templateUrl: './order-list.component.html',
-  styleUrl: './order-list.component.css',
+    selector: 'app-order-list',
+    imports: [ReactiveFormsModule, DatePipe, OrderDetailsComponent, ReturnOrderRequestComponent, PaginationComponent],
+    templateUrl: './order-list.component.html',
+    styleUrl: './order-list.component.css'
 })
 export class OrderListComponent implements OnInit {
   // Inject

@@ -9,11 +9,10 @@ import { ShippingRateService } from '../../../services/shipping-rate/shipping-ra
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-shipping-rate-form',
-  standalone: true,
-  imports: [ReactiveFormsModule, InputComponent],
-  templateUrl: './shipping-rate-form.component.html',
-  styleUrl: './shipping-rate-form.component.css'
+    selector: 'app-shipping-rate-form',
+    imports: [ReactiveFormsModule, InputComponent],
+    templateUrl: './shipping-rate-form.component.html',
+    styleUrl: './shipping-rate-form.component.css'
 })
 export class ShippingRateFormComponent {
   // Inject

@@ -11,13 +11,12 @@ import { CategoryService } from '../../services/category/category.service';
 import { ProductService } from '../../services/product/product.service';
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  // Đã bỏ CommonModule
-  imports: [RouterModule],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-home',
+    // Đã bỏ CommonModule
+    imports: [RouterModule],
+    templateUrl: './home.component.html',
+    styleUrl: './home.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
   // Inject

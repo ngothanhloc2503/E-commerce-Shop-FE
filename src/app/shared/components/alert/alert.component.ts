@@ -4,11 +4,10 @@ import { AlertService } from '../../../core/services/alert/alert.service';
 type AlertColor = 'red' | 'green' | 'yellow' | 'blue';
 
 @Component({
-  selector: 'app-alert',
-  standalone: true,
-  imports: [],
-  templateUrl: './alert.component.html',
-  styleUrl: './alert.component.css'
+    selector: 'app-alert',
+    imports: [],
+    templateUrl: './alert.component.html',
+    styleUrl: './alert.component.css'
 })
 export class AlertComponent {
   color = input<AlertColor>('red');

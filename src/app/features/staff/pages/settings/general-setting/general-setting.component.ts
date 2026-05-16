@@ -17,11 +17,10 @@ interface GeneralSettingsForm {
 }
 
 @Component({
-  selector: 'app-general-setting',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './general-setting.component.html',
-  styleUrl: './general-setting.component.css'
+    selector: 'app-general-setting',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './general-setting.component.html',
+    styleUrl: './general-setting.component.css'
 })
 export class GeneralSettingComponent {
   // Injects

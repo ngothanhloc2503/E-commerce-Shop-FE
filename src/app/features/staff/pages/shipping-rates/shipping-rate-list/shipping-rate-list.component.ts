@@ -9,11 +9,10 @@ import { getPaginationSignals } from '../../../../../shared/utils/pagination.uti
 import { ShippingRateService } from '../../../services/shipping-rate/shipping-rate.service';
 
 @Component({
-  selector: 'app-shipping-rate-list',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, PaginationComponent],
-  templateUrl: './shipping-rate-list.component.html',
-  styleUrl: './shipping-rate-list.component.css'
+    selector: 'app-shipping-rate-list',
+    imports: [ReactiveFormsModule, RouterModule, PaginationComponent],
+    templateUrl: './shipping-rate-list.component.html',
+    styleUrl: './shipping-rate-list.component.css'
 })
 export class ShippingRateListComponent {
   // Inject

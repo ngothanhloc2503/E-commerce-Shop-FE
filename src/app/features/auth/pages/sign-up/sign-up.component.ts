@@ -8,12 +8,11 @@ import { AuthService } from '../../services/auth-service/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-sign-up',
-  standalone: true,
-  imports: [InputComponent, ReactiveFormsModule, RouterModule],
-  templateUrl: './sign-up.component.html',
-  styleUrl: './sign-up.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-sign-up',
+    imports: [InputComponent, ReactiveFormsModule, RouterModule],
+    templateUrl: './sign-up.component.html',
+    styleUrl: './sign-up.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignUpComponent {
   // Inject

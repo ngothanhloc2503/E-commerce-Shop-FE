@@ -15,11 +15,10 @@ interface StaffNavLink {
 }
 
 @Component({
-  selector: 'app-nav',
-  standalone: true,
-  imports: [RouterLink, RouterLinkActive, ReactiveFormsModule],
-  templateUrl: './nav.component.html',
-  styleUrl: './nav.component.css',
+    selector: 'app-nav',
+    imports: [RouterLink, RouterLinkActive, ReactiveFormsModule],
+    templateUrl: './nav.component.html',
+    styleUrl: './nav.component.css'
 })
 export class NavComponent implements OnInit {
   // Inject

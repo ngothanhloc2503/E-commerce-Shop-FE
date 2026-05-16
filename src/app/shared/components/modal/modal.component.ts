@@ -2,12 +2,11 @@ import { Component, input, output, TemplateRef, ChangeDetectionStrategy, Input }
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-modal',
-  standalone: true,
-  imports: [CommonModule], 
-  templateUrl: './modal.component.html',
-  styleUrl: './modal.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-modal',
+    imports: [CommonModule],
+    templateUrl: './modal.component.html',
+    styleUrl: './modal.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalComponent {
   @Input() title: string = 'Modal title';

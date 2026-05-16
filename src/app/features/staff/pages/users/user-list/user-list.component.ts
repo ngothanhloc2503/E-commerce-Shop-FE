@@ -10,12 +10,11 @@ import { UserService } from '../../../services/user/user.service';
 import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 
 @Component({
-  selector: 'app-user-list',
-  standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, PaginationComponent],
-  templateUrl: './user-list.component.html',
-  styleUrl: './user-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-user-list',
+    imports: [RouterLink, ReactiveFormsModule, PaginationComponent],
+    templateUrl: './user-list.component.html',
+    styleUrl: './user-list.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserListComponent {
   // Inject

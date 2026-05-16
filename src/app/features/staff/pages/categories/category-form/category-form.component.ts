@@ -9,11 +9,10 @@ import { CategoryService } from '../../../services/category/category.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-category-form',
-  standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, InputComponent],
-  templateUrl: './category-form.component.html',
-  styleUrl: './category-form.component.css'
+    selector: 'app-category-form',
+    imports: [RouterModule, ReactiveFormsModule, InputComponent],
+    templateUrl: './category-form.component.html',
+    styleUrl: './category-form.component.css'
 })
 export class CategoryFormComponent {
   // Inject

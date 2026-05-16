@@ -10,11 +10,10 @@ import { getPaginationSignals } from '../../../../../shared/utils/pagination.uti
 import { CategoryService } from '../../../services/category/category.service';
 
 @Component({
-  selector: 'app-categories-list',
-  standalone: true,
-  imports: [RouterModule, PaginationComponent, ReactiveFormsModule],
-  templateUrl: './category-list.component.html',
-  styleUrl: './category-list.component.css'
+    selector: 'app-categories-list',
+    imports: [RouterModule, PaginationComponent, ReactiveFormsModule],
+    templateUrl: './category-list.component.html',
+    styleUrl: './category-list.component.css'
 })
 export class CategoryListComponent {
   // Inject

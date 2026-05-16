@@ -5,12 +5,11 @@ import { AuthService } from '../../services/auth-service/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-verify-account',
-  standalone: true,
-  imports: [RouterModule],
-  templateUrl: './verify-account.component.html',
-  styleUrl: './verify-account.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-verify-account',
+    imports: [RouterModule],
+    templateUrl: './verify-account.component.html',
+    styleUrl: './verify-account.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VerifyAccountComponent {
   // Inject

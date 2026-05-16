@@ -10,12 +10,11 @@ import { ProductService } from '../../services/product/product.service';
 import { getPaginationSignals } from '../../../../shared/utils/pagination.utils';
 
 @Component({
-  selector: 'app-category-detail',
-  standalone: true,
-  imports: [RouterModule],
-  templateUrl: './category-detail.component.html',
-  styleUrl: './category-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-category-detail',
+    imports: [RouterModule],
+    templateUrl: './category-detail.component.html',
+    styleUrl: './category-detail.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryDetailComponent {
   // Inject

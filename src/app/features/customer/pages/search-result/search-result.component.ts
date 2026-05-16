@@ -8,12 +8,11 @@ import { CartService } from '../../services/cart/cart.service';
 import { SearchService } from '../../services/search/search.service';
 
 @Component({
-  selector: 'app-search-result',
-  standalone: true,
-  imports: [RouterModule],
-  templateUrl: './search-result.component.html',
-  styleUrl: './search-result.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-search-result',
+    imports: [RouterModule],
+    templateUrl: './search-result.component.html',
+    styleUrl: './search-result.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchResultComponent {
   // Inject
