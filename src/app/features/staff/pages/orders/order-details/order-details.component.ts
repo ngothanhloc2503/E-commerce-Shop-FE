@@ -1,168 +1,165 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { timer } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
+import { round } from '../../../../../shared/utils/number.util';
 import { OrderService } from '../../../services/order/order.service';
 import { AddProductModalComponent } from '../add-product-modal/add-product-modal.component';
-import { NumberUtilService } from '../../../../../shared/utils/number-util.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-order-details',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, InputComponent, FormsModule, AddProductModalComponent],
+  imports: [ReactiveFormsModule, InputComponent, AddProductModalComponent, DatePipe],
   templateUrl: './order-details.component.html',
   styleUrl: './order-details.component.css'
 })
 export class OrderDetailsComponent {
-  showAddProductModal = false;
+  // Inject
+  private alertService = inject(AlertService);
+  private orderService = inject(OrderService);
+  private activatedRoute = inject(ActivatedRoute);
+  private countryService = inject(CountryService);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-  listCountries: any[] = [];
-  listStates: any[] = [];
-  listOrderTrack: any[] = [];
-  listOrderDetails: any[] = [];
-  orderId = 0;
+  // Signals
+  showAddProductModal = signal(false);
+  listCountries = signal<any[]>([]);
+  listStates = signal<any[]>([]);
+  listOrderTrack = signal<any[]>([]);
+  listOrderDetails = signal<any[]>([]);
+  orderId = signal(0);
+  isSubmitting = signal(false);
 
-  orderForm!: FormGroup;
-  id = new FormControl(0, [Validators.required]);
-  userId = new FormControl(0, [Validators.required]);
-  userFullName = new FormControl('');
-  firstName = new FormControl('', [Validators.required]);
-  lastName = new FormControl('', [Validators.required]);
-  phoneNumber = new FormControl('', [Validators.required]);
-  addressLine1 = new FormControl('', [Validators.required]);
-  addressLine2 = new FormControl('');
-  city = new FormControl('');
-  state = new FormControl('', [Validators.required]);
-  country = new FormControl('', [Validators.required]);
-  postalCode = new FormControl('', [Validators.required]);
-  shippingCost = new FormControl<number>(0, [Validators.required]);
-  productCost = new FormControl<number>(0, [Validators.required]);
-  subtotal = new FormControl<number>(0, [Validators.required]);
-  tax = new FormControl<number>(0, [Validators.required]);
-  total = new FormControl<number>(0, [Validators.required]);
-  orderTime = new FormControl('', [Validators.required]);
-  deliverDays = new FormControl(0, [Validators.required]);
-  deliverDate = new FormControl('', [Validators.required]);
-  paymentMethod = new FormControl('', [Validators.required]);
-  status = new FormControl('', [Validators.required]);
-  orderTrack = new FormControl<any>(null);
-  orderDetails = new FormControl<any>(null);
+  // Form
+  orderForm = inject(FormBuilder).group({
+    id: new FormControl(0, [Validators.required]),
+    userId: new FormControl(0, [Validators.required]),
+    userFullName: new FormControl(''),
+    firstName: new FormControl('', [Validators.required]),
+    lastName: new FormControl('', [Validators.required]),
+    phoneNumber: new FormControl('', [Validators.required]),
+    addressLine1: new FormControl('', [Validators.required]),
+    addressLine2: new FormControl(''),
+    city: new FormControl(''),
+    state: new FormControl('', [Validators.required]),
+    country: new FormControl('', [Validators.required]),
+    postalCode: new FormControl('', [Validators.required]),
+    shippingCost: new FormControl<number>(0, [Validators.required]),
+    productCost: new FormControl<number>(0, [Validators.required]),
+    subtotal: new FormControl<number>(0, [Validators.required]),
+    tax: new FormControl<number>(0, [Validators.required]),
+    total: new FormControl<number>(0, [Validators.required]),
+    orderTime: new FormControl('', [Validators.required]),
+    deliverDays: new FormControl(0, [Validators.required]),
+    deliverDate: new FormControl('', [Validators.required]),
+    paymentMethod: new FormControl('', [Validators.required]),
+    status: new FormControl('', [Validators.required]),
+    orderTrack: new FormControl<any>(null),
+    orderDetails: new FormControl<any>(null)
+  });
 
-  constructor(
-    private alertService: AlertService,
-    private orderService: OrderService,
-    private fb: FormBuilder,
-    private activatedRoute: ActivatedRoute,
-    private countryService: CountryService,
-    private router: Router,
-    private numberUtil: NumberUtilService
-  ) {}
-
+  // Init
   ngOnInit() {
-    this.orderForm = this.fb.group({
-      id: this.id,
-      userId: this.userId,
-      userFullName: this.userFullName,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      phoneNumber: this.phoneNumber,
-      addressLine1: this.addressLine1,
-      addressLine2: this.addressLine2,
-      city: this.city,
-      state: this.state,
-      country: this.country,
-      postalCode: this.postalCode,
-      shippingCost: this.shippingCost,
-      productCost: this.productCost,
-      subtotal: this.subtotal,
-      tax: this.tax,
-      total: this.total,
-      orderTime: this.orderTime,
-      deliverDays: this.deliverDays,
-      deliverDate: this.deliverDate,
-      paymentMethod: this.paymentMethod,
-      status: this.status,
-      orderTrack: this.orderTrack,
-      orderDetails: this.orderDetails
-    })
-
-    this.activatedRoute.params.subscribe(p => this.orderId = p['id']);
-    if (this.orderId > 0) {
-      this.getOrderById();
-    }
+    this.activatedRoute.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((p: any) => {
+        const id = p['id'];
+        this.orderId.set(Number(id) || 0);
+        if (this.orderId() > 0) {
+          this.getOrderById();
+        }
+      });
 
     this.getAllCountries();
   }
 
+  // API
   save() {
-    this.listOrderTrack.filter(track => (track.status != null && track.updatedTime != null));
+    this.isSubmitting.set(true);
     this.orderForm.patchValue({
-      details: this.listOrderTrack,
-      orderDetails: this.listOrderDetails,
+      orderTrack: this.listOrderTrack(),
+      orderDetails: this.listOrderDetails(),
     });
 
-    this.orderService.saveOrder(this.orderForm.value).subscribe({
-      next: (res) => {
-        if(res != null) {
-          this.alertService.showAlert("The order has been saved successfully.", "green")
-  
-          timer(3000).subscribe(i => {
-            this.alertService.isShowAlert = false;
+    this.orderService.saveOrder(this.orderForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.alertService.showAlert("The order has been saved successfully.", "green");
+          setTimeout(() => {
+            this.alertService.closeAlert();
             this.router.navigateByUrl("/staff/orders");
-          })
-        } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
+          }, 3000);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
         }
-      },
-    });
+      });
   }
 
   getOrderById() {
-    this.orderService.getOrderById(this.orderId).subscribe({
-      next: (res) => {
-        this.orderForm.patchValue(res);
-        this.getStateByCountryName();
-        this.listOrderTrack = res.orderTrack;
-        this.listOrderDetails = res.orderDetails;
-      },
-    })
+    this.orderService.getOrderById(this.orderId())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+
+          this.orderForm.patchValue(data);
+          this.getStateByCountryName();
+          this.listOrderTrack.set(data.orderTrack || []);
+          this.listOrderDetails.set(data.orderDetails || []);
+        },
+      });
   }
 
-  addProductToOrder(productInfo: any) {
-    let existing = this.listOrderDetails.some(orderDetail => orderDetail.productId == productInfo.id); 
-    
-    //Check product exists order details
-    if (existing) {
-      //If exists
-      this.listOrderDetails.forEach(orderDetail => {
-        if(orderDetail.productId == productInfo.id) {
-          orderDetail.shippingCost += (orderDetail.shippingCost / orderDetail.quantity);
-          orderDetail.quantity += 1;
-          this.updateQuantity(orderDetail.id);
-        }
-      })
+  getStateByCountryName() {
+    const countryVal = this.orderForm.get('country')?.value;
+    if (countryVal) {
+      this.countryService.getStateByCountryName(countryVal)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: (res) => this.listStates.set(res.data) });
     } else {
-      // If not exists
-      let newOrderDetailId = this.listOrderDetails.length == 0 ? 0 : Math.max(...this.listOrderDetails.map(p => p.id)) + 1;
+      this.listStates.set([]);
+    }
+  }
 
+  getAllCountries() {
+    this.countryService.getAllCountries()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (res) => this.listCountries.set(res.data) });
+  }
+
+  // Action
+  addProductToOrder(productInfo: any) {
+    const currentDetails = this.listOrderDetails();
+    const existingIdx = currentDetails.findIndex(d => d.productId == productInfo.id); 
+
+    if (existingIdx !== -1) {
+      const updatedDetails = currentDetails.map(d => {
+        if (d.productId == productInfo.id) {
+          return { ...d, shippingCost: d.shippingCost + (d.shippingCost / d.quantity), quantity: d.quantity + 1 };
+        }
+        return d;
+      });
+      this.listOrderDetails.set(updatedDetails);
+      
+      const updatedDetail = updatedDetails.find(d => d.productId == productInfo.id);
+      if (updatedDetail) this.updateQuantity(updatedDetail.id);
+    } else {
+      let newOrderDetailId = currentDetails.length == 0 ? 0 : Math.max(...currentDetails.map(p => p.id)) + 1;
       let orderDetailInfo = {
-        id: newOrderDetailId,
-        productId: productInfo.id,
-        productName: productInfo.name,
-        productImagePath: productInfo.mainImagePath,
-        quantity: 1,
-        productCost: this.numberUtil.round(productInfo.cost),
-        productCostTotal: this.numberUtil.round(productInfo.cost),
-        shippingCost: 0,
-        unitPrice: this.numberUtil.round(productInfo.discountPrice),
-        subtotal: this.numberUtil.round(productInfo.discountPrice),
+        id: newOrderDetailId, productId: productInfo.id, productName: productInfo.name,
+        productImagePath: productInfo.mainImagePath, quantity: 1, productCost: round(productInfo.cost),
+        productCostTotal: round(productInfo.cost), shippingCost: 0, unitPrice: round(productInfo.discountPrice),
+        subtotal: round(productInfo.discountPrice),
       }
-  
-      this.listOrderDetails.push(orderDetailInfo);
+      this.listOrderDetails.update(details => [...details, orderDetailInfo]);
     }
 
     this.updateShippingCost();
@@ -171,123 +168,112 @@ export class OrderDetailsComponent {
     this.closeModal();
   }
 
-  closeModal() {
-    this.showAddProductModal = false;
+  closeModal() { 
+    this.showAddProductModal.set(false); 
   }
 
   removeOrderDetailById(orderDetailId: number) {
-    this.listOrderDetails = this.listOrderDetails.filter((orderDetail) => orderDetail.id !== orderDetailId);
-    // this.elementRef.nativeElement.querySelector("#order_detail_" + orderDetailId).remove();
+    this.listOrderDetails.update(details => details.filter(d => d.id !== orderDetailId));
     this.updateShippingCost();
     this.updateProductCost();
     this.updateSubtotal();
   }
 
   addNewTrack() {
-    let newTrackId = this.listOrderTrack.length == 0 ? 0 : Math.max(...this.listOrderTrack.map(p => p.id)) + 1;
-    
-    let track = {
-      id: newTrackId,
-      updatedTime: this.getFormattedUserLocalDate(),// "yyyy-MM-dd\Thh:mm:ss"
-      status: '',
-      notes: '',
-    }
-    this.listOrderTrack.push(track);
+    const currentTracks = this.listOrderTrack();
+
+    let newTrackId = currentTracks.length == 0 ? 0 : Math.max(...currentTracks.map(p => p.id)) + 1;
+    let track = { 
+      id: newTrackId, 
+      updatedTime: this.getFormattedUserLocalDate(), 
+      status: '', 
+      notes: '' };
+
+    this.listOrderTrack.update(tracks => [...tracks, track]);
   }
 
   removeTrackById(trackId: number) {
-    this.listOrderTrack = this.listOrderTrack.filter((track) => track.id !== trackId);
-    // this.elementRef.nativeElement.querySelector("#track_" + trackId).remove();
+    this.listOrderTrack.update(tracks => tracks.filter(t => t.id !== trackId));
+  }
+
+  updateDetailField(detailId: number, field: string, event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.listOrderDetails.update(details => 
+      details.map(d => d.id === detailId ? { ...d, [field]: value } : d)
+    );
+  }
+
+  updateTrackField(trackId: number, field: string, event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.listOrderTrack.update(tracks => 
+      tracks.map(t => t.id === trackId ? { ...t, [field]: value } : t)
+    );
   }
 
   updateDeliverDate() {
-    if (this.orderTime.value != null) {
-      let orderTimeTemp = new Date(Date.parse(this.orderTime.value));
-      if (this.deliverDays.value != null) {
-        let deliverDateTemp = new Date().setTime(orderTimeTemp.getTime() + this.deliverDays.value*86400000); //86400000=1day
-        this.orderForm.patchValue({'deliverDate': deliverDateTemp});
-      }
+    const orderTimeVal = this.orderForm.get('orderTime')?.value;
+    const deliverDaysVal = this.orderForm.get('deliverDays')?.value;
+    if (orderTimeVal != null && deliverDaysVal != null) {
+      let orderTimeTemp = new Date(Date.parse(orderTimeVal));
+      let deliverDateTemp = new Date().setTime(orderTimeTemp.getTime() + deliverDaysVal * 86400000);
+      this.orderForm.patchValue({'deliverDate': new Date(deliverDateTemp).toISOString().slice(0, 16)}); 
     } 
   }
 
   updateShippingCost() {
-    let totalShippingCost = this.listOrderDetails.reduce((accumulator, current) => accumulator + current.shippingCost, 0);
-    this.orderForm.patchValue({'shippingCost': this.numberUtil.round(totalShippingCost)});
+    const total = this.listOrderDetails().reduce((acc, curr) => acc + Number(curr.shippingCost), 0);
+    this.orderForm.patchValue({'shippingCost': round(total)});
 
     this.updateTotal();
   }
 
   updateProductCost() {
-    let productCostTotal = this.listOrderDetails.reduce((accumulator, current) => accumulator + current.productCostTotal, 0);
-    this.orderForm.patchValue({'productCost': Math.round(productCostTotal * 100) / 100});
+    const total = this.listOrderDetails().reduce((acc, curr) => acc + Number(curr.productCostTotal), 0);
+    this.orderForm.patchValue({'productCost': Math.round(total * 100) / 100});
   }
 
   updateSubtotal() {
-    let subtotal = this.listOrderDetails.reduce((accumulator, current) => accumulator + current.subtotal, 0);
-    this.orderForm.patchValue({'subtotal': this.numberUtil.round(subtotal)});
+    const total = this.listOrderDetails().reduce((acc, curr) => acc + Number(curr.subtotal), 0);
+    this.orderForm.patchValue({'subtotal': round(total)});
 
     this.updateTotal();
   }
 
   updateQuantity(orderDetailId: number) {
+    const details = this.listOrderDetails();
     let subtotal = 0;
     let productCost = 0;
-    this.listOrderDetails.forEach(orderDetail => {
-      if(orderDetail.id == orderDetailId) {
-        orderDetail.productCostTotal = this.numberUtil.round(orderDetail.quantity * orderDetail.productCost);
-        orderDetail.subtotal = this.numberUtil.round(orderDetail.quantity * orderDetail.unitPrice);
+    
+    const updatedDetails = details.map(d => {
+      if(d.id == orderDetailId) {
+        return { ...d, productCostTotal: round(d.quantity * d.productCost), subtotal: round(d.quantity * d.unitPrice) };
       }
-      subtotal += orderDetail.subtotal;
-      productCost += orderDetail.productCostTotal;
-    })
-
-    this.orderForm.patchValue({
-      'subtotal': this.numberUtil.round(subtotal), 
-      'productCost': this.numberUtil.round(productCost)
+      return d;
     });
+
+    this.listOrderDetails.set(updatedDetails);
+
+    updatedDetails.forEach(d => { subtotal += d.subtotal; productCost += d.productCostTotal; });
+
+    this.orderForm.patchValue({ 'subtotal': round(subtotal), 'productCost': round(productCost) });
     this.updateTotal();
   }
 
   updateTotal() {
-    let subtotal = this.subtotal.value ? this.subtotal.value : 0;
-    let shippingCost = this.shippingCost.value ? this.shippingCost.value : 0;
-    let tax = this.tax.value ? this.tax.value : 0;
-    this.orderForm.patchValue({"total": this.numberUtil.round(subtotal + shippingCost + tax)});
+    const subtotal = this.orderForm.get('subtotal')?.value || 0;
+    const shippingCost = this.orderForm.get('shippingCost')?.value || 0;
+    const tax = this.orderForm.get('tax')?.value || 0;
+    this.orderForm.patchValue({"total": round(subtotal + shippingCost + tax)});
   }
 
-  getStateByCountryName() {
-    if (this.country.value != null && this.country.value != undefined && this.country.value != '') {
-      this.countryService.getStateByCountryName(this.country.value).subscribe({
-        next: (res) => {
-          this.listStates = res;
-        },
-      })
-    }
-  }
-
-  getAllCountries() {
-    this.countryService.getAllCountries().subscribe({
-      next: (res) => {
-        this.listCountries = res;
-      },
-    })
-  }
-
-  cancel() {
+  cancel() { 
     this.router.navigateByUrl("/staff/orders");
   }
 
   getFormattedUserLocalDate(): string {
     const date = new Date();
-  
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-  
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-  
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    const p = (n: number) => n.toString().padStart(2, '0');
+    
+    return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ${p(date.getHours())}:${p(date.getMinutes())}:${p(date.getSeconds())}`;
   };
 }

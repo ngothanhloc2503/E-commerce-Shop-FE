@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -7,138 +6,158 @@ import { map, of, timer } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { CategoryService } from '../../../services/category/category.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, InputComponent],
+  imports: [RouterModule, ReactiveFormsModule, InputComponent],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.css'
 })
 export class CategoryFormComponent {
-  title: string = 'Create Category';
-  categoryID = 0;
-  listCategories: any[] = [];
+  // Inject
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private titleService = inject(Title);
+  private categoryService = inject(CategoryService);
+  private alertService = inject(AlertService);
+  private destroyRef = inject(DestroyRef);
+
+  // Signals
+  title = signal('Create Category');
+  categoryID = signal(0);
+  listCategories = signal<any[]>([]);
+  imagePreviewSrc = signal('https://ecommerce-bucket-hcmus.s3.ap-southeast-1.amazonaws.com/images/image_thumbnail.png');
+  isSubmitting = signal<boolean>(false);
+
   categoryImage!: File;
-  imagePreviewSrc = 'https://ecommerce-bucket-hcmus.s3.ap-southeast-1.amazonaws.com/images/image_thumbnail.png';
 
-  categoryForm!: FormGroup;
-  id = new FormControl<number | null>(null);
-  name = new FormControl('', [
-    Validators.required,
-    Validators.minLength(2)
-  ], [this.uniqueName()]);
-  description = new FormControl('', [Validators.required]);
-  image = new FormControl<string | null>(null);
-  enabled = new FormControl<boolean>(false);
-  parentID = new FormControl(0);
-  
-  constructor(
-    private alertService: AlertService,
-    private activatedRoute: ActivatedRoute,
-    private titleService: Title,
-    private categoryService: CategoryService,
-    private fb: FormBuilder,
-    private router: Router,
-  ) {
-
-  }
+  // Form
+  categoryForm = inject(FormBuilder).group({
+    id: new FormControl<number | null>(null),
+    name: new FormControl('', [
+      Validators.required,
+      Validators.minLength(2)
+    ], [this.uniqueName()]),
+    description: new FormControl('', [Validators.required]),
+    image: new FormControl<string | null>(null),
+    enabled: new FormControl<boolean>(false),
+    parentID: new FormControl(0)
+  });
 
   ngOnInit() {
-    this.categoryForm = this.fb.group({
-      id: this.id,
-      name: this.name,
-      description: this.description,
-      image: this.image,
-      enabled: this.enabled,
-      parentID: this.parentID
-    })
-    
-    this.activatedRoute.params.subscribe(s => this.categoryID = s["id"]);
-    if (this.categoryID) {
-      this.title = "Edit Category(ID: " + this.categoryID + ")";
-      this.getCategoryById();
-    }
+    this.activatedRoute.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(s => {
+        const id = s["id"];
+        this.categoryID.set(Number(id) || 0);
 
-    this.image.setValidators(this.categoryID != null ? null : [Validators.required])
+        if (this.categoryID()) {
+          this.title.set("Edit Category(ID: " + this.categoryID() + ")");
 
-    this.titleService.setTitle(this.title);
-    
-    this.getAllCategories();
-  }
+          this.categoryForm.get('image')?.clearValidators();
+          this.categoryForm.get('image')?.updateValueAndValidity();
 
-  saveCategory() {
-    this.categoryService.saveCategory(this.categoryForm.value, this.categoryImage).subscribe({
-      next: (res) => {
-        if(res.id != null) {
-          this.alertService.showAlert("The category has been saved successfully.", "green")
-  
-          timer(3000).subscribe(i => {
-            this.alertService.isShowAlert = false;
-            this.router.navigateByUrl("/staff/categories");
-          })
+          this.getCategoryById();
         } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
+          this.categoryForm.get('image')?.setValidators([Validators.required]);
+          this.categoryForm.get('image')?.updateValueAndValidity();
         }
-      },
-    })
+
+        this.titleService.setTitle(this.title());
+
+        this.getAllCategories();
+      });
   }
 
-  onSelectImage(event: Event) {
-    let target = event.target as HTMLInputElement;
-    if (!target.files?.length) {
-      return;
-    }
-    const file = target.files[0];
-    if (file) {
-      if (file.type == 'image/png' || file.type == 'image/jpg' || file.type == 'image/jpeg') {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e: any) => {
-          this.imagePreviewSrc = e.target.result;
-        }
-        
-        this.categoryForm.patchValue({image: file.name});
-        this.categoryImage = file;
-      } else {
-        target.value = '';
-        this.alertService.showAndCloseAlertAfterXSecond("Image should be png, jpg, or jpeg extension!", "red", 3000);
-      }
-    }
-  }
-
+  // API
   getAllCategories() {
-    this.categoryService.getAllCategories().subscribe({
-      next: (res) => {
-        this.listCategories = res.filter((cat: any) => cat.id != this.categoryID);
-      },
-    })
+    this.categoryService.getAllCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+
+          const filteredCategories = data.filter((cat: any) => cat.id != this.categoryID());
+          this.listCategories.set(filteredCategories);
+        },
+      });
   }
 
   getCategoryById() {
-    this.categoryService.getCategoryById(this.categoryID).subscribe({
-      next: (res) => {
-        this.categoryForm.patchValue(res);
-        if (res.image != null && res.image != '') {
-          this.imagePreviewSrc = res.imagePath;
-        };
+    this.categoryService.getCategoryById(this.categoryID())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+
+          this.categoryForm.patchValue(data);
+          if (data.image != null && data.image != '') {
+            this.imagePreviewSrc.set(data.imagePath);
+          }
+        },
+      });
+  }
+
+  saveCategory() {
+    this.isSubmitting.set(true);
+
+    this.categoryService.saveCategory(this.categoryForm.value, this.categoryImage).subscribe({
+      next: () => {
+        this.alertService.showAlert("The category has been saved successfully.", "green");
+        this.isSubmitting.set(false);
+
+        setTimeout(() => {
+          this.alertService.closeAlert();
+          this.router.navigateByUrl("/staff/categories");
+        }, 3000);
       },
+      error: () => {
+        this.isSubmitting.set(false);
+      }
     })
   }
 
-  private uniqueName() {
-    return (ctrl: AbstractControl) => {
-      let name = ctrl.value;
-      let id = this.categoryID ? this.categoryID : 0;
-      return (name)
-        ? this.categoryService.isNameUnique(id, name).pipe(
-            map(isUnique => (isUnique) ? null : {nameNotUnique: true})
-          )
-        : of(null);
+  // Action
+  onSelectImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      this.alertService.showAndCloseAlertAfterXSecond("Invalid image file!", "red", 3000);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e: any) => {
+      this.imagePreviewSrc.set(e.target.result);
+    }
+
+    this.categoryForm.patchValue({ image: file.name });
+    this.categoryImage = file;
   }
 
   cancel() {
     this.router.navigateByUrl("/staff/categories");
+  }
+
+  // Validator
+  private uniqueName() {
+    return (ctrl: AbstractControl) => {
+      const name = ctrl.value;
+      const id = this.categoryID() ? this.categoryID() : 0;
+
+      return (name)
+        ? this.categoryService.isNameUnique(id, name).pipe(
+          map(isUnique => isUnique ? null : { nameNotUnique: true })
+        )
+        : of(null);
+    };
   }
 }

@@ -20,19 +20,34 @@ const STORAGE_KEY = 'auth_data';
 export class AuthStateService {
   private state = signal<AuthState>(this.loadFromStorage());
 
-  user = computed(() => this.state().user);
-  token = computed(() => this.state().token);
-  isAuthenticated = computed(() => !!this.state().token);
+  // Core computed signals
+  readonly user = computed(() => this.state().user);
+  readonly token = computed(() => this.state().token);
+  readonly isAuthenticated = computed(() => !!this.state().token && !this.isExpired());
 
-  init() {
-    const saved = this.loadFromStorage();
-    this.state.set(saved);
+  // Role computed signals
+  private roles = computed(() => new Set(this.state().user?.roles ?? []));
+
+  readonly isAdmin = computed(() => this.roles().has(UserRole.Admin));
+  readonly isCustomer = computed(() => this.roles().has(UserRole.Customer));
+  readonly isEditor = computed(() => this.roles().has(UserRole.Editor));
+  readonly isSalesPerson = computed(() => this.roles().has(UserRole.SalesPerson));
+  readonly isShipper = computed(() => this.roles().has(UserRole.Shipper));
+  readonly isAssistant = computed(() => this.roles().has(UserRole.Assistant));
+  readonly isStaff = computed(() => this.isAuthenticated() && !this.isCustomer());
+
+  // Init
+  constructor() {
+    if (this.isExpired()) {
+      this.logout();
+    }
   }
 
+  // API
   login(token: string, user: User, expiresIn: number) {
     const expiredAt = Date.now() + expiresIn;
-
     const newState: AuthState = { token, user, expiredAt };
+
     this.state.set(newState);
     this.saveToStorage(newState);
   }
@@ -42,17 +57,25 @@ export class AuthStateService {
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  // ===== ROLE CHECK =====
-  hasRole(role: UserRole): boolean {
-    return this.state().user?.roles?.includes(role) ?? false;
+  updateUser(user: Partial<User>) {
+    const current = this.state();
+    if (!current.token || !current.user) return;
+
+    const newState: AuthState = {
+      ...current,
+      user: { ...current.user, ...user },
+    };
+
+    this.state.set(newState);
+    this.saveToStorage(newState);
   }
 
-  isAdmin() { return this.hasRole(UserRole.Admin); }
-  isCustomer() { return this.hasRole(UserRole.Customer); }
-  isEditor() { return this.hasRole(UserRole.Editor); }
-  isSalesPerson() { return this.hasRole(UserRole.SalesPerson); }
-  isShipper() { return this.hasRole(UserRole.Shipper); }
-  isAssistant() { return this.hasRole(UserRole.Assistant); }
+  // Helpers
+  private isExpired(): boolean {
+    const expiredAt = this.state().expiredAt;
+    if (!expiredAt) return true;
+    return Date.now() >= expiredAt;
+  }
 
   private saveToStorage(state: AuthState) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -61,29 +84,26 @@ export class AuthStateService {
   private loadFromStorage(): AuthState {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) {
-        return { token: null, user: null, expiredAt: null };
+      if (!data) return this.emptyState();
+
+      const parsed = JSON.parse(data) as AuthState;
+
+      // Validate structure
+      if (!parsed.token) return this.emptyState();
+
+      // Check expiration
+      if (parsed.expiredAt && Date.now() >= parsed.expiredAt) {
+        localStorage.removeItem(STORAGE_KEY);
+        return this.emptyState();
       }
 
-      return JSON.parse(data);
+      return parsed;
     } catch {
-      return { token: null, user: null, expiredAt: null };
+      return this.emptyState();
     }
   }
 
-  updateUser(user: Partial<User>) {
-    const current = this.state();
-    if (!current.token || !current.user) return;
-
-    const newState = {
-      ...current,
-      user: {
-        ...current.user,
-        ...user
-      }
-    };
-
-    this.state.set(newState);
-    this.saveToStorage(newState);
+  private emptyState(): AuthState {
+    return { token: null, user: null, expiredAt: null };
   }
 }

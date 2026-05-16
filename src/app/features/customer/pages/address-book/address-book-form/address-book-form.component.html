@@ -1,9 +1,8 @@
 <div class="max-w-3xl mx-auto bg-white dark:bg-gray-700 shadow-lg rounded-2xl p-8">
 
-    <!-- Title -->
     <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-            {{ title }}
+            {{ pageTitle() }}
         </h2>
         <p class="text-gray-500 dark:text-gray-400 mt-2 text-sm">
             Please fill in your address details
@@ -14,7 +13,6 @@
 
         <input type="hidden" formControlName="id" />
 
-        <!-- 👤 Personal Info -->
         <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                 Personal Information
@@ -25,14 +23,14 @@
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         First name
                     </label>
-                    <app-input [control]="firstName" [type]="'text'" [required]="true"></app-input>
+                    <app-input [control]="firstName" [type]="'text'" [required]="true" />
                 </div>
 
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Last name
                     </label>
-                    <app-input [control]="lastName" [type]="'text'" [required]="true"></app-input>
+                    <app-input [control]="lastName" [type]="'text'" [required]="true" />
                 </div>
             </div>
 
@@ -40,11 +38,10 @@
                 <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Phone number
                 </label>
-                <app-input [control]="phoneNumber" [type]="'text'" [required]="true"></app-input>
+                <app-input [control]="phoneNumber" [type]="'text'" [required]="true" />
             </div>
         </div>
 
-        <!-- 📍 Address Info -->
         <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                 Address Details
@@ -54,28 +51,29 @@
                 <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Address Line 1
                 </label>
-                <app-input [control]="addressLine1" [type]="'text'" [required]="true"></app-input>
+                <app-input [control]="addressLine1" [type]="'text'" [required]="true" />
             </div>
 
             <div class="mb-4">
                 <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Address Line 2
                 </label>
-                <app-input [control]="addressLine2" [type]="'text'"></app-input>
+                <app-input [control]="addressLine2" [type]="'text'" />
             </div>
 
-            <!-- Country + State -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Country
                     </label>
-                    <select formControlName="country" (change)="getStateByCountryName()" class="bg-gray-50 border border-gray-300 text-sm rounded-xl px-3 py-2 w-full
-                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                         dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option *ngFor="let c of listCountries" [value]="c.name">
-                            {{ c.name }}
-                        </option>
+                    <select formControlName="country"
+                        class="bg-gray-50 border border-gray-300 text-sm rounded-xl px-3 py-2 w-full
+                               focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                               dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="" disabled selected>Select a country</option>
+                        @for (c of listCountries(); track c.name) {
+                            <option [value]="c.name">{{ c.name }}</option>
+                        }
                     </select>
                 </div>
 
@@ -83,43 +81,46 @@
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         State
                     </label>
-                    <select formControlName="state" class="bg-gray-50 border border-gray-300 text-sm rounded-xl px-3 py-2 w-full
-                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                         dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option *ngFor="let s of listStates" [value]="s.name">
-                            {{ s.name }}
-                        </option>
+                    <select formControlName="state"
+                        class="bg-gray-50 border border-gray-300 text-sm rounded-xl px-3 py-2 w-full
+                               focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                               dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        [disabled]="listStates().length === 0">
+                        <option value="" disabled selected>Select a state</option>
+                        @for (s of listStates(); track s.name) {
+                            <option [value]="s.name">{{ s.name }}</option>
+                        }
                     </select>
                 </div>
             </div>
 
-            <!-- City + Postal -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         City
                     </label>
-                    <app-input [control]="city" [type]="'text'"></app-input>
+                    <app-input [control]="city" [type]="'text'" [required]="true" />
                 </div>
 
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Postal Code
                     </label>
-                    <app-input [control]="postalCode" [type]="'text'" [required]="true"></app-input>
+                    <app-input [control]="postalCode" [type]="'text'" [required]="true" />
                 </div>
             </div>
         </div>
 
-        <!-- Buttons -->
         <div class="flex justify-center gap-4 mt-6">
-            <button type="button" (click)="cancel()" class="w-36 border border-gray-300 text-gray-700 bg-white hover:bg-gray-100
-               rounded-lg px-5 py-2.5 transition">
+            <button type="button" (click)="cancel()"
+                class="w-36 border border-gray-300 text-gray-700 bg-white hover:bg-gray-100
+                       rounded-lg px-5 py-2.5 transition">
                 Cancel
             </button>
 
-            <button type="submit" [disabled]="addressForm.invalid" class="w-36 text-white bg-blue-600 hover:bg-blue-700
-               rounded-lg px-5 py-2.5 transition disabled:opacity-50">
+            <button type="submit" [disabled]="addressForm.invalid"
+                class="w-36 text-white bg-blue-600 hover:bg-blue-700
+                       rounded-lg px-5 py-2.5 transition disabled:opacity-50">
                 Save
             </button>
         </div>

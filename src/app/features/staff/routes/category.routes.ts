@@ -3,7 +3,7 @@ import { CategoryListComponent } from "../pages/categories/category-list/categor
 import { CategoryFormComponent } from "../pages/categories/category-form/category-form.component";
 
 export const CATEGORY_ROUTES: Routes = [
-    { path: '', component: CategoryListComponent },
+    { path: '', component: CategoryListComponent, title: "Manage Categories" },
     { path: 'new', component: CategoryFormComponent },
     { path: 'edit/:id', component: CategoryFormComponent },
     { path: '**', redirectTo: '/staff/categories' },

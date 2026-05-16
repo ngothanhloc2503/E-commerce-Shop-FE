@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../constants';
+import { API_URL } from '../../../environment';
 
 const BASE_URL = API_URL + '/account';
 
@@ -14,11 +14,15 @@ export class AccountService {
     private httpClient: HttpClient,
   ) { }
 
-  updateAccountDetails(accountDetails: any, photo: File): Observable<any> {
+  updateAccountDetails(accountDetails: any, photo: File | null): Observable<any> {
     const formData = new FormData();
-    formData.append('accountDetails', new Blob([JSON.stringify(accountDetails)] , {type: 'application/json'}));
-    formData.append('photo', photo)
-    return this.httpClient.post(BASE_URL, formData)
+    formData.append('accountDetails', new Blob([JSON.stringify(accountDetails)], { type: 'application/json' }));
+
+    if (photo) {
+      formData.append("photo", photo);
+    }
+
+    return this.httpClient.put(BASE_URL, formData);
   }
 
   getAccountDetails(): Observable<any> {

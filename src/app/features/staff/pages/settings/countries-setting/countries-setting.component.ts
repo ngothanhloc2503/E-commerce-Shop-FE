@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../services/setting/country.service';
@@ -12,70 +12,76 @@ import { CountryService } from '../../../services/setting/country.service';
   styleUrl: './countries-setting.component.css'
 })
 export class CountriesSettingComponent {
-  isChanging = false;
-  listCountries: any[] = [];
+  // Injects
+  private fb = inject(FormBuilder);
+  private alertService = inject(AlertService);
+  private countryService = inject(CountryService);
+  
+  // Signals
+  isChanging = signal(false);
+  listCountries = signal<any[]>([]);
+  isSubmitting = signal(false);
+  isDeleting = signal(false);
 
-  countryForm!: FormGroup;
-  id = new FormControl(0);
-  name = new FormControl('', [
-    Validators.required,
-  ]);
-  code = new FormControl('', [
-    Validators.required,
-  ]);
+  // Form
+  countryForm: FormGroup = this.fb.group({
+    id: new FormControl(0),
+    name: new FormControl('', Validators.required),
+    code: new FormControl('', Validators.required),
+  });
 
-  constructor(
-    private fb: FormBuilder,
-    private alertService: AlertService,
-    private countryService: CountryService,
-  ) {}
-
-  ngOnInit() {
-    this.countryForm = this.fb.group({
-      id: this.id,
-      name: this.name,
-      code: this.code,
-    })
-
+  constructor() {
     this.getAllCountries();
+  }
+
+  // API
+  getAllCountries() {
+    this.countryService.getAllCountries().subscribe({
+      next: (res) => {
+        this.listCountries.set(res.data);
+      },
+    })
   }
 
   deleteCountry() {
     let id: number = this.countryForm.get('id')?.value;
+    this.isDeleting.set(true);
     this.countryService.deleteCountryByID(id).subscribe({
-      next: (res) => {
+      next: () => {
         this.onReloadCountryList();
+        this.isDeleting.set(false);
         this.alertService.showAndCloseAlertAfterXSecond("Country has been deleted successfully!", "green", 3000);
       },
+      error: () => {
+        this.isDeleting.set(false);
+      }
     })
   }
 
   saveCountry() {
+    this.isSubmitting.set(true);
     this.countryService.saveCountry(this.countryForm.value).subscribe({
-      next: (res) => {
+      next: () => {
         this.onReloadCountryList();
+        this.isSubmitting.set(false);
         this.alertService.showAndCloseAlertAfterXSecond("Country has been saved successfully!", "green", 3000);
       },
+      error: () => {
+        this.isSubmitting.set(false);
+      }
     })
   }
 
-  getAllCountries() {
-    this.countryService.getAllCountries().subscribe({
-      next: (res) => {
-        this.listCountries = res;
-      },
-    })
-  }
-
+  // UI Handlers  
   onSelectCountry(event: Event) {
     let target = event.target as HTMLInputElement;
-    for (let country of this.listCountries) {
+    for (let country of this.listCountries()) {
       if (country.id == target.value) {
         this.countryForm.patchValue(country);
-      } 
+      }
     }
 
-    this.isChanging = true;
+    this.isChanging.set(true);
   }
 
   onReloadCountryList() {
@@ -86,7 +92,7 @@ export class CountriesSettingComponent {
     }
     this.countryForm.patchValue(country);
 
-    this.isChanging = false;
+    this.isChanging.set(false);
     this.getAllCountries();
   }
 }

@@ -7,5 +7,10 @@
     
     <app-footer></app-footer>
     
-    <app-alert *ngIf="alertService.isShowAlert" [color]="alertService.alertColor" [message]="alertService.alertMessage"></app-alert>
+    @if (alertService.isShowAlert()) {
+    <app-alert 
+        [color]="alertService.alertColor()" 
+        [message]="alertService.alertMessage()">
+    </app-alert>
+}
 </div>

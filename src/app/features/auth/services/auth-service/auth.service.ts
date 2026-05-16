@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { API_URL, BASE_URL } from '../../../../constants';
+import { API_URL, BASE_URL } from '../../../../environment';
 import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
 
 const URL = API_URL + '/auth';
@@ -45,7 +45,7 @@ export class AuthService {
       params: parameters
     }).pipe(
       map((res: any) => {
-        this.handleSaveDateToStorage(res);
+        this.handleSaveDateToStorage(res.data);
       })
     );
   }
@@ -53,7 +53,7 @@ export class AuthService {
   signIn(userData: any): Observable<any> {
     return this.http.post<any>(`${URL}/login`, userData).pipe(
       map((res) => {
-        this.handleSaveDateToStorage(res);
+        this.handleSaveDateToStorage(res.data);
       })
     );
   }

@@ -1,132 +1,114 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AlertService } from '../../../../../core/services/alert/alert.service';
+import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
+import { getPaginationSignals } from '../../../../../shared/utils/pagination.utils';
 import { CategoryService } from '../../../services/category/category.service';
 import { ProductService } from '../../../services/product/product.service';
 
 @Component({
   selector: 'app-add-product-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './add-product-modal.component.html',
   styleUrl: './add-product-modal.component.css'
 })
 export class AddProductModalComponent {
-  @Input() isVisible: boolean = false;
-  @Output() addProductToOrderEmitter: EventEmitter<any> = new EventEmitter();
-  @Output() closeModalEmitter: EventEmitter<boolean> = new EventEmitter();
+  // Signal Inputs & Outputs
+  isVisible = input<boolean>(false);
+  addProductToOrderEmitter = output<any>();
+  closeModalEmitter = output<void>();
 
-  listProducts: any[] = [];
-  listCategories: any = [];
-  pageNum = 1;
-  pageSize = 5;
-  sortField = 'id';
-  sortDir = 'asc';
-  totalPages = 0;
-  totalItems = 0;
+  // Inject
+  private fb = inject(FormBuilder);
+  private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  public settingService = inject(GeneralSettingService);
+  private destroyRef = inject(DestroyRef);
 
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ]);
-  categoryID = new FormControl(0);
+  // Signals
+  listProducts = signal<any[]>([]);
+  listCategories = signal<any[]>([]);
+  pageNum = signal(1);
+  pageSize = signal(5);
+  totalPages = signal(0);
+  totalItems = signal(0);
 
-  constructor(
-    private fb: FormBuilder,
-    private productService: ProductService,
-    private categoryService: CategoryService,
-    private alertService: AlertService,
-    public settingService: GeneralSettingService,
-  ) {}
+  // Form
+  searchForm = this.fb.group({
+    keyword: new FormControl('', [Validators.required]),
+    categoryId: new FormControl(0)
+  });
+
+  // Computed
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
 
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword,
-      categoryID: this.categoryID
-    })
-
     this.getProductByPage();
     this.getAllCategories();
   }
 
-  addProductToOrder(productId: number) {
-    let productInfo = this.listProducts.filter(product => product.id == productId);
-    
-    this.addProductToOrderEmitter.emit(productInfo[0]);
+  // API
+  getProductByPage() {
+    const keyword = this.searchForm.get('keyword')?.value || '';
+    const categoryId = this.searchForm.get('categoryId')?.value || 0;
 
-    this.isVisible = false;
+    this.productService.getProductByPage(this.pageNum(), this.pageSize(), 'id', 'asc', keyword, categoryId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data;
+
+          this.listProducts.set(data.content);
+          this.totalPages.set(data.totalPages);
+          this.totalItems.set(data.totalItems);
+        },
+      });
+  }
+
+  getAllCategories() {
+    this.categoryService.getAllCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => this.listCategories.set(res.data)
+      });
+  }
+
+  // Action
+  addProductToOrder(productId: number) {
+    let productInfo = this.listProducts().find(product => product.id == productId);
+    if (productInfo) {
+      this.addProductToOrderEmitter.emit(productInfo);
+    }
   }
 
   closeModal() {
-    this.isVisible = false;
     this.closeModalEmitter.emit();
   }
 
-  getProductByPage() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    let categoryID = this.categoryID.value ? this.categoryID.value : 0;
-    this.productService.getProductByPage(this.pageNum, this.pageSize, this.sortField, this.sortDir, keyword, categoryID).subscribe({
-      next: (res: any) => {
-        this.listProducts = res.content;
-        this.totalPages = res.totalPages;
-        this.totalItems = res.totalItems;
-      },
-    })
-  }
-
   search() {
+    this.pageNum.set(1); 
     this.getProductByPage();
   }
   
   clear() {
-    this.searchForm.patchValue({keyword: ''});
-    this.searchForm.patchValue({categoryID: 0});
-
+    this.searchForm.patchValue({ keyword: '', categoryId: 0 });
+    this.pageNum.set(1);
     this.getProductByPage();
   }
 
-  findByCategory(event: Event) {
+  findByCategory() {
+    this.pageNum.set(1);
     this.getProductByPage();
-  }
-
-  getAllCategories() {
-    this.categoryService.getAllCategories().subscribe({
-      next: (res: any) => {
-        this.listCategories = res;
-      },
-      error: (err) => {
-        this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-        this.alertService.closeAlert(3000);
-      }
-    })
   }
 
   goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
+    if (pageNumber > this.totalPages() || pageNumber < 1) return;
+    this.pageNum.set(pageNumber);
     this.getProductByPage();
   }
 
-  get startCount(): number {
-    if (this.totalItems == 0) return 0;
-    return (this.pageNum - 1) * this.pageSize + 1;
-  }
-
-  get endCount(): number {
-    if (this.pageSize < 1) {
-      return this.totalItems;
-    }
-    return (this.pageNum * this.pageSize > this.totalItems) ? this.totalItems : this.pageNum * this.pageSize;
-  }
-
   getShortName(name: string): string {
-    if (name.length < 40) return name;
-    else return name.substring(0, 40) + "...";
+    return name.length < 40 ? name : name.substring(0, 40) + "...";
   }
 }

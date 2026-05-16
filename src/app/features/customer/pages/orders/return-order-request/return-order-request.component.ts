@@ -1,57 +1,94 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { OrderService } from '../../../services/order/order.service';
 
+interface ReturnReason {
+  value: string;
+  label: string;
+  id: string;
+}
+
 @Component({
   selector: 'app-return-order-request',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './return-order-request.component.html',
-  styleUrl: './return-order-request.component.css'
+  styleUrl: './return-order-request.component.css',
 })
 export class ReturnOrderRequestComponent {
-  @Input() isVisible: boolean = false;
-  @Input() orderId: number = 0;
-  @Output() closeModalEmitter: EventEmitter<boolean> = new EventEmitter();
-  @Output() returnRequestSuccessfulEmitter: EventEmitter<boolean> = new EventEmitter();
+  // Inject
+  private alertService = inject(AlertService);
+  private orderService = inject(OrderService);
+  private destroyRef = inject(DestroyRef);
 
-  reason = '';
-  note = '';
+  // Input
+  readonly isVisible = input(false);
+  readonly orderId = input(0);
 
-  constructor(
-    private alertService: AlertService,
-    private orderService: OrderService,
-  ) {}
+  // Output
+  readonly closeModalEmitter = output<void>();
+  readonly returnRequestSuccessfulEmitter = output<void>();
 
+  // state
+  readonly selectedReason = signal('');
+  readonly note = signal('');
+  readonly isSubmitting = signal(false);
+
+  readonly reasons: ReturnReason[] = [
+    { id: 'radioWrongItem', value: 'I bought the wrong items', label: 'I bought the wrong items' },
+    { id: 'radioReceivedWrong', value: 'I received the wrong items', label: 'I received the wrong items' },
+    { id: 'radioDamaged', value: 'The product was damaged/defective', label: 'The product was damaged/defective' },
+    { id: 'radioLate', value: 'The product arrived too late', label: 'The product arrived too late' },
+  ];
+
+  // API
   sendReturnRequest() {
-    if (this.reason != '') {
-      let data = new FormData();
-      data.append('id', this.orderId.toString());
-      data.append('reason', this.reason);
-      data.append('note', this.note);
+    const reason = this.selectedReason();
 
-      this.orderService.sendOrderReturnRequest(this.orderId, this.reason, this.note).subscribe({
-        next: (res) => {
-          this.isVisible = false;
-          this.reason = '';
+    if (!reason) {
+      this.alertService.showAndCloseAlertAfterXSecond(
+        'Please choose reason before send return request.', 'red', 3000
+      );
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    this.orderService
+      .sendOrderReturnRequest(this.orderId(), reason, this.note())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.resetForm();
           this.returnRequestSuccessfulEmitter.emit();
         },
-      })
-    } else {
-      this.alertService.showAndCloseAlertAfterXSecond("Please choose reason before send return request.", "red", 3000);
-    }
+        error: () => {
+          this.isSubmitting.set(false);
+        },
+      });
   }
 
-  onSelectReason(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.reason = target.value;
+  onReasonChange(reason: string) {
+    this.selectedReason.set(reason);
   }
 
   closeModal() {
-    this.isVisible = false;
-    this.reason = '';
+    this.resetForm();
     this.closeModalEmitter.emit();
+  }
+
+  private resetForm() {
+    this.selectedReason.set('');
+    this.note.set('');
   }
 }

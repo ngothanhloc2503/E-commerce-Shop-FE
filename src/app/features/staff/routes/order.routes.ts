@@ -3,7 +3,7 @@ import { OrderListComponent } from "../pages/orders/order-list/order-list.compon
 import { OrderDetailsComponent } from "../pages/orders/order-details/order-details.component";
 
 export const ORDER_ROUTES: Routes = [
-    { path: "", component: OrderListComponent },
+    { path: "", component: OrderListComponent, title: "Manage Orders" },
     { path: "edit/:id", component: OrderDetailsComponent },
     { path: "**", redirectTo: '/staff/orders' }
 ]

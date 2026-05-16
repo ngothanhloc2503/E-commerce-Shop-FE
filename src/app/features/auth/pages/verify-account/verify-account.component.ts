@@ -1,43 +1,55 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { AlertService } from '../../../../core/services/alert/alert.service';
 import { AuthService } from '../../services/auth-service/auth.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-verify-account',
   standalone: true,
-  imports: [CommonModule],
+  imports: [RouterModule],
   templateUrl: './verify-account.component.html',
-  styleUrl: './verify-account.component.css'
+  styleUrl: './verify-account.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VerifyAccountComponent {
+  // Inject
+  private activatedRoute = inject(ActivatedRoute);
+  private alertService = inject(AlertService);
+  private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
+
+  // Signals
   verifyCode = '';
-  isVerified = false;
+  isVerified = signal<boolean>(false);
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private authService: AuthService,
-  ) {}
-
+  // Init
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(s => this.verifyCode = s['code']);
-    this.getVerifyResult();
+    this.activatedRoute.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.verifyCode = params['code'] || '';
+
+        this.getVerifyResult();
+      });
   }
 
   getVerifyResult() {
-    this.authService.verifyAccount(this.verifyCode).subscribe({
-      next: (res) => {
-        this.isVerified = res;
-      },
-      error: (err) => {
-        if (err > 0 && err.status != 403) {
-          this.isVerified = false;
-        } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
+    if (!this.verifyCode) return;
+
+    this.authService.verifyAccount(this.verifyCode)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          this.isVerified.set(res.data);
+        },
+        error: (err: any) => {
+          if (err.status > 0 && err.status != 403) {
+            this.isVerified.set(false);
+          } else {
+            this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
+          }
         }
-      }
-    })
+      });
   }
 }

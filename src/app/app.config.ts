@@ -6,7 +6,6 @@ import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
-import { AuthStateService } from './core/services/auth-state/auth-state.service';
 import { GeneralSettingService } from './core/services/general-setting/general-setting.service';
 
 export const appConfig: ApplicationConfig = {
@@ -17,20 +16,15 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor, errorInterceptor])
     ),
     provideOAuthClient(),
-    AuthStateService,
+
     GeneralSettingService,
 
-    // APP_INITIALIZER để hydrate auth + settings
+    // APP_INITIALIZER chỉ cho settings
     {
       provide: APP_INITIALIZER,
-      useFactory: (auth: AuthStateService, settings: GeneralSettingService) => {
-        return () => {
-          auth.init();
-          return settings.loadSettings();
-        };
-      },
-      deps: [AuthStateService, GeneralSettingService],
-      multi: true
-    }
-  ]
+      useFactory: (settings: GeneralSettingService) => () => settings.loadSettings(),
+      deps: [GeneralSettingService],
+      multi: true,
+    },
+  ],
 };

@@ -1,64 +1,109 @@
-import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, TemplateRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
+import { downloadBlob } from '../../../../../shared/utils/file-download.util';
+import { getPaginationSignals } from '../../../../../shared/utils/pagination.utils';
 import { UserService } from '../../../services/user/user.service';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PaginationComponent],
   templateUrl: './user-list.component.html',
-  styleUrl: './user-list.component.css'
+  styleUrl: './user-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserListComponent {
-  listUsers: any = [];
-  pageNum = 1;
-  pageSize = 5;
-  sortField = 'id';
-  sortDir = 'asc';
-  totalPages = 0;
-  totalItems = 0;
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private userService = inject(UserService);
+  private alertService = inject(AlertService);
+  private modalService = inject(ModalService);
+  private fb = inject(FormBuilder);
 
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ]);
+  // Signals
+  listUsers = signal<any[]>([]);
+  pageNum = signal(1);
+  pageSize = signal(5);
+  sortField = signal('id');
+  sortDir = signal<'asc' | 'desc'>('asc');
+  totalPages = signal(0);
+  totalItems = signal(0);
 
-  constructor(
-    public alertService: AlertService,
-    private userService: UserService,
-    private modalService: ModalService,
-    private fb: FormBuilder,
-  ) {}
+  // Form
+  searchForm: FormGroup = this.fb.group({
+    keyword: ['', Validators.required]
+  })
+
+  // Computed
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
 
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword
-    });
-
     this.getUsersByPage();
+  }
+
+  // API
+  getUsersByPage() {
+    const keyword = this.searchForm.value.keyword || '';
+
+    this.userService.getUsersByPage(this.pageNum(), this.pageSize(), keyword, this.sortField(), this.sortDir())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        const data = res.data;
+        this.listUsers.set(data.content);
+        this.totalPages.set(data.totalPages);
+        this.totalItems.set(data.totalItems);
+
+        if (data.totalPages < this.pageNum()) {
+          this.pageNum.set(data.totalPages);
+        }
+      });
+  }
+
+  // Action
+  changeEnabledStatus(id: number, status: boolean) {
+    this.userService.changeEnabledStatus(id, !status)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.getUsersByPage();
+        this.alertService.showAndCloseAlertAfterXSecond(
+          `User ${id} has been ${status ? 'disabled' : 'enabled'}`,
+          'green',
+          3000
+        );
+      });
+  }
+
+  deleteUser(modalTemplate: TemplateRef<any>, userID: number) {
+    this.modalService.open(modalTemplate, {
+      title: `Confirm delete user ID: ${userID}`
+    }).subscribe(res => {
+      if (res === 'yes') {
+        this.userService.deleteUser(userID)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+            this.getUsersByPage();
+            this.alertService.showAndCloseAlertAfterXSecond(
+              `User ${userID} deleted`,
+              'green',
+              3000
+            );
+          });
+      }
+    });
   }
 
   sort(field: string) {
-    if (field.toLocaleLowerCase() === this.sortField.toLocaleLowerCase()) {
-      if (this.sortDir.toLocaleLowerCase() === 'asc') {
-        this.sortDir = 'desc';
-      } else {
-        this.sortDir = 'asc';
-      }
+    if (field === this.sortField()) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortField = field;
-      this.sortDir = 'asc';
+      this.sortField.set(field);
+      this.sortDir.set('asc');
     }
-
-    this.getUsersByPage();
-  }
-
-  clear() {
-    this.searchForm.patchValue({keyword: ''});
 
     this.getUsersByPage();
   }
@@ -67,161 +112,68 @@ export class UserListComponent {
     this.getUsersByPage();
   }
 
-  exportToCsv() {
-    this.userService.exportToCsv().subscribe({
-      next: (response: Blob) => {
-        const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
-        
-        // Create a link element
-        const link = document.createElement('a');
-        const url = window.URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'users_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.csv';
+  clear() {
+    this.searchForm.patchValue({ keyword: '' });
 
-        // Append to the DOM and trigger the download
-        document.body.appendChild(link);
-        link.click();
-
-        // Clean up and remove the link
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.alertService.showAndCloseAlertAfterXSecond('Error downloading the file', 'red', 5000);
-      }
-    });
-  }
-
-  exportToExcel() {
-    this.userService.exportToExcel().subscribe({
-      next: (response: Blob) => {
-        const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        
-        // Create a link element
-        const link = document.createElement('a');
-        const url = window.URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'users_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.xlsx';
-
-        // Append to the DOM and trigger the download
-        document.body.appendChild(link);
-        link.click();
-
-        // Clean up and remove the link
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.alertService.showAndCloseAlertAfterXSecond('Error downloading the file', 'red', 5000);
-      }
-    });
-  }
-
-  exportToPdf() {
-    this.userService.exportToPdf().subscribe({
-      next: (response: Blob) => {
-        const blob = new Blob([response], { type: 'application/pdf;charset=utf-8' });
-        
-        // Create a link element
-        const link = document.createElement('a');
-        const url = window.URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'users_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.pdf';
-
-        // Append to the DOM and trigger the download
-        document.body.appendChild(link);
-        link.click();
-
-        // Clean up and remove the link
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.alertService.showAndCloseAlertAfterXSecond('Error downloading the file', 'red', 5000);
-      }
-    });
-  }
-
-  changePageSize(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.value.length > 0) {
-      this.pageSize = Number(target.value);
-    } else {
-      return;
-    }
     this.getUsersByPage();
   }
 
-  changeEnabledStatus(id: number, status: boolean) {
-    this.userService.changeEnabledStatus(id, !status).subscribe({
-      next: (res) => {
-        if (res == null) {
-          this.getUsersByPage();
-          this.alertService.showAlert("The user ID " + id + " has been " + (status ? "disabled" : "enabled"), "green");
-        } else {
-          this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-        }
+  changePageSize(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    if (!value) return;
 
-        this.alertService.closeAlert(3000);
-      }
-    })
+    this.pageSize.set(Number(value));
+    this.pageNum.set(1);
+    this.getUsersByPage();
   }
 
-  deleteUser(modalTemplate: TemplateRef<any>,  userID: number) {
-    const title = "Confirm delete user has ID: " + userID;
-    this.modalService
-      .open(modalTemplate, { title: title })
-      .subscribe((res) => {
-        if (res == "yes") {
-          this.userService.deleteUser(userID).subscribe({
-            next: (res) => {
-              if (res == null) {
-                this.getUsersByPage();
-                this.alertService.showAlert("The user ID " + userID + " has been deleted successfully.", "green");
-              } else {
-                this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-              }
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
 
-              this.alertService.closeAlert(3000);
-            }
-          })
+    this.pageNum.set(page);
+    this.getUsersByPage();
+  }
+
+  // export
+  exportToCsv() {
+    this.userService.exportToCsv()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: Blob) => {
+          const blob = new Blob([res], { type: 'text/csv;charset=utf-8' });
+          downloadBlob(res, `users_${Date.now()}.csv`);
+        },
+        error: () => {
+          this.alertService.showAndCloseAlertAfterXSecond('Error downloading CSV', 'red', 3000);
         }
       });
   }
 
-  getUsersByPage() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    this.userService.getUsersByPage(this.pageNum, this.pageSize, keyword, this.sortField, this.sortDir).subscribe({
-      next: (res) => {
-        this.listUsers = res.content;
-        this.totalPages = res.totalPages;
-        if (res.totalPages < this.pageNum) {
-          this.goToPage(res.totalPages);
+  exportToExcel() {
+    this.userService.exportToExcel()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: Blob) => {
+          const blob = new Blob([res], { type: 'text/csv;charset=utf-8' });
+          downloadBlob(res, `users_${Date.now()}.xlsx`);
+        },
+        error: () => {
+          this.alertService.showAndCloseAlertAfterXSecond('Error downloading Excel', 'red', 3000);
         }
-        this.totalItems = res.totalItems;
-      }
-    })
+      });
   }
 
-  goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
-    this.getUsersByPage();
-  }
-
-  get startCount(): number {
-    if (this.totalItems == 0) return 0;
-    return (this.pageNum - 1) * this.pageSize + 1;
-  }
-
-  get endCount(): number {
-    if (this.pageSize < 1) {
-      return this.totalItems;
-    }
-    return (this.pageNum * this.pageSize > this.totalItems) ? this.totalItems : this.pageNum * this.pageSize;
+  exportToPdf() {
+    this.userService.exportToPdf()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: Blob) => {
+          const blob = new Blob([res], { type: 'text/csv;charset=utf-8' });
+          downloadBlob(res, `users_${Date.now()}.pdf`);
+        },
+        error: () => {
+          this.alertService.showAndCloseAlertAfterXSecond('Error downloading PDF', 'red', 3000);
+        }
+      });
   }
 }

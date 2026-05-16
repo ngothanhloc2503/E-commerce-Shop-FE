@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map, of, timer } from 'rxjs';
@@ -8,238 +7,207 @@ import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { UserService } from '../../../services/user/user.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent],
+  imports: [ReactiveFormsModule, InputComponent],
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.css'
 })
 export class UserFormComponent {
-  listRoles: any[] = [];
-  title = "Create User"
-  userListRoles: any[] = [];
+  // Inject
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private titleService = inject(Title);
+  private userService = inject(UserService);
+  private alertService = inject(AlertService);
+  private countryService = inject(CountryService);
+  private destroyRef = inject(DestroyRef);
+
+  // Form
+  userForm = this.fb.group({
+    id: new FormControl<number | null>(null),
+    firstName: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    lastName: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    email: new FormControl('', [Validators.required, Validators.email], [this.uniqueEmail()]),
+    password: new FormControl('', [Validators.pattern(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)]),
+    confirmPassword: new FormControl(''),
+    phoneNumber: new FormControl('', [Validators.required, Validators.minLength(10), Validators.maxLength(10)]),
+    birthOfDate: new FormControl('', [Validators.required]),
+    addressLine1: new FormControl('', [Validators.required]),
+    addressLine2: new FormControl(''),
+    city: new FormControl(''),
+    state: new FormControl('', [Validators.required]),
+    country: new FormControl('', [Validators.required]),
+    postalCode: new FormControl('', [Validators.required]),
+    roles: new FormControl('', [Validators.required]),
+    enabled: new FormControl<boolean>(false),
+    photo: new FormControl<string | null>(null)
+  }, { validators: this.match('password', 'confirmPassword') });
+
+  // Signals
+  listRoles = signal<any[]>([]);
+  userListRoles = signal<any[]>([]);
+  listCountries = signal<any[]>([]);
+  listStates = signal<any[]>([]);
+
+  title = signal("Create User");
   userId = 0;
-  userPhoto!: File;
-  photoPreviewSrc: any = "https://ecommerce-bucket-hcmus.s3.ap-southeast-1.amazonaws.com/images/default-user.png";
-  listCountries: any[] = [];
-  listStates: any[] = [];
-
-  userForm!: FormGroup;
-  id = new FormControl<number | null>(null);
-  email = new FormControl('', [
-    Validators.required,
-    Validators.email
-  ], [this.uniqueEmail()]);
-  firstName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  lastName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  password = new FormControl('', [
-    Validators.pattern(
-      /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
-    ),
-  ]);
-  confirm_password = new FormControl('');
-  phoneNumber = new FormControl('', [
-    Validators.required,
-    Validators.minLength(10),
-    Validators.maxLength(10),
-  ]);
-  birthOfDate = new FormControl('', [Validators.required]);
-  addressLine1 = new FormControl('', [Validators.required]);
-  addressLine2 = new FormControl('');
-  city = new FormControl('');
-  state = new FormControl('', [Validators.required]);
-  country = new FormControl('', [Validators.required]);
-  postalCode = new FormControl('', [Validators.required]);
-  roles = new FormControl('', [Validators.required]);
-  enabled = new FormControl<boolean>(false);
-  photo = new FormControl<string | null>(null);
-
-  constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private titleService: Title,
-    private userService: UserService,
-    private alertService: AlertService,
-    private countryService: CountryService,
-  ) {}
+  userPhoto = signal<File | null>(null);
+  photoPreviewSrc = signal<any>("https://ecommerce-bucket-hcmus.s3.ap-southeast-1.amazonaws.com/images/default-user.png");
+  isSubmitting = signal<boolean>(false);
 
   ngOnInit() {
-    this.userForm = this.fb.group({
-      id: this.id,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email,
-      password: this.password,
-      confirm_password: this.confirm_password,
-      phoneNumber: this.phoneNumber,
-      birthOfDate: this.birthOfDate,
-      addressLine1: this.addressLine1,
-      addressLine2: this.addressLine2,
-      city: this.city,
-      state: this.state,
-      country: this.country,
-      postalCode: this.postalCode,
-      roles: this.roles,
-      enabled: this.enabled,
-      photo: this.photo
-    }, {
-      validators: this.match('password', 'confirm_password')
-    });
+    this.activatedRoute.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(s => {
+        this.userId = s["id"];
+        if (this.userId) {
+          this.title.set("Edit User(ID: " + this.userId + ")");
+          this.getUserById();
+        }
+        this.titleService.setTitle(this.title());
+      });
 
-    this.activatedRoute.params.subscribe(s => this.userId = s["id"]);
-    if (this.userId) {
-      this.title = "Edit User(ID: " + this.userId + ")";
-      this.getUserById();
-    }
-    this.titleService.setTitle(this.title);
-    
     this.getAllRoles();
     this.getAllCountries();
   }
 
-  onSelectPhoto(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (!target.files?.length) {
-      return;
-    }
-    const file = target.files[0];
-    if (file) {
-      if (file.type == 'image/png' || file.type == 'image/jpg' || file.type == 'image/jpeg') {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e: any) => {
-          this.photoPreviewSrc = e.target.result;
-        }
-        
-        this.userForm.patchValue({photo: file.name});
-        this.userPhoto  = file;
-      } else {
-        target.value = '';
-        this.alertService.showAndCloseAlertAfterXSecond("Image should be png, jpg, or jpeg extension!", "red", 3000);
-      }
+  // API
+  getAllCountries() {
+    this.countryService.getAllCountries()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => this.listCountries.set(res.data),
+      });
+  }
+
+  getAllRoles() {
+    this.userService.getAllRoles()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => this.listRoles.set(res.data),
+      });
+  }
+
+  getUserById() {
+    this.userService.getUserById(this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+
+          this.userForm.patchValue(data);
+          if (data.photo) {
+            this.photoPreviewSrc.set(data.imagePath);
+          }
+          this.userListRoles.set(data.roles || []);
+          this.getStateByCountryName();
+        },
+      });
+  }
+
+  getStateByCountryName() {
+    const countryVal = this.userForm.get('country')?.value;
+    if (countryVal) {
+      this.countryService.getStateByCountryName(countryVal)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => this.listStates.set(res.data),
+        });
+    } else {
+      this.listStates.set([]);
     }
   }
 
   saveUser() {
-    this.userService.saveUser(this.userForm.value, this.userPhoto).subscribe({
-      next: (res) => {
-        if(res.id != null) {
+    this.isSubmitting.set(true);
+
+    this.userService.saveUser(this.userForm.value, this.userPhoto())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
           this.alertService.showAlert("The user has been saved successfully.", "green")
-  
-          timer(3000).subscribe(i => {
-            this.alertService.isShowAlert = false;
+          this.isSubmitting.set(false);
+
+          setTimeout(() => {
+            this.alertService.closeAlert();
             this.router.navigateByUrl("/staff/users");
-          })
-        } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
+          }, 3000);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
         }
-      },
-    })
+      })
+  }
+
+  // Action
+  onSelectPhoto(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      this.alertService.showAndCloseAlertAfterXSecond("Invalid image file!", "red", 3000);
+      return;
+    }
+
+    this.userPhoto.set(file);
+
+    const reader = new FileReader();
+    reader.onload = () => this.photoPreviewSrc.set(reader.result as string);
+    reader.readAsDataURL(file);
+
+    this.userForm.patchValue({ photo: file.name });
   }
 
   updateRole() {
     let listRolesTemp: any = [];
     document.querySelectorAll('input[name=roles]:checked').forEach((role) => {
-      const r = {
+      listRolesTemp.push({
         id: role.getAttribute('id'),
         name: role.getAttribute('value')
-      };
-      listRolesTemp.push(r);
-    })
-    this.userForm.patchValue({roles: listRolesTemp});
+      });
+    });
+    this.userForm.patchValue({ roles: listRolesTemp });
   }
 
+  // Helper
   private uniqueEmail() {
     return (ctrl: AbstractControl) => {
       let email = ctrl.value;
       let id = this.userId ? this.userId : 0;
       return (email)
         ? this.userService.isEmailUnique(id, email).pipe(
-            map(isUnique => (isUnique) ? null : {emailNotUnique: true})
-          )
+          map(isUnique => (isUnique) ? null : { emailNotUnique: true })
+        )
         : of(null);
     }
   }
 
-  getStateByCountryName() {
-    if (this.country.value != null && this.country.value != undefined && this.country.value != '') {
-      this.countryService.getStateByCountryName(this.country.value).subscribe({
-        next: (res) => {
-          this.listStates = res;
-        },
-      })
-    }
-  }
-
-  getAllCountries() {
-    this.countryService.getAllCountries().subscribe({
-      next: (res) => {
-        this.listCountries = res;
-      },
-    })
-  }
-
-  getAllRoles() {
-    this.userService.getAllRoles().subscribe({
-      next: (res) => {
-        this.listRoles = res;
-      },
-    })
-  }
-
-  getUserById() {
-    this.userListRoles = [];
-    this.userService.getUserById(this.userId).subscribe({
-      next: (res) => {
-        this.userForm.patchValue(res);
-        if (res.photo != null && res.photo != '') {
-          this.photoPreviewSrc = res.imagePath;
-        };
-        res.roles.forEach((role: any) => {
-          this.userListRoles.push(role);
-        });
-        this.getStateByCountryName();
-      },
-    })
-  }
-
   userHasRole(role: any): boolean {
-    for (let r of this.userListRoles) {
-      if (r.id == role.id) {
-        return true;
-      }
-    }
-    return false;
+    return this.userListRoles().some(r => r.id == role.id);
   }
 
   cancel() {
     this.router.navigateByUrl("/staff/users");
   }
 
-  match(controlName: string, matchingControlName: string) : ValidatorFn {
-    return (group: AbstractControl) : ValidationErrors | null  => {
-        const control = group.get(controlName);
-        const matchingControl = group.get(matchingControlName);
+  match(controlName: string, matchingControlName: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const control = group.get(controlName);
+      const matchingControl = group.get(matchingControlName);
 
-        if (!control || !matchingControl) {
-            console.error('Form controls can not be found in the form group.');
-            return { controlNotFound: false };
-        }
+      if (!control || !matchingControl) return null;
 
-        const error = control.value === matchingControl.value ? null : { noMatch: true };
-        
-        matchingControl.setErrors(error);
-
-        return error;
+      const error = control.value === matchingControl.value ? null : { noMatch: true };
+      matchingControl.setErrors(error);
+      return error;
     }
   }
 }

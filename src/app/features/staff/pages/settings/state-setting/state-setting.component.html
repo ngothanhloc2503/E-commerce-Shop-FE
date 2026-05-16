@@ -9,7 +9,7 @@
 
         <select id="select-country" (change)="onSelectCountry($event)"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option *ngFor="let country of listCountries" [value]="country.name">{{ country.name }} - {{ country.code }}</option>
+            <option *ngFor="let country of listCountries()" [value]="country.name">{{ country.name }} - {{ country.code }}</option>
         </select>
     </div>
 
@@ -18,7 +18,7 @@
 
         <select id="select-state" style="height: 175px" size="3" (change)="onSelectState($event)"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option *ngFor="let state of listStates" [value]="state.id">{{ state.name }}</option>
+            <option *ngFor="let state of listStates()" [value]="state.id">{{ state.name }}</option>
         </select>
     </div>
 
@@ -30,11 +30,29 @@
         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 md:w-72 lg:w-96 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
         required />
 
-        <button type="button" [disabled]="isChanging || stateForm.invalid" (click)="saveState()"
-        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mx-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Add</button>
-        <button type="button" [disabled]="!isChanging || stateForm.invalid" (click)="saveState()"
-        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Update</button>
-        <button type="button" [disabled]="!isChanging" (click)="deleteState()"
-        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">Delete</button>
+        <button type="button" [disabled]="isChanging() || stateForm.invalid || isSubmitting()" (click)="saveState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mx-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">
+            @if (isSubmitting() && !isChanging()) {
+                <span>Adding...</span>
+            } @else {
+                <span>Add</span>
+            }
+        </button>
+        <button type="button" [disabled]="!isChanging() || stateForm.invalid || isSubmitting()" (click)="saveState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">
+            @if (isSubmitting() && isChanging()) {
+                <span>Updating...</span>
+            } @else {
+                <span>Update</span>
+            }
+        </button>
+        <button type="button" [disabled]="!isChanging() || isDeleting()" (click)="deleteState()"
+        class="text-white w-24 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-400">
+            @if (isDeleting()) {
+                <span>Deleting...</span>
+            } @else {
+                <span>Delete</span>
+            }
+        </button>
     </form>
 </div>

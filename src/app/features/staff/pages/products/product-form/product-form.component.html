@@ -1,7 +1,7 @@
 <div class="mb-4 text-center justify-center">
     <h2
         class="mb-5 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
-        Manage Brands | {{ title }}</h2>
+        Manage Brands | {{ title() }}</h2>
 </div>
 
 <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
@@ -44,7 +44,7 @@
     <div class="hidden p-4 rounded-lg max-w-md mx-auto" id="overview" role="tabpanel" aria-labelledby="overview-tab">
         <div class="mb-5">
             <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name:</label>
-            <app-input [control]="f['name']" [type]="'text'" [required]="true"></app-input>
+            <app-input [control]="productForm.get('name')" [type]="'text'" [required]="true"></app-input>
         </div>
 
         <div class="z-0 w-full group">
@@ -53,13 +53,15 @@
             <select id="categories" formControlName="category" (change)="onCategoryChange()"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                 <option disabled [ngValue]="null"> -- Select Category -- </option>
-                <option *ngFor="let cat of listCategories" name="categories" [ngValue]="cat.id">{{ cat.name }}</option>
+                @for (cat of listCategories(); track cat.id) {
+                    <option [ngValue]="cat.id">{{ cat.name }}</option>
+                }
             </select>
-            <div *ngIf="f['category'].touched || f['category'].dirty">
-                <p *ngIf="f['category'].errors?.['required']" class="text-red-400">
-                    Field is required.
-                </p>
-            </div>
+            @if (productForm.get('category')?.touched || productForm.get('category')?.dirty) {
+                @if (productForm.get('category')?.errors?.['required']) {
+                    <p class="text-red-400">Field is required.</p>
+                }
+            }
         </div>
 
         <div class="z-0 w-full group">
@@ -68,13 +70,15 @@
             <select id="brand" formControlName="brand"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                 <option disabled [ngValue]="null"> -- Select Brand -- </option>
-                <option *ngFor="let brand of listBrands" name="brands" [ngValue]="brand.id">{{ brand.name }}</option>
+                @for (brand of listBrands(); track brand.id) {
+                    <option [ngValue]="brand.id">{{ brand.name }}</option>
+                }
             </select>
-            <div *ngIf="f['brand'].touched || f['brand'].dirty">
-                <p *ngIf="f['brand'].errors?.['required']" class="text-red-400">
-                    Field is required.
-                </p>
-            </div>
+            @if (productForm.get('brand')?.touched || productForm.get('brand')?.dirty) {
+                @if (productForm.get('brand')?.errors?.['required']) {
+                    <p class="text-red-400">Field is required.</p>
+                }
+            }
         </div>
 
         <div class="z-0 w-full mt-5 mb-5 group">
@@ -91,18 +95,18 @@
 
         <div class="mb-5">
             <label for="cost" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cost:</label>
-            <app-input [control]="f['cost']" [type]="'number'" [step]="0.01"></app-input>
+            <app-input [control]="productForm.get('cost')" [type]="'number'" [step]="0.01"></app-input>
         </div>
 
         <div class="mb-5">
             <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price:</label>
-            <app-input [control]="f['price']" [type]="'number'" [step]="0.01"></app-input>
+            <app-input [control]="productForm.get('price')" [type]="'number'" [step]="0.01"></app-input>
         </div>
 
         <div class="mb-5">
             <label for="discountPercent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Discount
                 percent(%):</label>
-            <app-input [control]="f['discountPercent']" [type]="'number'" [step]="0.01"></app-input>
+            <app-input [control]="productForm.get('discountPercent')" [type]="'number'" [step]="0.01"></app-input>
         </div>
     </div>
 
@@ -117,13 +121,13 @@
                 plugins: 'link image code',
                 toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code'}" 
                 id="summary"
-                apiKey="th474spuudpxmju6zc8oif37cw8k5609ouk8ytonewvqqiza" formControlName="summary" required>
+                [apiKey]="tinyMceApiKey" formControlName="summary" required>
             </editor>
-            <div *ngIf="f['summary'].touched || f['summary'].dirty">
-                <p *ngIf="f['summary'].errors?.['required']" class="text-red-400">
-                    Field is required.
-                </p>
-            </div>
+            @if (productForm.get('summary')?.touched || productForm.get('summary')?.dirty) {
+                @if (productForm.get('summary')?.errors?.['required']) {
+                    <p class="text-red-400">Field is required.</p>
+                }
+            }
         </div>
 
         <div class="z-0 w-full mb-5 group">
@@ -134,13 +138,14 @@
                 menubar: false,
                 plugins: 'link image code',
                 toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code'}"
-                id="description-editor" apiKey="th474spuudpxmju6zc8oif37cw8k5609ouk8ytonewvqqiza"
+                id="description-editor" [apiKey]="tinyMceApiKey"
                 formControlName="description" rows="10" required></editor>
-            <div *ngIf="f['description'].touched || f['description'].dirty">
-                <p *ngIf="f['description'].errors?.['required']" class="text-red-400">
-                    Field is required.
-                </p>
-            </div>
+            
+            @if (productForm.get('description')?.touched || productForm.get('description')?.dirty) {
+                @if (productForm.get('description')?.errors?.['required']) {
+                    <p class="text-red-400">Field is required.</p>
+                }
+            }
         </div>
     </div>
 
@@ -155,45 +160,45 @@
                     <h3 class="h-8 inline-flex justify-center items-center text-gray-900 dark:text-white">Main Image:
                     </h3>
                 </div>
-                <img id='preview_logo' class="rounded-lg w-full" [src]="mainImagePreviewSrc"
+                <img id='preview_logo' class="rounded-lg w-full" [src]="mainImagePreviewSrc()"
                     alt="Preview product image" />
                 <div class="pb-4 px-2 pt-2">
                     <input type="file" (change)="onSelectMainImage($event)" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer
                       bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 
                       dark:placeholder-gray-400">
-                    <p *ngIf="!mainImageFile && !productId" class="text-center justify-center text-red-400">
-                        Main image is required.
-                    </p>
+                    @if (!mainImageFile && !productId()) {
+                        <p class="text-center justify-center text-red-400">Main image is required.</p>
+                    }
                 </div>
             </div>
 
             <!-- Extras Images -->
-            <div *ngFor="let image of extrasImages.controls; index as idx; trackBy: trackByIndex"
-                class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
-                id="extra_image_{{idx}}">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center p-2">
-                        <h3 class="h-8 inline-flex justify-center items-center text-gray-900 dark:text-white">Extras
-                            Image #{{ idx + 1 }}:</h3>
+            @for (image of extrasImages.controls; track $index) {
+                <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center p-2">
+                            <h3 class="h-8 inline-flex justify-center items-center text-gray-900 dark:text-white">Extras
+                                Image #{{ $index + 1 }}:</h3>
+                        </div>
+                        <button (click)="removeExtraImage($index)" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto 
+                        inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                            <span class="sr-only">Remove extra image</span>
+                        </button>
                     </div>
-                    <button (click)="removeExtraImage(idx)" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto 
-                       inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                        </svg>
-                        <span class="sr-only">Remove extra image</span>
-                    </button>
+                    <img name='preview_extras_image' class="rounded-lg w-full" [src]="image.get('preview')?.value"
+                        alt="Preview product extras image" />
+                    <div class="pb-4 px-2 pt-2">
+                        <input type="file" (change)="onSelectExtrasImage($event, $index)" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer
+                        bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 
+                        dark:placeholder-gray-400">
+                    </div>
                 </div>
-                <img name='preview_extras_image' class="rounded-lg w-full" [src]="image.value.preview"
-                    alt="Preview product extras image" />
-                <div class="pb-4 px-2 pt-2">
-                    <input type="file" (change)="onSelectExtrasImage($event, idx)" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer
-                      bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 
-                      dark:placeholder-gray-400">
-                </div>
-            </div>
+            }
 
             <!-- New Extras Image -->
             <div
@@ -217,24 +222,22 @@
     <!-- Tab Details -->
     <div class="hidden p-4 rounded-lg w-auto mx-auto" id="details" role="tabpanel" aria-labelledby="details-tab">
         <div formArrayName="details">
-            <div *ngFor="let detailCtrl of details.controls; let i = index" [formGroupName]="i"
-                class="flex w-auto mx-auto justify-center content-center mb-4">
+            @for (detailCtrl of details.controls; track $index) {
+                <div [formGroupName]="$index" class="flex w-auto mx-auto justify-center content-center mb-4">
 
-                <!-- Name Input -->
-                <app-input [control]="detailCtrl.get('name')!" [type]="'text'" placeholder="Name" [required]="true"
+                <app-input [control]="detailCtrl.get('name')" [type]="'text'" placeholder="Name" [required]="true"
                     class="w-64 mx-2"></app-input>
 
-                <!-- Value Input -->
-                <app-input [control]="detailCtrl.get('value')!" [type]="'text'" placeholder="Value" [required]="true"
+                <app-input [control]="detailCtrl.get('value')" [type]="'text'" placeholder="Value" [required]="true"
                     class="w-64 mx-2"></app-input>
 
-                <!-- Remove Button -->
-                <button type="button" (click)="removeDetail(i)" class="text-white w-24 mx-2 p-2.5 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
+                <button type="button" (click)="removeDetail($index)" class="text-white w-24 mx-2 p-2.5 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
                      font-medium rounded-lg text-sm dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none 
                      dark:focus:ring-red-800">
                     Remove
                 </button>
             </div>
+            }
         </div>
 
         <!-- Add New Detail Button -->
@@ -257,22 +260,22 @@
         <div class="mb-5">
             <label for="length" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Length
                 (inch):</label>
-            <app-input [control]="f['length']" [type]="'number'" [step]="0.1"></app-input>
+            <app-input [control]="productForm.get('length')" [type]="'number'" [step]="0.1"></app-input>
         </div>
         <div class="mb-5">
             <label for="width" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Width
                 (inch):</label>
-            <app-input [control]="f['width']" [type]="'number'" [step]="0.1"></app-input>
+            <app-input [control]="productForm.get('width')" [type]="'number'" [step]="0.1"></app-input>
         </div>
         <div class="mb-5">
             <label for="height" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Height
                 (inch):</label>
-            <app-input [control]="f['height']" [type]="'number'" [step]="0.1"></app-input>
+            <app-input [control]="productForm.get('height')" [type]="'number'" [step]="0.1"></app-input>
         </div>
         <div class="mb-5">
             <label for="weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Weight
                 (lb):</label>
-            <app-input [control]="f['weight']" [type]="'number'" [step]="0.1"></app-input>
+            <app-input [control]="productForm.get('weight')" [type]="'number'" [step]="0.1"></app-input>
         </div>
     </div>
 
@@ -280,7 +283,13 @@
     <div class="text-center justify-content-center">
         <button type="button" (click)="cancel()"
             class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
-        <button type="submit" [disabled]="productForm.invalid || isSubmitting"
-            class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+        <button type="submit" [disabled]="productForm.invalid || isSubmitting()"
+            class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+            @if (isSubmitting()) {
+                <span>Saving...</span>
+            } @else {
+                <span>Save</span>
+            }
+        </button>
     </div>
 </form>

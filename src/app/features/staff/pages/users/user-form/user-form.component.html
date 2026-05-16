@@ -1,120 +1,158 @@
 <div class="mb-4 text-center justify-center">
-    <h2 class="text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Users | {{ title }}</h2>
+    <h2
+        class="text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
+        Manage Users | {{ title() }}</h2>
 </div>
 <form class="w-full lg:w-3/4 mx-auto" [formGroup]="userForm" (ngSubmit)="saveUser()">
-    <input type="hidden" id="id" name="id" formControlName="id"/>
+    <input type="hidden" id="id" name="id" formControlName="id" />
     <div class="grid md:grid-cols-2 md:gap-12">
         <div>
             <div class="grid md:grid-cols-2 md:gap-6">
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="firstName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-                    <app-input [control]="firstName" [type]="'text'" [required]="true"></app-input>
+                    <label for="firstName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First
+                        name</label>
+                    <app-input [control]="userForm.get('firstName')" [type]="'text'" [required]="true"></app-input>
                 </div>
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="lastName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
-                    <app-input [control]="lastName" [type]="'text'" [required]="true"></app-input>
+                    <label for="lastName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last
+                        name</label>
+                    <app-input [control]="userForm.get('lastName')" [type]="'text'" [required]="true"></app-input>
                 </div>
             </div>
-        
+
             <div class="mb-5">
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                <app-input [control]="email" [type]="'email'" [placeholder]="'Enter your email address'" [required]="true"></app-input>
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
+                    email</label>
+                <app-input [control]="userForm.get('email')" [type]="'email'" [placeholder]="'Enter your email address'"
+                    [required]="true"></app-input>
             </div>
             <div class="mb-5">
-                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-                <app-input [control]="password" [type]="'password'" [required]="userId == null"></app-input>
+                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
+                    password</label>
+                <app-input [control]="userForm.get('password')" [type]="'password'"
+                    [required]="userId == null"></app-input>
             </div>
             <div class="mb-5">
-                <label for="confirm-password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm password</label>
-                <app-input [control]="confirm_password" [type]="'password'" [required]="userId == null"></app-input>
+                <label for="confirm-password"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm password</label>
+                <app-input [control]="userForm.get('confirmPassword')" [type]="'password'"
+                    [required]="userId == null"></app-input>
             </div>
-        
+
             <div class="grid md:grid-cols-2 md:gap-6">
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="phoneNumber" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone number</label>
-                    <app-input [control]="phoneNumber" [type]="'text'" [required]="true"></app-input>
+                    <label for="phoneNumber" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone
+                        number</label>
+                    <app-input [control]="userForm.get('phoneNumber')" [type]="'text'" [required]="true"></app-input>
                 </div>
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="dateOfBirth" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date of birth</label>
-                    <app-input [control]="birthOfDate" [type]="'date'" [required]="true"></app-input>
+                    <label for="dateOfBirth" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date
+                        of birth</label>
+                    <app-input [control]="userForm.get('birthOfDate')" [type]="'date'" [required]="true"></app-input>
                 </div>
             </div>
 
             <div class="z-0 w-full mb-5 group">
-                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="user_avatar">Upload file user photo:</label>
-                <img id='preview_img' for="user_avatar" class="mx-auto mb-2 h-16 w-16 object-cover rounded-full" src="{{ photoPreviewSrc }}" alt="Preview profile photo" />
+                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="user_avatar">Upload
+                    file user photo:</label>
+                <img id='preview_img' for="user_avatar" class="mx-auto mb-2 h-16 w-16 object-cover rounded-full"
+                    [src]="photoPreviewSrc()" alt="Preview profile photo" />
                 <input (change)="onSelectPhoto($event)"
-                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="user_avatar" id="user_avatar" type="file">
-                <div class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="user_avatar">A profile picture is useful to confirm your are logged into your account</div>
+                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    aria-describedby="user_avatar" id="user_avatar" type="file">
+                <div class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="user_avatar">A profile picture is useful
+                    to confirm your are logged into your account</div>
             </div>
         </div>
 
         <div>
             <div class="mb-5">
-                <label for="addressLine1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 1</label>
-                <app-input [control]="addressLine1" [type]="'text'" [required]="true"></app-input>
+                <label for="addressLine1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address
+                    Line 1</label>
+                <app-input [control]="userForm.get('addressLine1')" [type]="'text'" [required]="true"></app-input>
             </div>
 
             <div class="mb-5">
-                <label for="addressLine2" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address Line 2</label>
-                <app-input [control]="addressLine2" [type]="'text'"></app-input>
+                <label for="addressLine2" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address
+                    Line 2</label>
+                <app-input [control]="userForm.get('addressLine2')" [type]="'text'"></app-input>
             </div>
 
             <div class="grid md:grid-cols-2 md:gap-6">
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="country" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Country</label>
-                    <select id="country" formControlName="country" (change)="getStateByCountryName()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option *ngFor="let c of listCountries" value="{{ c.name }}">{{ c.name }}</option>
+                    <label for="country"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Country</label>
+                    <select id="country" formControlName="country" (change)="getStateByCountryName()"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        @for (c of listCountries(); track c.name) {
+                        <option [value]="c.name">{{ c.name }}</option>
+                        }
                     </select>
                 </div>
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="state" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">State</label>
-                    <select id="state" formControlName="state" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option *ngFor="let s of listStates" value="{{ s.name }}">{{ s.name }}</option>
+                    <label for="state"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">State</label>
+                    <select id="state" formControlName="state"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        @for (s of listStates(); track s.name) {
+                        <option [value]="s.name">{{ s.name }}</option>
+                        }
                     </select>
                 </div>
             </div>
             <div class="grid md:grid-cols-2 md:gap-6">
                 <div class="relative z-0 w-full mb-5 group">
                     <label for="city" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">City</label>
-                    <app-input [control]="city" [type]="'text'"></app-input>
+                    <app-input [control]="userForm.get('city')" [type]="'text'"></app-input>
                 </div>
                 <div class="relative z-0 w-full mb-5 group">
-                    <label for="postalCode" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Postal Code</label>
-                    <app-input [control]="postalCode" [type]="'text'" [required]="true"></app-input>
+                    <label for="postalCode" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Postal
+                        Code</label>
+                    <app-input [control]="userForm.get('postalCode')" [type]="'text'" [required]="true"></app-input>
                 </div>
             </div>
-        
+
             <div class="z-0 w-full group">
                 <label for="checkbox-2" class="text-sm font-medium text-gray-900 dark:text-white">Roles: </label>
                 <fieldset>
                     <legend class="sr-only">Roles:</legend>
-                    
-                    <div *ngFor="let role of listRoles" class="flex items-center mb-2">
-                      <input id="{{role.id}}" type="checkbox" name="roles" value="{{role.name}}" [checked]="userHasRole(role)"
-                      (change)="updateRole()"
-                      class="w-4 h-4 border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                      <label for="{{role.id}}" class="block ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                        {{role.name.substring(5)}}
-                      </label>
+
+                    @for (role of listRoles(); track role.id) {
+                    <div class="flex items-center mb-2">
+                        <input [id]="role.id" type="checkbox" name="roles" [value]="role.name"
+                            [checked]="userHasRole(role)" (change)="updateRole()"
+                            class="w-4 h-4 border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                        <label [for]="role.id" class="block ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            {{role.name.substring(5)}}
+                        </label>
                     </div>
+                    }
                 </fieldset>
-                <p *ngIf="roles.errors?.['required']" class="text-red-400">
-                    Role is required. Please select least one of the role.
-                </p>
+
+                @if (userForm.get('roles')?.errors?.['required']) {
+                    <p class="text-red-400">
+                        Role is required. Please select least one of the role.
+                    </p>
+                }
             </div>
             <div class="z-0 w-full mt-5 mb-5 group">
                 <label for="isEnabled" class="text-sm font-medium text-gray-900 dark:text-white">Enabled: </label>
                 <input id="isEnabled" type="checkbox" formControlName="enabled"
-                class="ms-2 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    class="ms-2 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
             </div>
         </div>
     </div>
-    
+
     <div class="text-center justify-content-center">
         <button (click)="cancel()" type="button"
-        class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
-        <button type="submit" [disabled]="userForm.invalid"
-        class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+            class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
+        <button type="submit" [disabled]="userForm.invalid || isSubmitting()"
+            class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+            @if (isSubmitting()) {
+                <span>Saving...</span>
+            } @else {
+                <span>Save</span>
+            }
+        </button>
     </div>
 </form>

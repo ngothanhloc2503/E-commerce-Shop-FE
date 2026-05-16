@@ -1,95 +1,95 @@
-import { CommonModule } from '@angular/common';
-import { Component, effect, signal } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { GeneralSettingService } from '../../../core/services/general-setting/general-setting.service';
-import { CartService } from '../../../features/customer/services/cart/cart.service';
-import { ThemeService } from '../../../core/services/theme/theme.service';
-import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
 import { HttpClient } from '@angular/common/http';
-import { BASE_URL } from '../../../constants';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
+import { GeneralSettingService } from '../../../core/services/general-setting/general-setting.service';
+import { ThemeService } from '../../../core/services/theme/theme.service';
+import { BASE_URL } from '../../../environment';
+import { CartService } from '../../../features/customer/services/cart/cart.service';
+
+interface StaffNavLink {
+  path: string;
+  label: string;
+}
 
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [RouterLink, RouterLinkActive, ReactiveFormsModule],
   templateUrl: './nav.component.html',
-  styleUrl: './nav.component.css'
+  styleUrl: './nav.component.css',
 })
-export class NavComponent {
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [Validators.required]);
+export class NavComponent implements OnInit {
+  // Inject
+  private themeService = inject(ThemeService);
+  readonly cartService = inject(CartService);
+  readonly authState = inject(AuthStateService);
+  readonly settingService = inject(GeneralSettingService);
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
 
-  darkMode = this.themeService.darkMode;
+  // Form
+  private fb = inject(NonNullableFormBuilder);
+  searchForm = this.fb.group({
+    keyword: ['', [Validators.required]],
+  });
 
-  constructor(
-    private themeService: ThemeService,
-    public cartService: CartService,
-    private router: Router,
-    private fb: FormBuilder,
-    public settingService: GeneralSettingService,
-    private authState: AuthStateService,
-    private http: HttpClient,
-  ) { }
+  // Signals
+  readonly darkMode = this.themeService.darkMode;
+  readonly user = this.authState.user;
 
+  // Data-driven staff nav
+  readonly staffNavLinks: StaffNavLink[] = [
+    { path: '/staff/dashboard', label: 'Dashboard' },
+    { path: '/staff/users', label: 'Users' },
+    { path: '/staff/categories', label: 'Categories' },
+    { path: '/staff/brands', label: 'Brands' },
+    { path: '/staff/products', label: 'Products' },
+    { path: '/staff/shipping-rates', label: 'Shipping Rates' },
+    { path: '/staff/orders', label: 'Orders' },
+    { path: '/staff/settings', label: 'Settings' },
+  ];
+
+  // Init
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword
-    })
-
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.cartService.getCart();
-      }
-    });
+    this.router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          this.cartService.getCart();
+        }
+      });
   }
 
+  // Actions
   search() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    this.router.navigate(['/search'], { queryParams: { keyword: keyword } });
+    const keyword = this.searchForm.value.keyword ?? '';
+    this.router.navigate(['/search'], { queryParams: { keyword } });
   }
 
-  signOut(event: any) {
+  signOut(event: Event) {
     event.preventDefault();
     this.http.post(`${BASE_URL}/api/auth/logout`, {}).subscribe({
-      next: () => {
-        this.afterLogout();
-      },
-      error: () => {
-        this.afterLogout();
-      }
+      next: () => this.afterLogout(),
+      error: () => this.afterLogout(),
     });
   }
 
   private afterLogout() {
     this.authState.logout();
-    this.cartService.cart = {};
+    this.cartService.cart.set({});
     this.router.navigateByUrl('/');
   }
-
-  getShortName(name: string): string {
-    if (name.length < 15) return name;
-    else return name.substring(0, 40) + "...";
-  }
-
-  // Role helpers
-  isAdmin() { return this.authState.isAdmin(); }
-  isSalesPerson() { return this.authState.isSalesPerson(); }
-  isEditor() { return this.authState.isEditor(); }
-  isShipper() { return this.authState.isShipper(); }
-  isAssistant() { return this.authState.isAssistant(); }
-  isCustomer() { return this.authState.isCustomer(); }
-  isStaff() { return this.authState.isAuthenticated() && !this.authState.isCustomer(); }
 
   toggleTheme() {
     this.themeService.toggleDarkMode();
   }
 
-  get isAuth() {
-    return this.authState.isAuthenticated();
-  }
-
-  get user() {
-    return this.authState.user();
+  // Helper
+  getShortName(name: string, maxLen = 40): string {
+    return name.length <= maxLen ? name : name.substring(0, maxLen) + '…';
   }
 }

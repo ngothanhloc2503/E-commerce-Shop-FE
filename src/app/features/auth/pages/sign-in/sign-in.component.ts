@@ -1,10 +1,10 @@
-import { CommonModule } from '@angular/common';
-import { Component, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertService } from '../../../../core/services/alert/alert.service';
-import { AuthService } from '../../services/auth-service/auth.service';
 import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
+import { AuthService } from '../../services/auth-service/auth.service';
 
 interface LoginForm {
   email: FormControl<string>;
@@ -15,13 +15,20 @@ interface LoginForm {
 @Component({
   selector: 'app-sign-in',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignInComponent {
-  message = '';
+  // Inject
+  public alertService = inject(AlertService);
+  private authStateService = inject(AuthStateService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
+  // Form
   loginForm = new FormGroup<LoginForm>({
     email: new FormControl('', {
       nonNullable: true,
@@ -34,17 +41,14 @@ export class SignInComponent {
     rememberMe: new FormControl(false, { nonNullable: true })
   });
 
-  constructor(
-    public alertService: AlertService,
-    private authStateService: AuthStateService,
-    private authService: AuthService,
-    private router: Router,
-  ) { 
+  // Signal
+  isSubmitting = signal(false);
+
+  constructor() {
     effect(() => {
       if (this.authStateService.isAuthenticated()) {
         const user = this.authStateService.user();
         if (user) {
-          // Ví dụ phân role customer/staff
           if (user.roles.includes('ROLE_CUSTOMER')) {
             this.router.navigateByUrl('');
           } else {
@@ -55,24 +59,25 @@ export class SignInComponent {
     });
   }
 
+  // API
   signIn() {
     if (this.loginForm.invalid) return;
 
-    this.authService.signIn(this.loginForm.value).subscribe({
-      next: (res) => {
-        this.alertService.showAndCloseAlertAfterXSecond('Login successful', 'green', 2000);
-      },
-      error: (err) => {
-        this.alertService.showAndCloseAlertAfterXSecond(err?.error?.message || 'Login failed', 'red', 3000);
-      }
-    });
+    this.isSubmitting.set(true);
+    this.authService.signIn(this.loginForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.alertService.showAndCloseAlertAfterXSecond(err?.error?.message || 'Login failed', 'red', 3000);
+        }
+      });
   }
 
   signInWithGoogle() {
     this.authService.signInWithGoogle();
   }
-
-  // signInWithFacebook() {
-  //   this.authService.signInWithFacebook();
-  // }
 }

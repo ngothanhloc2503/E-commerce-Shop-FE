@@ -5,6 +5,7 @@ import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
 import { SettingService } from '../../../services/setting/setting.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 interface GeneralSettingsForm {
   CURRENCY_ID: FormControl<number>;
   CURRENCY_SYMBOL: FormControl<string>;
@@ -23,6 +24,11 @@ interface GeneralSettingsForm {
   styleUrl: './general-setting.component.css'
 })
 export class GeneralSettingComponent {
+  // Injects
+  private settingService = inject(SettingService);
+  private alertService = inject(AlertService);
+  private fb = inject(FormBuilder);
+  private generalSettingService = inject(GeneralSettingService);
   private destroyRef = inject(DestroyRef);
 
   // Inputs
@@ -32,11 +38,16 @@ export class GeneralSettingComponent {
   // Signals
   logoPreviewSrc = signal<string>('');
   siteLogoFile = signal<File | null>(null);
+  isSubmitting = signal(false);
+
   listCurrencies = toSignal(
-    this.settingService.getAllCurrencies(),
+    this.settingService.getAllCurrencies().pipe(
+      map(res => res.data)
+    ),
     { initialValue: [] }
   );
 
+  // Form
   generalSettingForm: FormGroup<GeneralSettingsForm> = this.fb.group({
     CURRENCY_ID: new FormControl(1, { nonNullable: true, validators: [Validators.required] }),
     CURRENCY_SYMBOL: new FormControl('$', { nonNullable: true, validators: [Validators.required] }),
@@ -46,13 +57,6 @@ export class GeneralSettingComponent {
     THOUSANDS_POINT_TYPE: new FormControl('COMMA', { nonNullable: true, validators: [Validators.required] }),
     SITE_LOGO: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
-
-  constructor(
-    private settingService: SettingService,
-    private alertService: AlertService,
-    private fb: FormBuilder,
-    private generalSettingService: GeneralSettingService,
-  ) { }
 
   private syncFormEffect = effect(() => {
     const settings = this.listAllSettings();
@@ -70,7 +74,10 @@ export class GeneralSettingComponent {
     allowSignalWrites: true
   });
 
+  // Action
   saveGeneralSettings() {
+    this.isSubmitting.set(true);
+
     if (this.generalSettingForm.invalid) {
       this.generalSettingForm.markAllAsTouched();
       return;
@@ -91,8 +98,12 @@ export class GeneralSettingComponent {
       .subscribe({
         next: async () => {
           await this.generalSettingService.loadSettings();
+          this.isSubmitting.set(false);
           this.alertService.showAndCloseAlertAfterXSecond("General settings has been saved successfully", "green", 3000);
         },
+        error: () => {
+          this.isSubmitting.set(false);
+        }
       })
   }
 

@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
+
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
 import { CartService } from '../../services/cart/cart.service';
 import { SearchService } from '../../services/search/search.service';
@@ -10,124 +10,139 @@ import { SearchService } from '../../services/search/search.service';
 @Component({
   selector: 'app-search-result',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [RouterModule],
   templateUrl: './search-result.component.html',
-  styleUrl: './search-result.component.css'
+  styleUrl: './search-result.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchResultComponent {
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private searchService = inject(SearchService);
+  private activatedRoute = inject(ActivatedRoute);
+  public settingService = inject(GeneralSettingService);
+  public cartService = inject(CartService);
+  private router = inject(Router);
+
+  // State
   keyword = '';
   sortField = 'averageRating_DESC';
-  pageNum: number = 1;
-  totalPages: number = 0;
-  showFilter = true;
-  rating: number = 0;
-  brandIDs: any[] = [];
-  listProduct: any[] = [];
-  listRecommendedBrands: any[] = [];
-  isLoading: boolean = false;
 
-  constructor(
-    private searchService: SearchService,
-    private activatedRoute: ActivatedRoute,
-    public settingService: GeneralSettingService,
-    public cartService: CartService,
-    private router: Router,
-  ) { }
+  // Signals
+  pageNum = signal(1);
+  totalPages = signal(0);
+  showFilter = signal(true);
+  rating = signal(0);
+  brandIDs = signal<any[]>([]);
+  listProduct = signal<any[]>([]);
+  listRecommendedBrands = signal<any[]>([]);
+  isLoading = signal(false);
 
+  // Computed
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    return Array.from({ length: total }, (_, i) => i + 1);
+  });
+
+  // Init
   ngOnInit() {
-    this.activatedRoute.queryParams.subscribe(s => this.keyword = s['keyword']);
-
-    // Search first time from another view
-    this.loadAll();
-
-    // Search in this view
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
+    this.activatedRoute.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(s => {
+        this.keyword = s['keyword'] || '';
         this.loadAll();
-      }
-    });
+      });
+
+    this.router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          this.loadAll();
+        }
+      });
   }
 
+  // API
   searchProduct() {
-    this.isLoading = true;
+    this.isLoading.set(true);
+    this.listProduct.set([]);
+    this.totalPages.set(0);
 
-    this.listProduct = [];
-    this.totalPages = 0;
-    this.searchService.searchProduct(this.keyword, this.pageNum, this.sortField, this.rating, this.brandIDs).subscribe({
-      next: (res) => {
-        this.listProduct = res.content;
-        this.totalPages = res.totalPages;
-        this.isLoading = false;
-      },
-    })
-  }
-
-  getListRecommendedBrands() {
-    this.isLoading = true;
-
-    this.searchService.getRecommendedBrands(this.keyword).subscribe({
-      next: (res) => {
-        this.listRecommendedBrands = res;
-        this.isLoading = false;
-      },
-    })
-  }
-
-  sortProduct() {
-    this.pageNum = 1;
-    this.searchProduct();
-  }
-
-  updateBrandIDs() {
-    this.brandIDs = [];
-    document.querySelectorAll('input[name=brand]:checked').forEach((brand) => {
-      if (brand.getAttribute('value') != null) {
-        this.brandIDs.push(brand.getAttribute('value'));
-      }
-    })
-
-    this.searchProduct();
-  }
-
-  changeRating(rating: number) {
-    this.rating = rating;
-    this.searchProduct();
-  }
-
-  getShortName(name: string): string {
-    if (name.length < 20) return name;
-    else return name.substring(0, 20) + "...";
-  }
-
-  goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
-
-    this.searchProduct();
+    this.searchService.searchProduct(
+      this.keyword, this.pageNum(), this.sortField, this.rating(), this.brandIDs()
+    ).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+          this.listProduct.set(data.content);
+          this.totalPages.set(data.totalPages);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        }
+      });
   }
 
   loadAll() {
-    this.isLoading = true;
+    this.isLoading.set(true);
 
-    const api1 = this.searchService.searchProduct(
-      this.keyword, this.pageNum, this.sortField, this.rating, this.brandIDs
-    );
+    forkJoin([
+      this.searchService.searchProduct(this.keyword, this.pageNum(), this.sortField, this.rating(), this.brandIDs()),
+      this.searchService.getRecommendedBrands(this.keyword)
+    ]).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ([searchResult, brandResult]) => {
+          this.listProduct.set(searchResult.data.content);
+          this.totalPages.set(searchResult.data.totalPages);
+          this.listRecommendedBrands.set(brandResult.data);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        }
+      });
+  }
 
-    const api2 = this.searchService.getRecommendedBrands(this.keyword);
+  // Action
+  onUpdateBrand(event: Event, brandId: string) {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
 
-    forkJoin([api1, api2]).subscribe({
-      next: ([searchResult, brandResult]) => {
-        this.listProduct = searchResult.content;
-        this.totalPages = searchResult.totalPages;
+    if (target.checked) {
+      this.brandIDs.update(ids => [...ids, brandId]);
+    } else {
+      this.brandIDs.update(ids => ids.filter(id => id !== brandId));
+    }
+    this.searchProduct();
+  }
 
-        this.listRecommendedBrands = brandResult;
+  onSortChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    if (target) {
+      this.sortField = target.value;
+      this.sortProduct();
+    }
+  }
 
-        this.isLoading = false;
-      },
-    });
+  sortProduct() {
+    this.pageNum.set(1);
+    this.searchProduct();
+  }
+
+  changeRating(newRating: number) {
+    this.rating.set(newRating);
+    this.searchProduct();
+  }
+
+  // Helpers
+  getShortName(name: string): string {
+    return name.length < 20 ? name : name.substring(0, 20) + "...";
+  }
+
+  goToPage(pageNumber: number) {
+    if (Number.isNaN(pageNumber) || pageNumber < 1 || pageNumber > this.totalPages()) return;
+    this.pageNum.set(pageNumber);
+    this.searchProduct();
   }
 }

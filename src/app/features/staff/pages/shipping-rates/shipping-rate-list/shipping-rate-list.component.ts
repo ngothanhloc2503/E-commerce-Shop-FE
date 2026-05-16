@@ -1,134 +1,129 @@
-import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, signal, TemplateRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { getPaginationSignals } from '../../../../../shared/utils/pagination.utils';
 import { ShippingRateService } from '../../../services/shipping-rate/shipping-rate.service';
 
 @Component({
   selector: 'app-shipping-rate-list',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule, PaginationComponent],
   templateUrl: './shipping-rate-list.component.html',
   styleUrl: './shipping-rate-list.component.css'
 })
 export class ShippingRateListComponent {
-  listShippingRates: any[] = [];
-  pageNum = 1;
-  pageSize = 5;
-  sortField = 'id';
-  sortDir = 'asc';
-  totalPages = 0;
-  totalItems = 0;
-  
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ])
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private shippingRateService = inject(ShippingRateService);
+  private alertService = inject(AlertService);
+  private modalService = inject(ModalService);
+  private fb = inject(FormBuilder);
 
-  constructor(
-    private shippingRateService: ShippingRateService,
-    private alertService: AlertService,
-    private modalService: ModalService,
-    private fb: FormBuilder,
-  ) {}
+  // Signals
+  listShippingRates = signal<any[]>([]);
+  pageNum = signal(1);
+  pageSize = signal(5);
+  sortField = signal('id');
+  sortDir = signal<'asc' | 'desc'>('asc');
+  totalPages = signal(0);
+  totalItems = signal(0);
 
+  // Form
+  searchForm = this.fb.group({
+    keyword: new FormControl('', [Validators.required])
+  });
+
+  // Computed 
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
+
+  // Init
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword
-    })
-
     this.getShippingRatesByPage();
   }
 
+  // API
   getShippingRatesByPage() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    this.shippingRateService.getShippingRatesByPage(this.pageNum, this.pageSize, this.sortField, this.sortDir, keyword).subscribe({
-      next: (res: any) => {
-        this.listShippingRates = res.content;
-        this.totalPages = res.totalPages;
-        this.totalItems = res.totalItems;
-      },
-    })
+    let keyword = this.searchForm.get('keyword')?.value || '';
+
+    this.shippingRateService.getShippingRatesByPage(this.pageNum(), this.pageSize(), this.sortField(), this.sortDir(), keyword)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data;
+
+          this.listShippingRates.set(data.content);
+          this.totalPages.set(data.totalPages);
+          this.totalItems.set(data.totalItems);
+        },
+      });
   }
 
   changeCodSupportedStatus(id: number, supported: boolean) {
-    this.shippingRateService.changeCodSupportedStatus(id, !supported).subscribe({
-      next: (res) => {
-        this.getShippingRatesByPage();
-        this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + id + " has been " + (supported ? "disabled" : "enabled"), "green", 3000);
-      },
-    })
+    this.shippingRateService.changeCodSupportedStatus(id, !supported)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.getShippingRatesByPage();
+          this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + id + " has been " + (supported ? "disabled" : "enabled"), "green", 3000);
+        },
+      });
   }
+
 
   deleteShippingRate(deleteModal: TemplateRef<any>, shippingRateId: number) {
     const title = "Confirm delete shipping rate has ID: " + shippingRateId;
-    this.modalService.open(deleteModal, {title: title}).subscribe((res) => {
+    this.modalService.open(deleteModal, { title: title }).subscribe((res) => {
       if (res == "yes") {
-        this.shippingRateService.deleteShippingRate(shippingRateId).subscribe({
-          next: (res) => {
-            this.getShippingRatesByPage();
-            this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + shippingRateId + " has been deleted successfully.", "green", 3000);
-          },
-        })
+        this.shippingRateService.deleteShippingRate(shippingRateId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.getShippingRatesByPage();
+              this.alertService.showAndCloseAlertAfterXSecond("The shipping rate ID " + shippingRateId + " has been deleted successfully.", "green", 3000);
+            },
+          });
       }
-    })
+    });
   }
 
+  // Action
   sort(field: string) {
-    if (field.toLocaleLowerCase() === this.sortField.toLocaleLowerCase()) {
-      if (this.sortDir.toLocaleLowerCase() === 'asc') {
-        this.sortDir = 'desc';
-      } else {
-        this.sortDir = 'asc';
-      }
+    if (field.toLowerCase() === this.sortField().toLowerCase()) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortField = field;
-      this.sortDir = 'asc';
+      this.sortField.set(field);
+      this.sortDir.set('asc');
     }
-
     this.getShippingRatesByPage();
   }
 
   changePageSize(event: Event) {
     const target = event.target as HTMLInputElement;
     if (target.value.length > 0) {
-      this.pageSize = Number(target.value);
-    } else {
-      return;
+      this.pageSize.set(Number(target.value));
+      this.pageNum.set(1);
     }
     this.getShippingRatesByPage();
   }
 
   goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
+    if (Number.isNaN(pageNumber) || pageNumber > this.totalPages() || pageNumber < 1) return;
+    this.pageNum.set(pageNumber);
     this.getShippingRatesByPage();
   }
 
   search() {
+    this.pageNum.set(1);
     this.getShippingRatesByPage();
   }
 
   clear() {
     this.searchForm.patchValue({keyword: ''});
+    this.pageNum.set(1);
     this.getShippingRatesByPage();
-  }
-
-  get startCount(): number {
-    if (this.totalItems == 0) return 0;
-    return (this.pageNum - 1) * this.pageSize + 1;
-  }
-
-  get endCount(): number {
-    if (this.pageSize < 1) {
-      return this.totalItems;
-    }
-    return (this.pageNum * this.pageSize > this.totalItems) ? this.totalItems : this.pageNum * this.pageSize;
   }
 }

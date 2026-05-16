@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SettingService } from '../../../services/setting/setting.service';
 import { CountriesSettingComponent } from '../countries-setting/countries-setting.component';
@@ -7,6 +7,8 @@ import { GeneralSettingComponent } from '../general-setting/general-setting.comp
 import { MailTemplatesSettingComponent } from '../mail-templates-setting/mail-templates-setting.component';
 import { PaymentSettingComponent } from '../payment-setting/payment-setting.component';
 import { StateSettingComponent } from '../state-setting/state-setting.component';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -18,23 +20,19 @@ import { StateSettingComponent } from '../state-setting/state-setting.component'
   styleUrl: './settings.component.css'
 })
 export class SettingsComponent {
-  listAllSettings: any[] = [];
-  logoImageBaseURI = '';
+  // Inject
+  private settingService = inject(SettingService);
 
-  constructor(
-    private settingService: SettingService,
-  ) {}
+  private settingsData = toSignal(
+    this.settingService.getAllSettings().pipe(map(res => res.data)),
+    { initialValue: [] }
+  );
 
-  ngOnInit() {
-    this.getAllSettings();
-  }
+  listAllSettings = computed(() =>
+    this.settingsData()?.listSettings ?? []
+  );
 
-  getAllSettings() {
-    this.settingService.getAllSettings().subscribe({
-      next: (res) => {
-        this.listAllSettings = res.listSettings;
-        this.logoImageBaseURI = res.logoImageBaseURI;
-      },
-    })
-  }
+  logoImageBaseURI = computed(() =>
+    this.settingsData()?.logoImageBaseURI ?? ''
+  );
 }

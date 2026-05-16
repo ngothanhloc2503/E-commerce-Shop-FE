@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../../constants';
+import { API_URL } from '../../../../environment';
 import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
 const BASE_URL = API_URL + '/orders';

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal, computed } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { API_URL } from '../../../constants';
+import { API_URL } from '../../../environment';
 
 const BASE_URL = API_URL + '/settings/general';
 
@@ -29,14 +29,15 @@ export class GeneralSettingService {
 
   async loadSettings(): Promise<void> {
     const res: any = await firstValueFrom(this.httpClient.get(BASE_URL));
+    const data = res.data;
 
     const s: SiteSettings = {
-      SITE_LOGO: res.logoImageBaseURI + res.listSettings.SITE_LOGO,
-      CURRENCY_SYMBOL: res.listSettings.CURRENCY_SYMBOL,
-      CURRENCY_SYMBOL_POSITION: res.listSettings.CURRENCY_SYMBOL_POSITION === 'before' ? 'before' : 'after',
-      DECIMAL_DIGITS: res.listSettings.DECIMAL_DIGITS,
-      DECIMAL_POINT_TYPE: res.listSettings.DECIMAL_POINT_TYPE === 'COMMA' ? ',' : '.',
-      THOUSANDS_POINT_TYPE: res.listSettings.THOUSANDS_POINT_TYPE === 'COMMA' ? ',' : '.'
+      SITE_LOGO: data.logoImageBaseURI + data.listSettings.SITE_LOGO,
+      CURRENCY_SYMBOL: data.listSettings.CURRENCY_SYMBOL,
+      CURRENCY_SYMBOL_POSITION: data.listSettings.CURRENCY_SYMBOL_POSITION === 'before' ? 'before' : 'after',
+      DECIMAL_DIGITS: data.listSettings.DECIMAL_DIGITS,
+      DECIMAL_POINT_TYPE: data.listSettings.DECIMAL_POINT_TYPE === 'COMMA' ? ',' : '.',
+      THOUSANDS_POINT_TYPE: data.listSettings.THOUSANDS_POINT_TYPE === 'COMMA' ? ',' : '.'
     };
 
     this._settings.set(s);

@@ -1,138 +1,115 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertService } from '../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { AuthService } from '../../services/auth-service/auth.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-sign-up',
   standalone: true,
-  imports: [InputComponent, CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [InputComponent, ReactiveFormsModule, RouterModule],
   templateUrl: './sign-up.component.html',
-  styleUrl: './sign-up.component.css'
+  styleUrl: './sign-up.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignUpComponent {
-  listCountries: any[] = [];
-  listStates: any[] = [];
+  // Inject
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private alertService = inject(AlertService);
+  private router = inject(Router);
+  private countryService = inject(CountryService);
+  private destroyRef = inject(DestroyRef);
 
-  registerForm!: FormGroup;
-  email = new FormControl('', [
-    Validators.required,
-    Validators.email
-  ]);
-  firstName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  lastName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  password = new FormControl('', [
-    Validators.pattern(
-      /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
-    ),
-  ]);
-  confirm_password = new FormControl('');
-  phoneNumber = new FormControl('', [
-    Validators.required,
-    Validators.minLength(10),
-    Validators.maxLength(10),
-  ]);
-  birthOfDate = new FormControl('', [Validators.required]);
-  addressLine1 = new FormControl('', [Validators.required]);
-  addressLine2 = new FormControl('');
-  city = new FormControl('');
-  state = new FormControl('', [Validators.required]);
-  country = new FormControl('', [Validators.required]);
-  postalCode = new FormControl('', [Validators.required]);
+  // Signals
+  listCountries = signal<any[]>([]);
+  listStates = signal<any[]>([]);
+  isSubmitting = signal(false);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private router: Router,
-    private countryService: CountryService,
-  ) {}
+  // Form
+  registerForm = inject(FormBuilder).group({
+    firstName: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    lastName: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.pattern(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)]),
+    confirmPassword: new FormControl(''),
+    phoneNumber: new FormControl('', [Validators.required, Validators.minLength(10), Validators.maxLength(10)]),
+    birthOfDate: new FormControl('', [Validators.required]),
+    addressLine1: new FormControl('', [Validators.required]),
+    addressLine2: new FormControl(''),
+    city: new FormControl(''),
+    state: new FormControl('', [Validators.required]),
+    country: new FormControl('', [Validators.required]),
+    postalCode: new FormControl('', [Validators.required]),
+  }, {
+    validators: this.match('password', 'confirmPassword')
+  });
 
+  // Init
   ngOnInit() {
-    this.registerForm = this.fb.group({
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email,
-      password: this.password,
-      confirm_password: this.confirm_password,
-      phoneNumber: this.phoneNumber,
-      birthOfDate: this.birthOfDate,
-      addressLine1: this.addressLine1,
-      addressLine2: this.addressLine2,
-      city: this.city,
-      state: this.state,
-      country: this.country,
-      postalCode: this.postalCode,
-    }, {
-      validators: this.match('password', 'confirm_password')
-    });
-
     this.getAllCountries();
   }
 
+  // API
   signUp() {
-    this.authService.signUp(this.registerForm.value).subscribe({
-      next: (res) => {
-        if (res) {
-          this.router.navigateByUrl("/sign-in")
+    this.isSubmitting.set(true);
+    this.authService.signUp(this.registerForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.router.navigateByUrl("/sign-in");
           this.alertService.showAndCloseAlertAfterXSecond("Account has been created successfully. Please check your email to verify your account!", "green", 20000);
-        } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
-        }
-      }, 
-      error: (err) => {
-          if(err.status > 0) {
-            this.email.setErrors({emailNotUnique: true});
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          if (err.status > 0) {
+            this.registerForm.get('email')?.setErrors({ emailNotUnique: true });
           } else {
             this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred. Please try again later.", "red", 3000);
           }
-      },
-    })
+        },
+      });
   }
 
   getStateByCountryName() {
-    if (this.country.value != null && this.country.value != undefined && this.country.value != '') {
-      this.countryService.getStateByCountryName(this.country.value).subscribe({
-        next: (res) => {
-          this.listStates = res;
-        },
-      })
+    const countryVal = this.registerForm.get('country')?.value;
+    if (countryVal) {
+      this.countryService.getStateByCountryName(countryVal)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            this.listStates.set(res.data);
+          },
+        });
+    } else {
+      this.listStates.set([]);
     }
   }
 
   getAllCountries() {
-    this.countryService.getAllCountries().subscribe({
-      next: (res) => {
-        this.listCountries = res;
-      },
-    })
+    this.countryService.getAllCountries()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.listCountries.set(res.data);
+        },
+      });
   }
 
-  match(controlName: string, matchingControlName: string) : ValidatorFn {
-    return (group: AbstractControl) : ValidationErrors | null  => {
-        const control = group.get(controlName);
-        const matchingControl = group.get(matchingControlName);
+  // Validator
+  private match(controlName: string, matchingControlName: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const control = group.get(controlName);
+      const matchingControl = group.get(matchingControlName);
 
-        if (!control || !matchingControl) {
-            console.error('Form controls can not be found in the form group.');
-            return { controlNotFound: false };
-        }
+      if (!control || !matchingControl) return null; // Đã bỏ console.error bẩn code
 
-        const error = control.value === matchingControl.value ? null : { noMatch: true };
-        
-        matchingControl.setErrors(error);
-
-        return error;
-    }
+      const error = control.value === matchingControl.value ? null : { noMatch: true };
+      matchingControl.setErrors(error);
+      return error;
+    };
   }
 }

@@ -3,69 +3,76 @@
         <div class="grid gap-4">
             <!-- Main Image -->
             <div class="flex items-center justify-center">
-                <img class="h-auto max-w-full rounded-lg" src="{{ bigImage }}" alt="">
+                <img class="h-auto max-w-full rounded-lg" [src]="bigImage()" alt="Product Image">
             </div>
-            <div class="grid gap-4" [class]="'grid-cols-' + (product.images.length + 1)">
-                <button class="flex items-center justify-center bg-white" type="button" 
-                (click)="bigImage = product.mainImagePath">
-                    <img class="h-[100px] max-w-full rounded-lg" src="{{ product.mainImagePath }}" alt="">
+            
+            <!-- Thumbnails Grid -->
+            <div [class]="gridCols()" class="grid gap-4">
+                <button class="flex items-center justify-center bg-white" type="button" (click)="changeImage(product().mainImagePath)">
+                    <img class="h-[100px] max-w-full rounded-lg" [src]="product().mainImagePath" alt="Main">
                 </button>
-                <button *ngFor="let extra of product.images" class="flex items-center justify-center bg-white" type="button" (click)="bigImage = extra.imagePath">
-                    <img class="h-[100px] max-w-full rounded-lg" src="{{ extra.imagePath }}" alt="">
-                </button>
+                
+                @for (extra of product().images; track extra.imagePath) {
+                    <button class="flex items-center justify-center bg-white" type="button" (click)="changeImage(extra.imagePath)">
+                        <img class="h-[100px] max-w-full rounded-lg" [src]="extra.imagePath" alt="Extra Image">
+                    </button>
+                }
             </div>
         </div>
     </div>
 
     <div class="relative p-4 w-full max-w-2xl max-h-full">
         <div class="relative bg-white dark:bg-gray-800">
-            <h3
-                class="text-xl font-semibold text-gray-900 dark:text-white p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
-                {{ product.name }}
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
+                {{ product().name }}
             </h3>
 
             <div class="text-base text-gray-900 dark:text-white p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
                 <div>
-                    Brand: {{ product.brand.name }}
+                    Brand: {{ product().brand.name }}
                 </div>
                 <div>
                     List Price:
-                    <span *ngIf="product.discountPercent <= 0">
-                        {{ settingService.formatMoney(product.price) }}
-                    </span>
-                    <del *ngIf="product.discountPercent > 0"><span>
-                        {{ settingService.formatMoney(product.price) }}
-                    </span></del>
+                    @if (product().discountPercent <= 0) {
+                        <span>{{ settingService.formatMoney(product().price) }}</span>
+                    } @else {
+                        <del><span>{{ settingService.formatMoney(product().price) }}</span></del>
+                    }
                 </div>
 
-                <div *ngIf="product.discountPercent > 0">
-                    Price:
-                    <span class="text-lg font-medium text-red-900">
-                        {{ settingService.formatMoney(product.discountPrice) }}
-                    </span>
-                    ({{ product.discountPercent }}% off)
-                </div>
+                @if (product().discountPercent > 0) {
+                    <div>
+                        Price:
+                        <span class="text-lg font-medium text-red-900">
+                            {{ settingService.formatMoney(product().discountPrice) }}
+                        </span>
+                        ({{ product().discountPercent }}% off)
+                    </div>
+                }
             </div>
 
             <div class="p-4 sm:p-5 space-y-4">
-                <div class="text-base leading-relaxed text-gray-700 dark:text-gray-400" [innerHTML]="product.summary"></div>
+                <div class="text-base leading-relaxed text-gray-700 dark:text-gray-400" [innerHTML]="product().summary"></div>
             </div>
 
             <div class="flex flex-row-reverse items-center p-4 sm:p-5 text-gray-900 dark:text-white border-t border-gray-200 rounded-b dark:border-gray-600">
-                <div *ngIf="product.inStock">
-                    <label>Number of Items:</label>
-                    <input type="number" step="1" [(ngModel)]="quantity" [min]="1" class="w-16 rounded-lg mx-2 bg-white dark:bg-gray-700">
-                    <button type="button" (click)="addProductToCart()"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <i class="fa-xl fa-solid fa-cart-plus"></i>
-                    </button>
-                </div>
-                <div *ngIf="!product.inStock">
-                    <button type="button" disabled
-                    class="text-white bg-red-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                    Out of Stock
-                    </button>
-                </div>
+                @if (product().inStock) {
+                    <div>
+                        <label>Number of Items:</label>
+                        <input type="number" step="1" [value]="quantity()" (input)="onUpdateQuantity($event)" min="1" class="w-16 rounded-lg mx-2 bg-white dark:bg-gray-700">
+                        <button type="button" (click)="addProductToCart()"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            <i class="fa-xl fa-solid fa-cart-plus"></i>
+                        </button>
+                    </div>
+                } @else {
+                    <div>
+                        <button type="button" disabled
+                        class="text-white bg-red-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Out of Stock
+                        </button>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -79,7 +86,7 @@
     </h3>
 
     <div class="p-4 sm:p-5 space-y-4">
-        <div class="text-base leading-relaxed text-gray-700 dark:text-gray-400" [innerHTML]="product.description"></div>
+        <div class="text-base leading-relaxed text-gray-700 dark:text-gray-400" [innerHTML]="product().description"></div>
     </div>
 </div>
 
@@ -94,15 +101,16 @@
         <div class="w-fit mx-auto overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-fit text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <tbody>
-                    <tr *ngFor="let detail of product.details" class="border-b border-gray-200 dark:border-gray-500">
-                        <th scope="row"
-                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-700">
-                            {{detail.name}}
-                        </th>
-                        <td class="px-6 py-4 dark:bg-gray-600">
-                            {{detail.value}}
-                        </td>
-                    </tr>
+                    @for (detail of product().details; track detail.name) {
+                        <tr class="border-b border-gray-200 dark:border-gray-500">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-700">
+                                {{ detail.name }}
+                            </th>
+                            <td class="px-6 py-4 dark:bg-gray-600">
+                                {{ detail.value }}
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>

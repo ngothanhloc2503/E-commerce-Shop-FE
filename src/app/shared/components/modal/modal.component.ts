@@ -1,30 +1,26 @@
-import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
-
-// @ts-ignore
-const $: any = window['$'];
+import { Component, input, output, TemplateRef, ChangeDetectionStrategy, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [],
+  imports: [CommonModule], 
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.css'
+  styleUrl: './modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalComponent {
-  @Input() title? = 'Modal title';
+  @Input() title: string = 'Modal title';
+  @Input() contentTemplate: TemplateRef<any> | null = null;
 
-  @Output() closeEvent = new EventEmitter();
-  @Output() submitEvent = new EventEmitter();
-
-  constructor(private elementRef: ElementRef) {}
+  closeEvent = output<void>();
+  submitEvent = output<void>();
 
   close(): void {
-    this.elementRef.nativeElement.remove();
     this.closeEvent.emit();
   }
 
   submit(): void {
-    this.elementRef.nativeElement.remove();
     this.submitEvent.emit();
   }
 }

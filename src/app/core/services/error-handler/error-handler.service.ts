@@ -21,13 +21,11 @@ export class ErrorHandlerService {
         break;
       case 401:
       case 403:
+      case 500:
         break;
       case 404:
       case 409:
         message = err?.error?.message || err?.error || 'Request error';
-        break;
-      case 500:
-        message = 'Internal server error. Try again later.';
         break;
       default:
         message = 'Unexpected error occurred.';

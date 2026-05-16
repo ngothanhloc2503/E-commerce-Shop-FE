@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../../constants';
+import { API_URL } from '../../../../environment';
 import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
 const BASE_URL = API_URL + '/users';
@@ -30,10 +30,13 @@ export class UserService {
     return this.httpClient.patch(BASE_URL + `/${id}/enabled`, { status });
   }
 
-  saveUser(user: any, userPhoto: File): Observable<any> {
+  saveUser(user: any, userPhoto: File | null): Observable<any> {
     const formData = new FormData();
     formData.append('user', new Blob([JSON.stringify(user)] , {type: 'application/json'}));
-    formData.append('filePhoto', userPhoto)
+    if (userPhoto) {
+      formData.append("filePhoto", userPhoto);
+    }
+
     
     return this.httpClient.post(BASE_URL, formData)
   }

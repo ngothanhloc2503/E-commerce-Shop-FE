@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../../constants';
+import { API_URL } from '../../../../environment';
 import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
 
 const BASE_URL = API_URL + '/categories';
@@ -16,7 +16,7 @@ export class CategoryService {
     private httpUtil: HttpUtilService
   ) { }
 
-  getCategoriesByPage(pageNum: number, pageSize: number, keyword: string, sortField: string, sortDir: string): Observable<any> {
+  getCategoriesByPage(pageNum: number, pageSize: number, sortField: string, sortDir: string, keyword: string): Observable<any> {
     let parameters = this.httpUtil.createPagingParams(pageNum, pageSize, sortField, sortDir, keyword);
     
     return this.httpClient.get(BASE_URL, { 

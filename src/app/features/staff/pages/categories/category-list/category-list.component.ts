@@ -1,116 +1,119 @@
-import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, signal, TemplateRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { downloadBlob } from '../../../../../shared/utils/file-download.util';
+import { getPaginationSignals } from '../../../../../shared/utils/pagination.utils';
 import { CategoryService } from '../../../services/category/category.service';
 
 @Component({
   selector: 'app-categories-list',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule],
+  imports: [RouterModule, PaginationComponent, ReactiveFormsModule],
   templateUrl: './category-list.component.html',
   styleUrl: './category-list.component.css'
 })
 export class CategoryListComponent {
-  listCategories: any = [];
-  pageNum = 1;
-  pageSize = 5;
-  sortField = 'id';
-  sortDir = 'asc';
-  totalPages = 0;
-  totalItems = 0;
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private categoryService = inject(CategoryService);
+  private alertService = inject(AlertService);
+  private modalService = inject(ModalService);
+  private fb = inject(FormBuilder);
 
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ]);
+  // Signals
+  listCategories = signal<any[]>([]);
+  pageNum = signal(1);
+  pageSize = signal(5);
+  sortField = signal('id');
+  sortDir = signal<'asc' | 'desc'>('asc');
+  totalPages = signal(0);
+  totalItems = signal(0);
 
-  constructor(
-    private categoryService: CategoryService,
-    private alertService: AlertService,
-    private modalService: ModalService,
-    private fb: FormBuilder,
-  ) {}
+  // Form
+  searchForm: FormGroup = this.fb.group({
+    keyword: ['', Validators.required]
+  })
+
+  // Computed
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
 
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword
-    })
-
     this.getCategoriesByPage();
   }
 
+  // API
   getCategoriesByPage() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    this.categoryService.getCategoriesByPage(this.pageNum, this.pageSize, keyword, this.sortField, this.sortDir).subscribe({
-      next: (res: any) => {
-        this.listCategories = res.content;
-        this.totalPages = res.totalPages;
-        if (res.totalPages < this.pageNum) {
-          this.goToPage(res.totalPages);
-        }
-        this.totalItems = res.totalItems;
-      },
-    })
+    const keyword = this.searchForm.value.keyword || '';
+
+    this.categoryService.getCategoriesByPage(this.pageNum(), this.pageSize(), this.sortField(), this.sortDir(), keyword)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data;
+
+          this.listCategories.set(data.content);
+          this.totalPages.set(data.totalPages);
+          this.totalItems.set(data.totalItems);
+        },
+      })
+  }
+
+  deleteCategory(modalTemplate: TemplateRef<any>, categoryID: number) {
+    const title = "Confirm delete category has ID: " + categoryID;
+    this.modalService.open(modalTemplate, { title: title }).subscribe((res) => {
+      if (res == "yes") {
+        this.categoryService.deleteCategory(categoryID).subscribe({
+          next: () => {
+            this.getCategoriesByPage();
+            this.alertService.showAlert("The category ID " + categoryID + " has been deleted successfully.", "green");
+
+            this.alertService.closeAlert(3000);
+          },
+        })
+      }
+    });
   }
 
   exportToCsv() {
     this.categoryService.exportToCsv().subscribe({
-      next: (response: Blob) => {
-        const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
-        
-        // Create a link element
-        const link = document.createElement('a');
-        const url = window.URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'categories_' + new Date().toISOString().split('.')[0].replace(/:/g, '-') + '.csv';
-
-        // Append to the DOM and trigger the download
-        document.body.appendChild(link);
-        link.click();
-
-        // Clean up and remove the link
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      next: (res: Blob) => {
+        const blob = new Blob([res], { type: 'text/csv;charset=utf-8' });
+        downloadBlob(blob, `categories_${Date.now()}.csv`);
       },
-      error: (err) => {
+      error: () => {
         this.alertService.showAndCloseAlertAfterXSecond('Error downloading the file', 'red', 5000);
       }
     });
   }
 
+  // Action
   changePageSize(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.value.length > 0) {
-      this.pageSize = Number(target.value);
-    } else {
-      return;
-    }
+    const value = (event.target as HTMLInputElement).value;
+    if (!value) return;
+
+    this.pageSize.set(Number(value));
+    this.pageNum.set(1);
+
     this.getCategoriesByPage();
   }
 
-  goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
+
+    this.pageNum.set(page);
     this.getCategoriesByPage();
   }
 
   sort(field: string) {
-    if (field.toLocaleLowerCase() === this.sortField.toLocaleLowerCase()) {
-      if (this.sortDir.toLocaleLowerCase() === 'asc') {
-        this.sortDir = 'desc';
-      } else {
-        this.sortDir = 'asc';
-      }
+    if (field === this.sortField()) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortField = field;
-      this.sortDir = 'asc';
+      this.sortField.set(field);
+      this.sortDir.set('asc');
     }
 
     this.getCategoriesByPage();
@@ -118,60 +121,22 @@ export class CategoryListComponent {
 
   changeEnabledStatus(categoryID: number, status: boolean) {
     this.categoryService.changeEnabledStatus(categoryID, !status).subscribe({
-      next: (res) => {
-        if (res == null) {
-          this.getCategoriesByPage();
-          this.alertService.showAlert("The category ID " + categoryID + " has been " + (status ? "disabled" : "enabled"), "green");
-        } else {
-          this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-        }
+      next: () => {
+        this.getCategoriesByPage();
+        this.alertService.showAlert("The category ID " + categoryID + " has been " + (status ? "disabled" : "enabled"), "green");
 
         this.alertService.closeAlert(3000);
       },
     });
   }
 
-  deleteCategory(modalTemplate: TemplateRef<any>,  categoryID: number) {
-    const title = "Confirm delete category has ID: " + categoryID;
-    this.modalService
-      .open(modalTemplate, { title: title })
-      .subscribe((res) => {
-        if (res == "yes") {
-          this.categoryService.deleteCategory(categoryID).subscribe({
-            next: (res) => {
-              if (res == null) {
-                this.getCategoriesByPage();
-                this.alertService.showAlert("The category ID " + categoryID + " has been deleted successfully.", "green");
-              } else {
-                this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-              }
-
-              this.alertService.closeAlert(3000);
-            },
-          })
-        }
-      });
-  }
-
   clear() {
-    this.searchForm.patchValue({keyword: ''});
+    this.searchForm.patchValue({ keyword: '' });
 
     this.getCategoriesByPage();
   }
 
   search() {
     this.getCategoriesByPage();
-  }
-
-  get startCount(): number {
-    if (this.totalItems == 0) return 0;
-    return (this.pageNum - 1) * this.pageSize + 1;
-  }
-
-  get endCount(): number {
-    if (this.pageSize < 1) {
-      return this.totalItems;
-    }
-    return (this.pageNum * this.pageSize > this.totalItems) ? this.totalItems : this.pageNum * this.pageSize;
   }
 }

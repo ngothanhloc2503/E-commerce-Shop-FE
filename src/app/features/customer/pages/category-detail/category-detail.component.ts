@@ -1,98 +1,114 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
+
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
 import { CartService } from '../../services/cart/cart.service';
 import { CategoryService } from '../../services/category/category.service';
 import { ProductService } from '../../services/product/product.service';
+import { getPaginationSignals } from '../../../../shared/utils/pagination.utils';
 
 @Component({
   selector: 'app-category-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './category-detail.component.html',
-  styleUrl: './category-detail.component.css'
+  styleUrl: './category-detail.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryDetailComponent {
-  category: any = [];
-  name: string = '';
-  pageNum: number = 1;
-  totalPages: number = 0;
-  listProduct: any[] = [];
-  isLoading: boolean = false;
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private categoryService = inject(CategoryService);
+  private productService = inject(ProductService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  public settingService = inject(GeneralSettingService);
+  public cartService = inject(CartService);
 
-  constructor(
-    private categoryService: CategoryService,
-    private productService: ProductService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    public settingService: GeneralSettingService,
-    public cartService: CartService,
-  ) {}
+  // State
+  name = '';
 
+  category = signal<any>("");
+  listProduct = signal<any[]>([]);
+  isLoading = signal<boolean>(false);
+
+  pageNum = signal(1);
+  pageSize = signal(5);
+  totalPages = signal(0);
+  totalItems = signal(0);
+
+  // Computed
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
+
+  // Init
   ngOnInit() {
-    this.activatedRoute.params.subscribe(s => this.name = s["name"]);
-    if (this.name == '') {
-      this.router.navigateByUrl("/");
-    }
-
-    this.loadAll();
+    this.activatedRoute.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(s => {
+        this.name = s["name"] || '';
+        if (this.name) {
+          this.loadAll();
+        } else {
+          this.router.navigateByUrl("/");
+        }
+      });
   }
-  
+
+  // API
   loadAll() {
-    this.isLoading = true;
+    this.isLoading.set(true);
 
-    const apiCategory = this.categoryService.getCategoryByName(this.name);
-    const apiProducts = this.productService.getProductByCategoryName(this.name, this.pageNum);
-
-    forkJoin([apiCategory, apiProducts]).subscribe({
-      next: ([categoryRes, productRes]) => {
-        this.category = categoryRes;
-
-        this.listProduct = productRes.content;
-        this.totalPages = productRes.totalPages;
-
-        this.isLoading = false;
-      },
-      error: (err) => {
-        // Nếu category lỗi -> về trang chủ
-        this.router.navigateByUrl("/");
-
-        this.isLoading = false;
-      }
-    });
+    forkJoin([
+      this.categoryService.getCategoryByName(this.name),
+      this.productService.getProductByCategoryName(this.name, 1)
+    ]).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ([categoryRes, productRes]) => {
+          this.category.set(categoryRes.data);
+          this.listProduct.set(productRes.data.content);
+          this.totalPages.set(productRes.data.totalPages);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.router.navigateByUrl("/");
+          this.isLoading.set(false);
+        }
+      });
   }
 
-  getProductByCategoryName() {
-    this.isLoading = true;
-    this.productService.getProductByCategoryName(this.name, this.pageNum).subscribe({
-      next: (res) => {
-        this.listProduct = res.content;
-        this.totalPages = res.totalPages;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.isLoading = false;
-      }
-    })
+  getProductByCategoryName(page: number) {
+    this.isLoading.set(true);
+    this.productService.getProductByCategoryName(this.name, page)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const data = res.data;
+          this.listProduct.set(data.content);
+          this.totalPages.set(data.totalPages);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        }
+      });
   }
 
+  // Helper
   getLinkCategory(name: string): string {
     return '/categories/' + name.replace(/ /g, '-');
   }
 
   getShortName(name: string): string {
-    return name.length < 40 ? name : name.slice(0, 40) + "...";
+    return name.length < 40 ? name : name.substring(0, 40) + "...";
   }
 
   goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
+    if (Number.isNaN(pageNumber) || pageNumber < 1 || pageNumber > this.totalPages()) {
       return;
     }
-    this.pageNum = pageNumber;
-    this.getProductByCategoryName();
+
+    this.getProductByCategoryName(pageNumber);
   }
 }

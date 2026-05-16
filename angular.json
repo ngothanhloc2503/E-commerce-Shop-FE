@@ -22,12 +22,10 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              "src/output.css"
+              "src/assets"
             ],
             "styles": [
-              "src/styles.css",
-              "src/output.css"
+              "src/styles.css"
             ],
             "scripts": []
           },
@@ -83,12 +81,10 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              "src/output.css"
+              "src/assets"
             ],
             "styles": [
-              "src/styles.css",
-              "src/output.css"
+              "src/styles.css"
             ],
             "scripts": []
           }

@@ -1,7 +1,12 @@
-<input [formControl]="formControl" [type]="type" [step]="step" [placeholder]="placeholder" [required]="required" min="0"
+@if (control) {
+<input [formControl]="formControl" [type]="type()" [step]="step()" [placeholder]="placeholder()" [required]="required()"
+  min="0"
   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
-<ng-container *ngIf="control.touched || control.dirty">
-  <p *ngIf="errorMessage()" class="text-red-400">
-    {{ errorMessage() }}
-  </p>
-</ng-container>
+  @if (control.touched || control.dirty) {
+    @if (errorMessage()) {
+      <p class="text-red-400">
+        {{ errorMessage() }}
+      </p>
+    }
+  }
+}

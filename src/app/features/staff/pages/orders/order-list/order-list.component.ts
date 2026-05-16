@@ -1,72 +1,78 @@
-import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, signal, TemplateRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
 import { ModalService } from '../../../../../core/services/modal/modal.service';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { getPaginationSignals } from '../../../../../shared/utils/pagination.utils';
 import { OrderService } from '../../../services/order/order.service';
+import { GeneralSettingService } from '../../../../../core/services/general-setting/general-setting.service';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [PaginationComponent, ReactiveFormsModule, RouterLink, DatePipe],
   templateUrl: './order-list.component.html',
   styleUrl: './order-list.component.css'
 })
 export class OrderListComponent {
-  listOrders: any[] = [];
-  pageNum = 1;
-  pageSize = 5;
-  sortField = 'id';
-  sortDir = 'asc';
-  totalPages = 0;
-  totalItems = 0;
-  
-  searchForm!: FormGroup;
-  keyword = new FormControl('', [
-    Validators.required
-  ])
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private orderService = inject(OrderService);
+  private alertService = inject(AlertService);
+  private modalService = inject(ModalService);
+  private fb = inject(FormBuilder);
 
-  constructor(
-    private orderService: OrderService,
-    private alertService: AlertService,
-    private modalService: ModalService,
-    public settingService: GeneralSettingService,
-    private fb: FormBuilder,
-  ) {}
+  public settingService = inject(GeneralSettingService);
+
+  // Signals
+  listOrders = signal<any[]>([]);
+  pageNum = signal(1);
+  pageSize = signal(5);
+  sortField = signal('id');
+  sortDir = signal<'asc' | 'desc'>('asc');
+  totalPages = signal(0);
+  totalItems = signal(0);
+
+  // Form
+  searchForm: FormGroup = this.fb.group({
+    keyword: ['', Validators.required]
+  })
+
+  // Computed
+  pagination = getPaginationSignals(this.pageNum, this.pageSize, this.totalItems, this.totalPages);
 
   ngOnInit() {
-    this.searchForm = this.fb.group({
-      keyword: this.keyword
-    })
-
     this.getOrdersByPage();
   }
 
+  // API
   getOrdersByPage() {
-    let keyword = this.keyword.value ? this.keyword.value : '';
-    this.orderService.getOrdersByPage(this.pageNum, this.pageSize, this.sortField, this.sortDir, keyword).subscribe({
-      next: (res: any) => {
-        this.listOrders = res.content;
-        this.totalItems = res.totalItems;
-        this.totalPages = res.totalPages;
-      },
-    })
+    const keyword = this.searchForm.value.keyword || '';
+
+    this.orderService.getOrdersByPage(this.pageNum(), this.pageSize(), this.sortField(), this.sortDir(), keyword)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data;
+
+          this.listOrders.set(data.content);
+          this.totalItems.set(data.totalItems);
+          this.totalPages.set(data.totalPages);
+        },
+      })
   }
 
   deleteOrder(deleteModal: TemplateRef<any>, orderID: number) {
     const title = "Confirm delete order has ID: " + orderID;
-    this.modalService.open(deleteModal, {title: title}).subscribe((res) => {
+    this.modalService.open(deleteModal, { title: title }).subscribe((res) => {
       if (res == "yes") {
         this.orderService.deleteOrder(orderID).subscribe({
-          next: (res) => {
-            if (res == null) {
-              this.getOrdersByPage();
-              this.alertService.showAlert("The order ID " + orderID + " has been deleted successfully.", "green");
-            } else {
-              this.alertService.showAlert("An unexpected error occurred. Please try again later.", "red");
-            }
+          next: () => {
+            this.getOrdersByPage();
+            this.alertService.showAlert("The order ID " + orderID + " has been deleted successfully.", "green");
 
             this.alertService.closeAlert(3000);
           },
@@ -75,32 +81,13 @@ export class OrderListComponent {
     })
   }
 
-  getDestination(info: any): string {
-    let address = "";
-
-    if (info.city != null && info.city.length) {
-      address += info.city;
-    }
-
-    if (info.state != null && info.state.length) {
-      address.length > 0 ? address += ", " + info.state : address += info.state;
-    } 
-
-    address += ", " + info.country;
-
-    return address;
-  }
-
+  // Action
   sort(field: string) {
-    if (field.toLocaleLowerCase() === this.sortField.toLocaleLowerCase()) {
-      if (this.sortDir.toLocaleLowerCase() === 'asc') {
-        this.sortDir = 'desc';
-      } else {
-        this.sortDir = 'asc';
-      }
+    if (field === this.sortField()) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
     } else {
-      this.sortField = field;
-      this.sortDir = 'asc';
+      this.sortField.set(field);
+      this.sortDir.set('asc');
     }
 
     this.getOrdersByPage();
@@ -111,39 +98,40 @@ export class OrderListComponent {
   }
 
   changePageSize(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.value.length > 0) {
-      this.pageSize = Number(target.value);
-    } else {
-      return;
-    }
+    const value = (event.target as HTMLInputElement).value;
+    if (!value) return;
+
+    this.pageSize.set(Number(value));
+    this.pageNum.set(1);
     this.getOrdersByPage();
   }
 
-  goToPage(pageNumber: number) {
-    if (Number.isNaN(pageNumber)) {
-      return
-    } else if (pageNumber > this.totalPages || pageNumber < 1) {
-      return;
-    }
-    this.pageNum = pageNumber;
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
+
+    this.pageNum.set(page);
     this.getOrdersByPage();
   }
 
   clear() {
-    this.searchForm.patchValue({keyword: ''});
+    this.searchForm.patchValue({ keyword: '' });
     this.getOrdersByPage();
   }
 
-  get startCount(): number {
-    if (this.totalItems == 0) return 0;
-    return (this.pageNum - 1) * this.pageSize + 1;
-  }
+  // Helper
+  getDestination(info: any): string {
+    let address = "";
 
-  get endCount(): number {
-    if (this.pageSize < 1) {
-      return this.totalItems;
+    if (info.city != null && info.city.length) {
+      address += info.city;
     }
-    return (this.pageNum * this.pageSize > this.totalItems) ? this.totalItems : this.pageNum * this.pageSize;
+
+    if (info.state != null && info.state.length) {
+      address.length > 0 ? address += ", " + info.state : address += info.state;
+    }
+
+    address += ", " + info.country;
+
+    return address;
   }
 }

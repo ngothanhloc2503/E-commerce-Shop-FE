@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, input, Input } from '@angular/core';
 import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -10,18 +10,18 @@ import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/form
   styleUrl: './input.component.css'
 })
 export class InputComponent {
-  @Input() control!: AbstractControl;
-  @Input() type = 'text';
-  @Input() step = 1;
-  @Input() placeholder = '';
-  @Input() required = false;
+  @Input() control: AbstractControl | null = null;
+  type = input<'text' | 'email' | 'password' | 'date' | 'number'>('text');
+  step = input<number>(1);
+  placeholder = input<string>('');
+  required = input<boolean>(false);
 
   get formControl(): FormControl {
     return this.control as FormControl;
   }
 
   errorMessage(): string | null {
-    if (!this.control.errors) return null;
+    if (!this.control || !this.control.errors) return null;
 
     const errors = this.control.errors;
 
@@ -36,6 +36,6 @@ export class InputComponent {
     if (errors['emailNotUnique']) return 'Email already taken. Please try another email.';
     if (errors['nameNotUnique']) return 'Name already taken. Please try another name.';
 
-    return null; // fallback nếu có lỗi không xác định
+    return null;
   }
 }

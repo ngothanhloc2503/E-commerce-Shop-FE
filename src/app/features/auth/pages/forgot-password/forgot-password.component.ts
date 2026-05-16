@@ -1,60 +1,53 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
 import { InputComponent } from '../../../../shared/components/input/input.component';
 import { AuthService } from '../../services/auth-service/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, InputComponent],
+  imports: [ReactiveFormsModule, InputComponent, RouterModule],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.css'
+  styleUrl: './forgot-password.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForgotPasswordComponent {
-  isSent = false;
-  bgColor = 'green';
-  message = '';
+  // Inject
+  private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
-  forgotPasswordForm!: FormGroup;
-  email = new FormControl('', [
-    Validators.required, 
-    Validators.email
-  ])
+  // State
+  isSent = signal<boolean>(false);
+  isSuccess = signal<boolean>(false);
+  message = signal<string>('');
 
-  constructor(
-    private authService: AuthService,
-    private fb: FormBuilder,
-  ) {}
+  // Form
+  forgotPasswordForm = inject(FormBuilder).group({
+    email: new FormControl('', [Validators.required, Validators.email])
+  });
 
-  ngOnInit() {
-    this.forgotPasswordForm = this.fb.group({
-      email: this.email
-    })
-  }
-
+  // API
   forgotPassword() {
-    this.isSent = true;
-    this.authService.forgotPassword(this.email.value).subscribe({
-      next: (res) => {
-        this.bgColor = 'green';
-        this.message = `Please check your email to get link reset password. If you don't receive this, please send again.`;
-      },
-      error: (err) => {
-        this.bgColor = 'red';
-        if (err.status > 0) {
-          this.message = err.error;
-        } else {
-          this.message = "An unexpected error occurred. Please try again later.";
-        }
-      }
-    })
-  }
+    this.isSent.set(false);
 
-  getBgColor() {
-    if (this.bgColor == 'green') {
-      return 'bg-green-500';
-    }
-    return 'bg-red-500';
+    const emailVal = this.forgotPasswordForm.get('email')?.value;
+
+    this.authService.forgotPassword(emailVal)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSuccess.set(true);
+          this.message.set('Please check your email to get link reset password. If you don\'t receive this, please send again.');
+          this.isSent.set(true);
+        },
+        error: (err: any) => {
+          this.isSuccess.set(false);
+          this.message.set(err?.error?.message || "An unexpected error occurred. Please try again later.");
+          this.isSent.set(true);
+        }
+      });
   }
 }

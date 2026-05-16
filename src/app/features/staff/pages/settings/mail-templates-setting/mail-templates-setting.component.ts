@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, effect, inject, input } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
@@ -22,13 +22,19 @@ interface MailTemplatesForm {
   styleUrl: './mail-templates-setting.component.css'
 })
 export class MailTemplatesSettingComponent {
+  // Injects
   private destroyRef = inject(DestroyRef);
+  private settingService = inject(SettingService);
+  private alertService = inject(AlertService);
+  private fb = inject(FormBuilder);
 
   // Inputs
   listAllSettings = input<any>();
 
-  isSubmitting = false;
+  // Signal
+  isSubmitting = signal(false);
 
+  // Form
   mailTemplatesForm: FormGroup<MailTemplatesForm> = this.fb.group({
     CUSTOMER_VERIFY_SUBJECT: new FormControl('', {
       nonNullable: true,
@@ -48,12 +54,6 @@ export class MailTemplatesSettingComponent {
     }),
   });
 
-  constructor(
-    private alertService: AlertService,
-    private fb: FormBuilder,
-    private settingService: SettingService,
-  ) {}
-
   private syncFormEffect = effect(() => {
     const value = this.listAllSettings();
 
@@ -70,13 +70,13 @@ export class MailTemplatesSettingComponent {
       return;
     }
 
-    this.isSubmitting = true;
+    this.isSubmitting.set(true);
 
     this.settingService.saveMailTemplatesSettings(this.mailTemplatesForm.value)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.isSubmitting = false;
+          this.isSubmitting.set(false);
           this.mailTemplatesForm.markAsPristine();
           this.alertService.showAndCloseAlertAfterXSecond("Mail templates has been saved successfully.", "green", 3000);
         },

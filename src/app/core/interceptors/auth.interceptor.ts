@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpIntercepto
 import { inject } from '@angular/core';
 import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError } from 'rxjs';
 import { AuthStateService } from '../services/auth-state/auth-state.service';
-import { BASE_URL } from '../../constants';
+import { BASE_URL } from '../../environment';
 
 const AUTH_URLS = [
   '/api/auth/login',
@@ -73,8 +73,8 @@ export const authInterceptor: HttpInterceptorFn = (
         withCredentials: true
       }).pipe(
         switchMap(res => {
-          const newToken = res.accessToken;
-          const expiresIn = res.expiresIn;
+          const newToken = res.data.accessToken;
+          const expiresIn = res.data.expiresIn;
 
           // Get old user data
           const currentUser = authState.user();

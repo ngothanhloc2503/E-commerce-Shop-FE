@@ -1,16 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EditorModule } from '@tinymce/tinymce-angular';
-import { map, of, Subject, takeUntil, timer } from 'rxjs';
+import { map, of } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
+import { DEFAULT_IMAGE, TinyMceApiKey } from '../../../../../environment';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { BrandService } from '../../../services/brand/brand.service';
 import { CategoryService } from '../../../services/category/category.service';
 import { ProductService } from '../../../services/product/product.service';
-import { DEFAULT_IMAGE } from '../../../../../constants';
 
 interface ExtrasImage {
   id?: number,
@@ -38,94 +38,165 @@ interface Brand {
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, EditorModule],
+  imports: [ReactiveFormsModule, InputComponent, EditorModule],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.css']
 })
-export class ProductFormComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+export class ProductFormComponent implements OnInit {
+  // Inject
+  private destroyRef = inject(DestroyRef);
+  private titleService = inject(Title);
+  private categoryService = inject(CategoryService);
+  private brandService = inject(BrandService);
+  private activatedRoute = inject(ActivatedRoute);
+  private productService = inject(ProductService);
+  private alertService = inject(AlertService);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
 
-  title = 'Create Product';
-  productId = 0;
+  // Signals
+  title = signal('Create Product');
+  productId = signal(0);
+  listCategories = signal<Category[]>([]);
+  listBrands = signal<Brand[]>([]);
+  mainImagePreviewSrc = signal(DEFAULT_IMAGE);
+  isSubmitting = signal(false);
+  extraImageFiles = signal<File[]>([]);
 
-  listCategories: Category[] = [];
-  listBrands: Brand[] = [];
   defaultImage = DEFAULT_IMAGE;
   mainImageFile!: File;
-  mainImagePreviewSrc = DEFAULT_IMAGE;
+  tinyMceApiKey = TinyMceApiKey;
 
-  productForm!: FormGroup;
-  isSubmitting = false;
-
-  constructor(
-    private titleService: Title,
-    private categoryService: CategoryService,
-    private brandService: BrandService,
-    private activatedRoute: ActivatedRoute,
-    private productService: ProductService,
-    private alertService: AlertService,
-    private fb: FormBuilder,
-    private router: Router
-  ) { }
+  // Form
+  productForm: FormGroup = this.fb.group({
+    id: [0],
+    name: ['', {
+      validators: [Validators.required, Validators.minLength(2)],
+      asyncValidators: [this.uniqueName()],
+      updateOn: 'blur'
+    }],
+    summary: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(1024)]],
+    description: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(4096)]],
+    enabled: [true],
+    inStock: [true],
+    reviewCount: [0],
+    averageRating: [0],
+    discountPercent: [0],
+    price: [0, [Validators.required, Validators.min(0)]],
+    cost: [0, [Validators.required, Validators.min(0)]],
+    length: [0],
+    width: [0],
+    height: [0],
+    weight: [0],
+    category: [null, Validators.required],
+    brand: [null, Validators.required],
+    mainImage: ['', [this.mainImageRequired(this.mainImageFile, false)]],
+    images: this.fb.array([]),
+    details: this.fb.array([]),
+  });
 
   ngOnInit() {
-    this.initForm();
-
     this.activatedRoute.params
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
-        this.productId = params['id'] ?? 0;
-        if (this.productId) {
-          this.title = `Edit Product (Id: ${this.productId})`;
+        const id = params['id'] ?? 0;
+        this.productId.set(Number(id));
+
+        if (this.productId()) {
+          this.title.set(`Edit Product (Id: ${this.productId()})`);
           this.getProductById();
         }
-        this.titleService.setTitle(this.title);
+        this.titleService.setTitle(this.title());
       });
 
     this.getAllCategories();
   }
 
-  initForm() {
-    this.productForm = this.fb.group({
-      id: [0],
-      name: ['', {
-        validators: [Validators.required, Validators.minLength(2)],
-        asyncValidators: [this.uniqueName()],
-        updateOn: 'blur'
-      }],
-      summary: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(1024)]],
-      description: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(4096)]],
-      enabled: [true],
-      inStock: [true],
-      reviewCount: [0],
-      averageRating: [0],
-      discountPercent: [0],
-      price: [0, [Validators.required, Validators.min(0)]],
-      cost: [0, [Validators.required, Validators.min(0)]],
-      length: [0],
-      width: [0],
-      height: [0],
-      weight: [0],
-      category: [null, Validators.required],
-      brand: [null, Validators.required],
-      mainImage: ['', Validators.required],
-      images: this.fb.array([]),
-      details: this.fb.array([]),
-    });
+  // Getter
+  get details(): FormArray { return this.productForm.get('details') as FormArray; }
+
+  get extrasImages(): FormArray { return this.productForm.get('images') as FormArray; }
+
+  // API
+  save() {
+    if (this.productForm.invalid) return;
+
+    this.isSubmitting.set(true);
+
+    const mainImage = this.mainImageFile ?? null;
+    const extraFiles = this.extraImageFiles();
+
+    const selectedCategory = this.listCategories().find(cat => cat.id == this.productForm.value.category);
+    const selectedBrand = this.listBrands().find(brand => brand.id == this.productForm.value.brand);
+
+    const data = {
+      ...this.productForm.value,
+      category: selectedCategory || null,
+      brand: selectedBrand || null,
+    };
+
+    this.productService.saveProduct(data, mainImage, extraFiles)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.alertService.showAlert("The product has been saved successfully.", "green");
+
+          setTimeout(() => {
+            this.alertService.closeAlert();
+            this.router.navigateByUrl("/staff/products");
+          }, 3000);
+        },
+        error: () => { this.isSubmitting.set(false); }
+      });
   }
 
-  get details(): FormArray {
-    return this.productForm.get('details') as FormArray;
+  getProductById() {
+    this.productService.getProductById(this.productId())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const data = res.data;
+
+          this.productForm.patchValue({
+            ...data,
+            brand: data.brand.id,
+            category: data.category.id
+          });
+
+          this.mainImagePreviewSrc.set(data.mainImagePath);
+          this.extrasImages.clear();
+          (data.images || []).forEach((img: any) => {
+            this.extrasImages.push(this.fb.group({
+              id: [img.id || null], name: [img.name], preview: [img.imagePath], file: [null]
+            }));
+          });
+
+          this.details.clear();
+          (data.details || []).forEach((d: ProductDetail) => this.addDetail(d));
+
+          this.brandService.getBrandByCategory(data.category.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(res => this.listBrands.set(res.data || []));
+        }
+      });
   }
 
-  get extrasImages(): FormArray {
-    return this.productForm.get('images') as FormArray;
+  getAllCategories() {
+    this.categoryService.getAllCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.listCategories.set(res.data));
   }
 
-  get extrasImagesValue(): ExtrasImage[] {
-    return this.extrasImages.value;
+  onCategoryChange() {
+    const categoryId = this.productForm.get('category')?.value;
+    this.productForm.patchValue({ brand: null });
+
+    this.brandService.getBrandByCategory(categoryId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.listBrands.set(res.data || []));
   }
 
+  // Action
   addDetail(detail: ProductDetail = { name: '', value: '' }) {
     this.details.push(this.fb.group({
       id: [detail.id || null],
@@ -138,194 +209,121 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     this.details.removeAt(index);
   }
 
-  addExtraImage(image: ExtrasImage) {
+  addExtraImage(image: ExtrasImage, file: File) {
+    this.extraImageFiles.update(files => [...files, file]); // Save file
+
     this.extrasImages.push(this.fb.group({
       id: [image.id || null],
       name: [image.name],
       preview: [image.preview],
-      file: [image.file]
     }));
   }
 
   removeExtraImage(index: number) {
     this.extrasImages.removeAt(index);
-  }
-
-  save() {
-    if (this.productForm.invalid) return;
-
-    this.isSubmitting = true;
-    const mainImage = this.mainImageFile ?? null;
-    const extraFiles: File[] = this.extrasImages.controls
-      .map(ctrl => ctrl.value.file)
-      .filter((f: File) => !!f);
-
-    const selectedCategory = this.listCategories.filter(cat => cat.id == this.productForm.value.category)[0];
-    const selectedBrand = this.listBrands.filter(brand => brand.id == this.productForm.value.brand)[0];
-
-    const data = {
-      ...this.productForm.value,
-      category: selectedCategory,
-      brand: selectedBrand,
-    };
-
-    this.productService.saveProduct(data, mainImage, extraFiles).subscribe({
-      next: res => {
-        if (res?.id) {
-          this.alertService.showAlert("The product has been saved successfully.", "green");
-
-          timer(2000).subscribe(() => {
-            this.alertService.isShowAlert = false;
-            this.router.navigateByUrl("/staff/products");
-          });
-        } else {
-          this.alertService.showAndCloseAlertAfterXSecond("An unexpected error occurred.", "red", 3000);
-        }
-        this.isSubmitting = false;
-      },
-      error: err => {
-        this.isSubmitting = false;
-      }
+    this.extraImageFiles.update(files => {
+      const newFiles = [...files];
+      newFiles.splice(index, 1); // Remove file
+      return newFiles;
     });
   }
 
-  getProductById() {
-    this.productService.getProductById(this.productId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res: any) => {
-          this.productForm.patchValue({
-            ...res,
-            brand: res.brand.id,
-            category: res.category.id
-          });
+  async onSelectMainImage(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
 
-          // Populate extras images
-          this.mainImagePreviewSrc = res.mainImagePath;
-          this.extrasImages.clear();
+    try {
+      const base64 = await this.handleImage(file);
+      this.mainImagePreviewSrc.set(base64);
+      this.mainImageFile = file;
+      this.productForm.patchValue({ mainImage: file.name });
+      this.productForm.get('mainImage')?.updateValueAndValidity();
+    } catch (error) {
+      (event.target as HTMLInputElement).value = '';
+    }
+  }
 
-          (res.images || []).forEach((img: any) => {
-            this.extrasImages.push(this.fb.group({
-              id: [img.id || null],
-              name: [img.name],
-              preview: [img.imagePath],
-              file: [null]
-            }));
-          });
+  async onSelectExtrasImage(event: Event, index: number) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
 
-          // Populate details
-          this.details.clear();
-          (res.details || []).forEach((d: ProductDetail) => this.addDetail(d));
-
-          if (res.category) {
-            this.brandService.getBrandByCategory(res.category.id).subscribe(brands => {
-              this.listBrands = brands || [];
-            });
-          }
-        }
+    try {
+      const base64 = await this.handleImage(file);
+      this.extraImageFiles.update(files => {
+        const newFiles = [...files];
+        newFiles[index] = file;
+        return newFiles;
       });
+      
+      this.extrasImages.at(index).patchValue({ preview: base64, name: file.name });
+    } catch (error) {
+      (event.target as HTMLInputElement).value = '';
+    }
   }
 
-  onCategoryChange() {
-    const categoryId = this.productForm.get('category')?.value;
-
-    this.productForm.patchValue({ brand: null });
-
-    this.brandService.getBrandByCategory(categoryId)
-      .subscribe(brands => this.listBrands = brands || []);
-  }
-
-  onSelectMainImage(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-
-    this.handleImage(file, base64 => this.mainImagePreviewSrc = base64);
-    this.mainImageFile = file;
-    this.productForm.patchValue({ mainImage: file.name });
-    this.productForm.get('mainImage')?.updateValueAndValidity();
-  }
-
-  onSelectExtrasImage(event: Event, index: number) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-
-    this.handleImage(file, base64 => {
-      this.extrasImages.removeAt(index);
-      this.extrasImages.push(this.fb.group({
-        name: file.name,
-        preview: base64,
-        file: file
-      }));
-    });
-  }
-
-  onSelectNewExtraImage(event: Event) {
+  async onSelectNewExtraImage(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    this.handleImage(file, base64 => {
-      this.extrasImages.push(this.fb.group({
-        name: file.name,
-        preview: base64,
-        file: file
+    try {
+      const base64 = await this.handleImage(file);
+
+      this.extrasImages.push(this.fb.group({ 
+        name: file.name, 
+        preview: base64 
       }));
-    });
 
-    input.value = '';
-  }
+      this.extraImageFiles.update(files => [...files, file]);
 
-  handleImage(file: File, callback: (base64: string) => void) {
-    if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
-      this.alertService.showAndCloseAlertAfterXSecond("Invalid image type", "red", 3000);
-      return;
+      input.value = ''; 
+      
+    } catch (error) {
+      input.value = '';
     }
-    if (file.size > 2 * 1024 * 1024) {
-      this.alertService.showAndCloseAlertAfterXSecond("File too large", "red", 3000);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => callback(e.target.result);
-    reader.onerror = () => this.alertService.showAndCloseAlertAfterXSecond("Error reading file", "red", 3000);
-    reader.readAsDataURL(file);
-  }
-
-  uniqueName() {
-    return (ctrl: AbstractControl) => {
-      const name = ctrl.value;
-
-      if (!name) return of(null);
-
-      // Nếu edit và không đổi tên → skip
-      if (this.productId && name === this.productForm.get('name')?.value) {
-        return of(null);
-      }
-
-      return this.productService.isNameUnique(this.productId, name).pipe(
-        map(isUnique => (isUnique ? null : { nameNotUnique: true }))
-      );
-    };
   }
 
   cancel() {
     this.router.navigateByUrl("/staff/products");
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  // helpers
+  handleImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
+        this.alertService.showAndCloseAlertAfterXSecond("Invalid image type", "red", 3000);
+        reject("Invalid type");
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        this.alertService.showAndCloseAlertAfterXSecond("File too large", "red", 3000);
+        reject("Too large");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => resolve(e.target.result);
+      reader.onerror = () => reject("Error reading file");
+      reader.readAsDataURL(file);
+    });
   }
 
-  get f() {
-    return this.productForm.controls;
+  uniqueName() {
+    return (ctrl: AbstractControl) => {
+      const name = ctrl.value;
+      if (!name) return of(null);
+      // Gọi signal this.productId()
+      return this.productService.isNameUnique(this.productId(), name).pipe(
+        map(isUnique => (isUnique ? null : { nameNotUnique: true }))
+      );
+    };
   }
 
-  getAllCategories() {
-    this.categoryService.getAllCategories().subscribe(res => this.listCategories = res);
-  }
-
-  trackByIndex(index: number) {
-    return index;
+  mainImageRequired(mainImageFile: File | undefined, isEditMode: boolean): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (isEditMode || mainImageFile) return null;
+      if (!control.value) return { mainImageRequired: true };
+      return null;
+    };
   }
 }

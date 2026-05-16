@@ -1,35 +1,47 @@
 <div class="mb-4 text-center justify-center">
-    <h2 class="mb-5 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Shipping Rate | {{ title }}</h2>
+    <h2 class="mb-5 text-xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">Manage Shipping Rate | {{ title() }}</h2>
 </div>
 
 <form class="max-w-md mx-auto" [formGroup]="shippingRateForm" (ngSubmit)="saveShippingRate()">
     <input type="hidden" id="id" name="id" formControlName="id"/>
     <div class="mb-5 w-full group">
         <label for="country" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Country</label>
-        <select *ngIf="shippingRateId == null || shippingRateId <= 0" id="country" formControlName="country" (change)="getStateByCountryName()" class=" block bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option *ngFor="let c of listCountries" value="{{ c.name }}">{{ c.name }}</option>
-        </select>
-        <input *ngIf="shippingRateId != null && shippingRateId > 0" formControlName="country" type="text"
-            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" readonly/>
+        @if (shippingRateId() <= 0) {
+            <select id="country" formControlName="country" (change)="getStateByCountryName()" 
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                @for (c of listCountries(); track c.name) {
+                    <option [value]="c.name">{{ c.name }}</option>
+                }
+            </select>
+        } @else {
+            <input formControlName="country" type="text" readonly
+                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
+        }
     </div>
 
     <div class="mb-5 w-full group">
         <label for="state" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">State</label>
-        <select *ngIf="shippingRateId == null || shippingRateId <= 0" id="state" formControlName="state" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option *ngFor="let s of listStates" value="{{ s.name }}">{{ s.name }}</option>
-        </select>
-        <input *ngIf="shippingRateId != null && shippingRateId > 0" formControlName="state" type="text"
-            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" readonly/>
+        @if (shippingRateId() <= 0) {
+            <select id="state" formControlName="state" 
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                @for (s of listStates(); track s.name) {
+                    <option [value]="s.name">{{ s.name }}</option>
+                }
+            </select>
+        } @else {
+            <input formControlName="state" type="text" readonly
+                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
+        }
     </div>
 
     <div class="mb-5">
         <label for="rate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rate:</label>
-        <app-input [control]="rate" [type]="'number'" [step]="0.01" [required]="true"></app-input>
+        <app-input [control]="shippingRateForm.get('rate')" [type]="'number'" [step]="0.01" [required]="true"></app-input>
     </div>
 
     <div class="mb-5">
         <label for="days" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Days:</label>
-        <app-input [control]="days" [type]="'number'" [step]="1" [required]="true"></app-input>
+        <app-input [control]="shippingRateForm.get('days')" [type]="'number'" [step]="1" [required]="true"></app-input>
     </div>
 
     <div class="z-0 w-full mt-5 mb-5 group">
@@ -41,7 +53,13 @@
     <div class="text-center justify-content-center">
         <button type="button" (click)="cancel()"
         class="text-white w-36 bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">Cancel</button>
-        <button type="submit" [disabled]="shippingRateForm.invalid"
-        class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+        <button type="submit" [disabled]="shippingRateForm.invalid || isSubmitting()"
+        class="text-white w-36 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+            @if (isSubmitting()) {
+                <span>Saving...</span>
+            } @else {
+                <span>Save</span>
+            }
+        </button>
     </div>
 </form>

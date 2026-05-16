@@ -28,7 +28,7 @@ export const STAFF_ROUTES: Routes = [
         path: 'orders',
         loadChildren: () => import('./order.routes').then(r => r.ORDER_ROUTES),
     },
-    { path: 'settings', component: SettingsComponent },
-    { path: 'dashboard', component: DashboardComponent },
+    { path: 'settings', component: SettingsComponent, title: "Manage Settings" },
+    { path: 'dashboard', component: DashboardComponent, title: "Dashboard" },
     { path: '**', redirectTo: '/staff/dashboard' },
 ];

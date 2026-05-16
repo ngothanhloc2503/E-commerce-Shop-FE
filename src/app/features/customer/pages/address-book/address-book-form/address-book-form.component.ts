@@ -1,8 +1,19 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  DestroyRef,
+} from '@angular/core';
+import {
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
 import { CountryService } from '../../../../../core/services/country/country.service';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
@@ -11,115 +22,134 @@ import { AddressBookService } from '../../../services/address-book/address-book.
 @Component({
   selector: 'app-address-form',
   standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, CommonModule],
+  imports: [ReactiveFormsModule, InputComponent],
   templateUrl: './address-book-form.component.html',
-  styleUrl: './address-book-form.component.css'
+  styleUrl: './address-book-form.component.css',
 })
-export class AddressBookFormComponent {
-  title = "Add New Address";
-  addressId = 0;
-  redirect = '';
-  
-  listCountries: any[] = [];
-  listStates: any[] = [];
+export class AddressBookFormComponent implements OnInit {
+  // Inject
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private alertService = inject(AlertService);
+  private countryService = inject(CountryService);
+  private addressBookService = inject(AddressBookService);
+  private titleService = inject(Title);
+  private destroyRef = inject(DestroyRef);
 
-  addressForm!: FormGroup;
-  id = new FormControl<number | null>(null);
-  firstName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  lastName = new FormControl('', [
-    Validators.required, 
-    Validators.minLength(2)
-  ]);
-  phoneNumber = new FormControl('', [
-    Validators.required,
-    Validators.minLength(10),
-    Validators.maxLength(10),
-  ]);
-  addressLine1 = new FormControl('', [Validators.required]);
-  addressLine2 = new FormControl('');
-  city = new FormControl('');
-  state = new FormControl('', [Validators.required]);
-  country = new FormControl('', [Validators.required]);
-  postalCode = new FormControl('', [Validators.required]);
+  // Signals
+  readonly addressId = signal(0);
+  readonly redirect = signal('');
+  readonly listCountries = signal<any[]>([]);
+  readonly listStates = signal<any[]>([]);
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private countryService: CountryService,
-    private addressBookService: AddressBookService,
-    private titleService: Title,
-  ) {}
+  readonly isEditMode = computed(() => this.addressId() > 0);
+  readonly pageTitle = computed(() =>
+    this.isEditMode()
+      ? `Edit Address (ID: ${this.addressId()})`
+      : 'Add New Address'
+  );
 
+  // Form
+  private fb = inject(NonNullableFormBuilder);
+
+  addressForm = this.fb.group({
+    id: [0 as number],
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    phoneNumber: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(10)]],
+    addressLine1: ['', [Validators.required]],
+    addressLine2: [''],
+    city: ['', [Validators.required]],
+    state: ['', [Validators.required]],
+    country: ['', [Validators.required]],
+    postalCode: ['', [Validators.required]],
+  });
+
+  // Aliases
+  get firstName() { return this.addressForm.get('firstName')!; }
+  get lastName() { return this.addressForm.get('lastName')!; }
+  get phoneNumber() { return this.addressForm.get('phoneNumber')!; }
+  get addressLine1() { return this.addressForm.get('addressLine1')!; }
+  get addressLine2() { return this.addressForm.get('addressLine2')!; }
+  get city() { return this.addressForm.get('city')!; }
+  get state() { return this.addressForm.get('state')!; }
+  get country() { return this.addressForm.get('country')!; }
+  get postalCode() { return this.addressForm.get('postalCode')!; }
+
+  // Init
   ngOnInit() {
-    this.addressForm = this.fb.group({
-      id: this.id,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      phoneNumber: this.phoneNumber,
-      addressLine1: this.addressLine1,
-      addressLine2: this.addressLine2,
-      city: this.city,
-      state: this.state,
-      country: this.country,
-      postalCode: this.postalCode,
-    })
+    this.listenToRouteParams();
+    this.loadCountries();
+    this.listenToCountryChange();
 
-    this.activatedRoute.params.subscribe(s => this.addressId = s['id']);
-    this.activatedRoute.queryParams.subscribe(p => this.redirect = p['redirect']);
-    if (this.addressId) {
-      this.title = "Edit Address(ID: " + this.addressId + ")";
-      this.getAddressById();
-    }
-    this.titleService.setTitle(this.title);
-    this.getAllCountries();
+    this.titleService.setTitle(this.pageTitle());
   }
 
-  saveAddress() {
-    this.addressBookService.saveAddressBook(this.addressForm.value).subscribe({
-      next: (res) => {
-        if (this.redirect) {
-          this.router.navigate(["/address-book"], {queryParams: {redirect: "cart"}});
-        } else {
-          this.router.navigateByUrl("/address-book");
-          this.alertService.showAndCloseAlertAfterXSecond("Address has been saved successfully.", "green", 3000);
+  private listenToRouteParams() {
+    this.activatedRoute.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const id = Number(params.get('id'));
+        this.addressId.set(id);
+        if (id) this.loadAddressById(id);
+      });
+
+    this.activatedRoute.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => this.redirect.set(params.get('redirect') ?? ''));
+  }
+
+  private listenToCountryChange() {
+    this.country.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(country => {
+        this.state.setValue('');
+        this.listStates.set([]);
+
+        if (country) {
+          this.countryService.getStateByCountryName(country)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(res => this.listStates.set(res.data));
         }
-      },
-    })
+      });
   }
 
-  getAddressById() {
-    this.addressBookService.getAddressById(this.addressId).subscribe({
-      next: (res) => {
-        this.addressForm.patchValue(res);
-        this.getStateByCountryName();
-      },
-    })
+  // Data loading
+  private loadCountries() {
+    this.countryService.getAllCountries()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.listCountries.set(res.data));
   }
 
-  getStateByCountryName() {
-    if (this.country.value != null && this.country.value != undefined && this.country.value != '') {
-      this.countryService.getStateByCountryName(this.country.value).subscribe({
-        next: (res) => {
-          this.listStates = res;
+  private loadAddressById(id: number) {
+    this.addressBookService.getAddressById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.addressForm.patchValue(res.data);
+      });
+  }
+
+  // API
+  saveAddress() {
+    if (this.addressForm.invalid) return;
+
+    this.addressBookService.saveAddressBook(this.addressForm.getRawValue())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          if (this.redirect()) {
+            this.router.navigate(['/address-book'], { queryParams: { redirect: 'cart' } });
+          } else {
+            this.router.navigateByUrl('/address-book');
+            this.alertService.showAndCloseAlertAfterXSecond(
+              'Address has been saved successfully.', 'green', 3000
+            );
+          }
         },
-      })
-    }
-  }
-
-  getAllCountries() {
-    this.countryService.getAllCountries().subscribe({
-      next: (res) => {
-        this.listCountries = res;
-      },
-    })
+      });
   }
 
   cancel() {
-    this.router.navigateByUrl("/address-book");
+    this.router.navigateByUrl('/address-book');
   }
 }

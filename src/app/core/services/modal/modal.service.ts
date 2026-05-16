@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { ComponentFactoryResolver, Inject, Injectable, Injector, TemplateRef } from '@angular/core';
+import { Injectable, TemplateRef, createComponent, EnvironmentInjector } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
@@ -8,38 +7,46 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 })
 export class ModalService {
   private modalNotifier?: Subject<string>;
-  constructor(
-    private resolver: ComponentFactoryResolver,
-    private injector: Injector,
-    @Inject(DOCUMENT) private document: Document
-  ) {}
+  private hostElement?: HTMLElement;
+
+  constructor(private environmentInjector: EnvironmentInjector) {}
 
   open(content: TemplateRef<any>, options?: { title?: string }) {
-    const modalComponentFactory = this.resolver.resolveComponentFactory(
-      ModalComponent
-    );
-    const contentViewRef = content.createEmbeddedView(null);
-    const modalComponent = modalComponentFactory.create(this.injector, [
-      contentViewRef.rootNodes,
-    ]);
+    // 1. Tạo một thẻ div ảo làm nơi chứa Modal
+    this.hostElement = document.createElement('div');
+    document.body.appendChild(this.hostElement);
 
-    modalComponent.instance.title = options?.title;
-    modalComponent.instance.closeEvent.subscribe(() => this.closeModal());
-    modalComponent.instance.submitEvent.subscribe(() => this.submitModal());
+    // 2. Dùng createComponent gắn thẳng vào thẻ div ảo
+    const componentRef = createComponent(ModalComponent, {
+      environmentInjector: this.environmentInjector,
+      hostElement: this.hostElement,
+    });
 
-    modalComponent.hostView.detectChanges();
+    // 3. Truyền dữ liệu vào Modal
+    componentRef.instance.title = options?.title || 'Modal title';
+    componentRef.instance.contentTemplate = content;
 
-    this.document.body.appendChild(modalComponent.location.nativeElement);
-    this.modalNotifier = new Subject();
-    return this.modalNotifier?.asObservable();
+    // 4. Lắng nghe sự kiện đóng từ bên trong Modal
+    componentRef.instance.closeEvent.subscribe(() => this.destroyModal());
+    componentRef.instance.submitEvent.subscribe(() => {
+      this.modalNotifier?.next('yes');
+      this.destroyModal();
+    });
+
+    // 5. Báo cho Angular cập nhật giao diện (do tạo bằng code chứ không qua HTML)
+    componentRef.changeDetectorRef.detectChanges();
+
+    // 6. Khởi tạo Subject để trả về Observable cho component cha subscribe
+    this.modalNotifier = new Subject<string>();
+    return this.modalNotifier.asObservable();
   }
 
-  closeModal() {
-    this.modalNotifier?.complete();
-  }
-
-  submitModal() {
-    this.modalNotifier?.next('yes');
-    this.closeModal();
+  private destroyModal() {
+    this.modalNotifier?.complete(); // Close Observable
+  
+    if (this.hostElement) {
+      this.hostElement.remove();
+      this.hostElement = undefined;
+    }
   }
 }
