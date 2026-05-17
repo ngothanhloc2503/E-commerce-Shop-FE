@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -36,9 +36,10 @@ export class NavComponent implements OnInit {
     keyword: ['', [Validators.required]],
   });
 
-  // Signals
+  // State
   readonly darkMode = this.themeService.darkMode;
   readonly user = this.authState.user;
+  readonly isDropdownOpen = signal(false);
 
   // Data-driven staff nav
   readonly staffNavLinks: StaffNavLink[] = [
@@ -85,6 +86,25 @@ export class NavComponent implements OnInit {
 
   toggleTheme() {
     this.themeService.toggleDarkMode();
+  }
+
+  // Dropdown
+  toggleDropdown() {
+    this.isDropdownOpen.update(v => !v);
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const dropdown = document.getElementById('userDropdown');
+    const button = document.getElementById('userMenuButton');
+    if (dropdown && button && !dropdown.contains(target) && !button.contains(target)) {
+      this.closeDropdown();
+    }
   }
 
   // Helper

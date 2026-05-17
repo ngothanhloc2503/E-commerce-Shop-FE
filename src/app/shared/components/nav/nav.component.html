@@ -71,46 +71,47 @@
             @if (authState.isAuthenticated()) {
                 <button
                     class="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                    id="userMenuButton" aria-expanded="false" data-dropdown-toggle="userDropdown"
-                    data-dropdown-placement="bottom">
+                    id="userMenuButton" (click)="toggleDropdown()">
                     <img class="w-8 h-8 rounded-full" [src]="authState.user()?.image" alt="user photo" />
                 </button>
 
-                <div id="userDropdown"
-                    class="z-50 hidden px-4 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <div class="px-4 py-3">
-                        <span class="block text-sm text-gray-900 dark:text-white">{{ authState.user()?.fullName }}</span>
-                        <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ authState.user()?.email }}</span>
-                    </div>
-                    <ul class="py-2" aria-labelledby="userMenuButton">
-                        <li>
-                            <a routerLink="/account"
+                @if (isDropdownOpen()) {
+                    <div id="userDropdown"
+                        class="z-50 absolute right-4 top-14 px-4 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                        <div class="px-4 py-3">
+                            <span class="block text-sm text-gray-900 dark:text-white">{{ authState.user()?.fullName }}</span>
+                            <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ authState.user()?.email }}</span>
+                        </div>
+                        <ul class="py-2" aria-labelledby="userMenuButton">
+                            <li>
+                                <a routerLink="/account" (click)="closeDropdown()"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                    Account
+                                </a>
+                            </li>
+                            @if (authState.isCustomer()) {
+                                <li>
+                                    <a routerLink="/address-book" (click)="closeDropdown()"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                        Address Book
+                                    </a>
+                                </li>
+                                <li>
+                                    <a routerLink="/orders" (click)="closeDropdown()"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                        Orders
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                        <div class="py-2">
+                            <a routerLink="/" (click)="signOut($event); closeDropdown()"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                Account
+                                Sign out
                             </a>
-                        </li>
-                        @if (authState.isCustomer()) {
-                            <li>
-                                <a routerLink="/address-book"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                    Address Book
-                                </a>
-                            </li>
-                            <li>
-                                <a routerLink="/orders"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                    Orders
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                    <div class="py-2">
-                        <a routerLink="/" (click)="signOut($event)"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                            Sign out
-                        </a>
+                        </div>
                     </div>
-                </div>
+                }
             } @else {
                 <!-- Auth: Guest -->
                 <div>
