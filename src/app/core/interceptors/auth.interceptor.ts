@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpIntercepto
 import { inject } from '@angular/core';
 import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError } from 'rxjs';
 import { AuthStateService } from '../services/auth-state/auth-state.service';
-import { BASE_URL } from '../../environment';
+import { BASE_URL } from '../constants/app.constants';
 
 const AUTH_URLS = [
   '/api/auth/login',

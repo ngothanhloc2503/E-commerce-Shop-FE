@@ -1,9 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { API_URL } from '../../../../environment';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { AlertService } from '../../../../core/services/alert/alert.service';
 import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
+import { API_URL } from '../../../../core/constants/app.constants';
 
 const BASE_URL = API_URL + '/cart';
 

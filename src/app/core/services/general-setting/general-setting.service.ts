@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal, computed } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { API_URL } from '../../../environment';
+import { API_URL } from '../../constants/app.constants';
 
 const BASE_URL = API_URL + '/settings/general';
 

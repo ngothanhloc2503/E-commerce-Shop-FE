@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../../environment';
+import { API_URL } from '../../../../core/constants/app.constants';
 
 const BASE_URL = API_URL + '/checkout';
 

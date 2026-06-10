@@ -6,11 +6,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { map, of } from 'rxjs';
 import { AlertService } from '../../../../../core/services/alert/alert.service';
-import { DEFAULT_IMAGE, TinyMceApiKey } from '../../../../../environment';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { BrandService } from '../../../services/brand/brand.service';
 import { CategoryService } from '../../../services/category/category.service';
 import { ProductService } from '../../../services/product/product.service';
+import { DEFAULT_IMAGE, TinyMceApiKey } from '../../../../../core/constants/app.constants';
 
 interface ExtrasImage {
   id?: number,

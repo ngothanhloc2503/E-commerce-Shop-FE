@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { API_URL, BASE_URL } from '../../../../environment';
 import { AuthStateService } from '../../../../core/services/auth-state/auth-state.service';
+import { API_URL, BASE_URL } from '../../../../core/constants/app.constants';
 
 const URL = API_URL + '/auth';
 

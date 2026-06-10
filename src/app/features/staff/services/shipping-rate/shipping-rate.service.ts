@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_URL } from '../../../../environment';
 import { HttpUtilService } from '../../../../core/services/http-util/http-util.service';
+import { API_URL } from '../../../../core/constants/app.constants';
 
 const BASE_URL = API_URL + '/shipping-rates';
 

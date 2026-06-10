@@ -6,8 +6,8 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { AuthStateService } from '../../../core/services/auth-state/auth-state.service';
 import { GeneralSettingService } from '../../../core/services/general-setting/general-setting.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { BASE_URL } from '../../../environment';
 import { CartService } from '../../../features/customer/services/cart/cart.service';
+import { BASE_URL } from '../../../core/constants/app.constants';
 
 interface StaffNavLink {
   path: string;
