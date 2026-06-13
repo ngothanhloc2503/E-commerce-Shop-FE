@@ -5,10 +5,11 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GeneralSettingService } from '../../../../core/services/general-setting/general-setting.service';
 import { CartService } from '../../services/cart/cart.service';
 import { ProductService } from '../../services/product/product.service';
+import { ProductReviewsComponent } from '../product-reviews/product-reviews.component';
 
 @Component({
     selector: 'app-product-detail',
-    imports: [RouterModule],
+    imports: [RouterModule, ProductReviewsComponent],
     templateUrl: './product-detail.component.html',
     styleUrl: './product-detail.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush
