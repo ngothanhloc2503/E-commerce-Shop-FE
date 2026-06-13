@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { SettingsComponent } from "../pages/settings/settings/settings.component";
 import { DashboardComponent } from "../pages/dashboard/dashboard.component";
+import { ReviewManagementComponent } from "../pages/review-management/review-management.component";
 
 
 export const STAFF_ROUTES: Routes = [
@@ -29,6 +30,7 @@ export const STAFF_ROUTES: Routes = [
         loadChildren: () => import('./order.routes').then(r => r.ORDER_ROUTES),
     },
     { path: 'settings', component: SettingsComponent, title: "Manage Settings" },
+    { path: 'reviews', component: ReviewManagementComponent, title: "Review Management" },
     { path: 'dashboard', component: DashboardComponent, title: "Dashboard" },
     { path: '**', redirectTo: '/staff/dashboard' },
 ];

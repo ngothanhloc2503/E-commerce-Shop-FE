@@ -48,6 +48,7 @@ export class NavComponent implements OnInit {
     { path: '/staff/categories', label: 'Categories' },
     { path: '/staff/brands', label: 'Brands' },
     { path: '/staff/products', label: 'Products' },
+    { path: '/staff/reviews', label: 'Reviews' },
     { path: '/staff/shipping-rates', label: 'Shipping Rates' },
     { path: '/staff/orders', label: 'Orders' },
     { path: '/staff/settings', label: 'Settings' },
