@@ -4,8 +4,9 @@
     </span>
     
     <div class="flex items-center ms-auto me-2">
-        <span class="text-sm font-medium dark:text-white">Users per page: &nbsp;</span>
-        <select (change)="pageSizeChange.emit($event)"
+        <span class="text-sm font-medium dark:text-white capitalize">{{ entityName() }} per page: &nbsp;</span>
+        
+        <select #pageSizeSelect (change)="pageSizeChange.emit(+pageSizeSelect.value)"
             class="h-8 text-sm pt-2 leading-none transition duration-75 border-gray-300 rounded-lg shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-inset focus:ring-blue-500 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500">
             <option value="5">5</option>
             <option value="10">10</option>
@@ -29,26 +30,26 @@
             </button>
         </li>
         
-        @if (pageNum() > 3) {
-            <li><button type="button" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400" disabled>...</button></li>
-        }
-        
         @for (i of pageNumbers(); track i) {
-            @if (i !== pageNum() && pageNum() - 4 < i && i < pageNum() + 2) {
+            @if (i === 1 || i === totalPages() || (i >= pageNum() - 2 && i <= pageNum() + 2)) {
                 <li>
-                    <button type="button" (click)="pageChange.emit(i)" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">{{ i }}</button>
+                    @if (i === pageNum()) {
+                        <button type="button" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" disabled>
+                            {{ i }}
+                        </button>
+                    } @else {
+                        <button type="button" (click)="pageChange.emit(i)" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                            {{ i }}
+                        </button>
+                    }
                 </li>
-            } @else if (i === pageNum()) {
+            } @else if (i === pageNum() - 3 || i === pageNum() + 3) {
                 <li>
-                    <button type="button" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" disabled>{{ i }}</button>
+                    <button type="button" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400" disabled>...</button>
                 </li>
             }
         }
 
-        @if (pageNum() + 2 < totalPages()) {
-            <li><button type="button" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400" disabled>...</button></li>
-        }
-        
         <li>
             <button type="button" (click)="pageChange.emit(pageNum() + 1)" [disabled]="pageNum() >= totalPages()" title="Next" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
                 <span class="sr-only">Next</span>

@@ -80,12 +80,8 @@ export class OrderListComponent implements OnInit {
     this.loadOrders();
   }
 
-  changePageSize(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    const size = Number(value);
-    if (isNaN(size)) return;
-
-    this.pageSize.set(size);
+  changePageSize(newPageSize: number) {
+    this.pageSize.set(newPageSize);
     this.pageNum.set(1);
     this.loadOrders();
   }

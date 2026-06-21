@@ -96,11 +96,8 @@ export class OrderListComponent {
     this.getOrdersByPage();
   }
 
-  changePageSize(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    if (!value) return;
-
-    this.pageSize.set(Number(value));
+  changePageSize(newPageSize: number) {
+    this.pageSize.set(newPageSize);
     this.pageNum.set(1);
     this.getOrdersByPage();
   }

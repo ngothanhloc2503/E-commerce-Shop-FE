@@ -147,12 +147,9 @@ export class ProductListComponent {
     this.getProductByPage();
   }
 
-  changePageSize(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.value.length > 0) {
-      this.pageSize.set(Number(target.value));
-      this.pageNum.set(1); 
-    }
+  changePageSize(newPageSize: number) {
+    this.pageSize.set(newPageSize);
+    this.pageNum.set(1);
     this.getProductByPage();
   }
 

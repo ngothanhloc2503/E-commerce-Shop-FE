@@ -18,5 +18,5 @@ export class PaginationComponent {
 
   // Outputs
   pageChange = output<number>();
-  pageSizeChange = output<Event>();
+  pageSizeChange = output<number>();
 }
