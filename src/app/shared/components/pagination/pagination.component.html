@@ -1,21 +1,32 @@
-<nav class="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4" aria-label="Table navigation">
-    <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
-        Showing <span class="font-semibold text-gray-900 dark:text-white">{{ startCount() }}-{{ endCount() }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ totalItems() }} {{ entityName() }}</span>
-    </span>
+<!-- Thêm class dynamic: justify-between nếu có đủ 3 phần, justify-center nếu chỉ còn lại pagination -->
+<nav class="flex items-center flex-wrap md:flex-row pt-4"
+     [class.justify-between]="showCounts() || showPageSize()"
+     [class.justify-center]="!showCounts() && !showPageSize()"
+     aria-label="Table navigation">
+     
+    <!-- 1. Counts -->
+    @if (showCounts()) {
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
+            Showing <span class="font-semibold text-gray-900 dark:text-white">{{ startCount() }}-{{ endCount() }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ totalItems() }} {{ entityName() }}</span>
+        </span>
+    }
     
-    <div class="flex items-center ms-auto me-2">
-        <span class="text-sm font-medium dark:text-white capitalize">{{ entityName() }} per page: &nbsp;</span>
-        
-        <select #pageSizeSelect (change)="pageSizeChange.emit(+pageSizeSelect.value)"
-            class="h-8 text-sm pt-2 leading-none transition duration-75 border-gray-300 rounded-lg shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-inset focus:ring-blue-500 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="-1">All</option>
-        </select>
-    </div>
+    <!-- 2. Page Size -->
+    @if (showPageSize()) {
+        <div class="flex items-center ms-auto me-2">
+            <span class="text-sm font-medium dark:text-white capitalize">{{ entityName() }} per page: &nbsp;</span>
+            <select #pageSizeSelect (change)="pageSizeChange.emit(+pageSizeSelect.value)"
+                class="h-8 text-sm pt-2 leading-none transition duration-75 border-gray-300 rounded-lg shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-inset focus:ring-blue-500 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+    }
 
+    <!-- 3. Pagination Numbers (Giữ nguyên logic cũ) -->
     <ul class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
         <li>
             <button type="button" (click)="pageChange.emit(1)" [disabled]="pageNum() <= 1" title="First" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
@@ -34,13 +45,9 @@
             @if (i === 1 || i === totalPages() || (i >= pageNum() - 2 && i <= pageNum() + 2)) {
                 <li>
                     @if (i === pageNum()) {
-                        <button type="button" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" disabled>
-                            {{ i }}
-                        </button>
+                        <button type="button" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" disabled>{{ i }}</button>
                     } @else {
-                        <button type="button" (click)="pageChange.emit(i)" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                            {{ i }}
-                        </button>
+                        <button type="button" (click)="pageChange.emit(i)" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">{{ i }}</button>
                     }
                 </li>
             } @else if (i === pageNum() - 3 || i === pageNum() + 3) {

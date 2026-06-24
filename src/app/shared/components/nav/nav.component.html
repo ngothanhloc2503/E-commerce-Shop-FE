@@ -8,6 +8,22 @@
 
         <!-- Right side -->
         <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+            @if (authState.isCustomer()) {
+                <div class="px-2">
+                    <a routerLink="/wishlist">
+                        <button type="button" class="relative p-2">
+                            @if (wishlistService.hasItems) {
+                                <div class="absolute bottom-0 right-0">
+                                    <p class="flex h-2 w-2 items-center justify-center rounded-full bg-red-500 p-2 text-xs text-white">
+                                        {{ wishlistService.itemCount() }}
+                                    </p>
+                                </div>
+                            }
+                            <i class="fa-solid text-pink-500 dark:text-pink-400 fa-xl fa-heart"></i>
+                        </button>
+                    </a>
+                </div>
+            }
 
             <!-- Cart Icon -->
             <div class="px-14">
@@ -90,6 +106,12 @@
                                 </a>
                             </li>
                             @if (authState.isCustomer()) {
+                                <li>
+                                    <a routerLink="/wishlist" (click)="closeDropdown()"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                        My Wishlist
+                                    </a>
+                                </li>
                                 <li>
                                     <a routerLink="/address-book" (click)="closeDropdown()"
                                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">

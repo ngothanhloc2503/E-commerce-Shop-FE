@@ -9,6 +9,7 @@ import { CartComponent } from "../pages/cart/cart.component";
 import { CheckoutComponent } from "../pages/checkout/checkout.component";
 import { OrderListComponent } from "../pages/orders/order-list/order-list.component";
 import { signedInGuard } from "../../../core/guards/signed-in.guard";
+import { WishlistComponent } from "../pages/wishlist/wishlist.component";
 
 export const CUSTOMER_ROUTES: Routes = [
     { path: '', component: HomeComponent },
@@ -22,5 +23,6 @@ export const CUSTOMER_ROUTES: Routes = [
     { path: 'cart', component: CartComponent },
     { path: 'checkout', component: CheckoutComponent, canMatch: [signedInGuard] },
     { path: 'orders', component: OrderListComponent, canMatch: [signedInGuard] },
+    { path: 'wishlist', component: WishlistComponent, canMatch: [signedInGuard] },
     { path: '**', redirectTo: '' }
 ];

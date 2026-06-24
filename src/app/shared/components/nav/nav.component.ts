@@ -8,6 +8,7 @@ import { GeneralSettingService } from '../../../core/services/general-setting/ge
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { CartService } from '../../../features/customer/services/cart/cart.service';
 import { BASE_URL } from '../../../core/constants/app.constants';
+import { WishlistService } from '../../../features/customer/services/wishlist/wishlist.service';
 
 interface StaffNavLink {
   path: string;
@@ -25,6 +26,7 @@ export class NavComponent implements OnInit {
   private themeService = inject(ThemeService);
   readonly cartService = inject(CartService);
   readonly authState = inject(AuthStateService);
+  readonly wishlistService = inject(WishlistService);
   readonly settingService = inject(GeneralSettingService);
   private router = inject(Router);
   private http = inject(HttpClient);
@@ -61,6 +63,10 @@ export class NavComponent implements OnInit {
       .subscribe(event => {
         if (event instanceof NavigationEnd) {
           this.cartService.getCart();
+
+          if (this.authState.isCustomer()) {
+            this.wishlistService.loadWishlist();
+          }
         }
       });
   }
@@ -82,6 +88,8 @@ export class NavComponent implements OnInit {
   private afterLogout() {
     this.authState.logout();
     this.cartService.cart.set({});
+    this.wishlistService.wishlistItems.set([]);
+    this.wishlistService.itemCount.set(0);
     this.router.navigateByUrl('/');
   }
 

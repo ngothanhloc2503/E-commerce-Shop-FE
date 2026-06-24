@@ -15,6 +15,8 @@ export class PaginationComponent {
   endCount = input.required<number>();
   pageNumbers = input.required<number[]>();
   entityName = input<string>('items');
+  showCounts = input<boolean>(true);
+  showPageSize = input<boolean>(true);
 
   // Outputs
   pageChange = output<number>();

@@ -23,9 +23,22 @@
 
     <div class="relative p-4 w-full max-w-2xl max-h-full">
         <div class="relative bg-white dark:bg-gray-800">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
-                {{ product().name }}
-            </h3>
+            <div class="flex items-start justify-between p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    {{ product().name }}
+                </h3>
+                <button 
+                    type="button" 
+                    (click)="toggleWishlist()"
+                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    [title]="isInWishlist() ? 'Remove from wishlist' : 'Add to wishlist'">
+                    <i class="fa-solid fa-heart text-2xl transition-colors duration-200"
+                       [class.text-red-500]="isInWishlist()"
+                       [class.text-gray-300]="!isInWishlist()"
+                       [class.dark:text-gray-600]="!isInWishlist()">
+                    </i>
+                </button>
+            </div>
 
             <div class="text-base text-gray-900 dark:text-white p-4 sm:p-5 border-b rounded-t dark:border-gray-600">
                 <div>

@@ -6,6 +6,7 @@ import { GeneralSettingService } from '../../../../core/services/general-setting
 import { CartService } from '../../services/cart/cart.service';
 import { ProductService } from '../../services/product/product.service';
 import { ProductReviewsComponent } from '../product-reviews/product-reviews.component';
+import { WishlistService } from '../../services/wishlist/wishlist.service';
 
 @Component({
     selector: 'app-product-detail',
@@ -22,6 +23,7 @@ export class ProductDetailComponent {
   private router = inject(Router);
   public settingService = inject(GeneralSettingService);
   public cartService = inject(CartService);
+  public wishlistService = inject(WishlistService);
 
   // State
   alias = '';
@@ -30,6 +32,11 @@ export class ProductDetailComponent {
   product = signal<any>({ images: [] });
 
   // Computed
+  isInWishlist = computed(() => {
+    const productId = this.product()?.id;
+    return productId ? this.wishlistService.isInWishlist(productId) : false;
+  });
+  
   gridCols = computed(() => {
     const imgCount = this.product()?.images?.length || 0;
     return `grid-cols-${imgCount + 1}`;
@@ -82,5 +89,16 @@ export class ProductDetailComponent {
 
   changeImage(imagePath: string) {
     this.bigImage.set(imagePath);
+  }
+
+  toggleWishlist() {
+    const productId = this.product()?.id;
+    if (!productId) return;
+
+    if (this.isInWishlist()) {
+      this.wishlistService.removeFromWishlist(productId).subscribe();
+    } else {
+      this.wishlistService.addToWishlist(productId).subscribe();
+    }
   }
 }

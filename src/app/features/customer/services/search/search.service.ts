@@ -14,10 +14,11 @@ export class SearchService {
     private httpClient: HttpClient,
   ) { }
 
-  searchProduct(keyword: string, pageNum: number, sortField: string, rating: number, brandIDs: number[]): Observable<any> {
+  searchProduct(keyword: string, pageNum: number, pageSize: number, sortField: string, rating: number, brandIDs: number[]): Observable<any> {
     let parameters = new HttpParams;
     parameters = parameters.append("keyword", keyword);
     parameters = parameters.append("pageNum", pageNum);
+    parameters = parameters.append("pageSize", pageSize);
     parameters = parameters.append("sortField", sortField);
     parameters = parameters.append("rating", rating);
     if (brandIDs.length > 0) {

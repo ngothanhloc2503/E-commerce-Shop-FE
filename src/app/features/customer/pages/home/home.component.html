@@ -1,122 +1,281 @@
 <!-- Loading Overlay -->
 @if (isLoading()) {
-    <div class="loading-overlay">
-        <div class="spinner"></div>
-        <p>Loading...</p>
+    <div class="fixed inset-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 pt-6 animate-pulse">
+            <!-- Skeleton Carousel -->
+            <div class="w-full h-64 md:h-[28rem] rounded-2xl bg-gray-200 dark:bg-gray-800"></div>
+            <!-- Skeleton Categories -->
+            <div class="mt-8">
+                <div class="h-8 w-48 rounded-lg bg-gray-200 dark:bg-gray-800 mb-6"></div>
+                <div class="grid grid-cols-4 md:grid-cols-8 gap-4">
+                    @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="w-full aspect-square rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+                            <div class="h-4 w-16 rounded bg-gray-200 dark:bg-gray-800"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <!-- Skeleton Products -->
+            <div class="mt-10">
+                <div class="h-8 w-56 rounded-lg bg-gray-200 dark:bg-gray-800 mb-6"></div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    @for (_ of [1,2,3,4]; track $index) {
+                        <div class="rounded-2xl border border-gray-100 dark:border-gray-700 p-4 space-y-3">
+                            <div class="aspect-[4/3] rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+                            <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-800"></div>
+                            <div class="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-800"></div>
+                            <div class="h-10 w-full rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 }
 
-<!-- Carousel -->
-<div id="carousel" class="relative w-full mx-auto h-full" data-carousel="slide">
-    <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://neoberx.com/wp-content/uploads/2023/08/Service-Main-Banner-1920x576-2.jpg" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
+<!-- Hero Carousel -->
+<section class="px-4 pt-6 pb-2">
+    <div id="carousel" class="relative w-full mx-auto rounded-2xl overflow-hidden shadow-2xl dark:shadow-gray-900/60" data-carousel="slide">
+        <div class="relative h-64 md:h-[28rem] w-full">
+            @for (slide of [
+                { img: 'https://neoberx.com/wp-content/uploads/2023/08/Service-Main-Banner-1920x576-2.jpg', badge: 'New Arrivals', title: 'Discover the Latest Tech', desc: 'Explore cutting-edge electronics with exclusive deals up to 40% off.', link: '/search' },
+                { img: 'https://assets-global.website-files.com/5e0f6315ca8431ed8cb1cf73/5e1cf59a0bbd5b796d60f820_driftrock-facebook-carousel-ads.png', badge: 'Hot Deals', title: 'Unbeatable Prices', desc: 'Shop our curated selection of top-rated products at amazing prices.', link: '/search' },
+                { img: 'https://www.searchenginejournal.com/wp-content/uploads/2021/05/googles-top-products-carousels-seo-teardown-609a61dc7dd86.png', badge: 'Trending Now', title: 'Most Popular Picks', desc: 'See what everyone is buying. Trending products updated daily.', link: '/search' },
+                { img: 'https://static.vecteezy.com/system/resources/previews/011/871/820/non_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-vector.jpg', badge: 'Flash Sale', title: 'Shop on the Go', desc: 'Seamless mobile shopping experience with instant checkout.', link: '/search' },
+                { img: 'https://static.vecteezy.com/system/resources/previews/004/299/835/non_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-free-vector.jpg', badge: 'Exclusive', title: 'Members Only Deals', desc: 'Sign in to unlock special discounts and early access to new products.', link: '/search' }
+            ]; track $index) {
+                <div class="hidden duration-700 ease-in-out absolute inset-0 w-full h-full" data-carousel-item>
+                    <img [src]="slide.img" class="w-full h-full object-cover" alt="Banner {{ $index + 1 }}">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+                    <div class="absolute inset-0 flex flex-col justify-center px-8 md:px-16 max-w-2xl">
+                        <span class="text-xs md:text-sm font-semibold uppercase tracking-widest text-blue-300 mb-2">
+                            {{ slide.badge }}
+                        </span>
+                        <h2 class="text-2xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4 drop-shadow-lg">
+                            {{ slide.title }}
+                        </h2>
+                        <p class="text-sm md:text-base text-gray-200 mb-6 line-clamp-2">
+                            {{ slide.desc }}
+                        </p>
+                        <a [routerLink]="slide.link"
+                           class="inline-flex items-center gap-2 w-fit px-6 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg shadow-blue-600/30 transition-all hover:scale-105">
+                            Shop Now <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://assets-global.website-files.com/5e0f6315ca8431ed8cb1cf73/5e1cf59a0bbd5b796d60f820_driftrock-facebook-carousel-ads.png" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
-        </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://www.searchenginejournal.com/wp-content/uploads/2021/05/googles-top-products-carousels-seo-teardown-609a61dc7dd86.png" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
-        </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://static.vecteezy.com/system/resources/previews/011/871/820/non_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-vector.jpg" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
-        </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://static.vecteezy.com/system/resources/previews/004/299/835/non_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-free-vector.jpg" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
-        </div>
-    </div>
-    <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="true" aria-label="Slide 1" data-carousel-slide-to="0"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 2" data-carousel-slide-to="1"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 3" data-carousel-slide-to="2"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 4" data-carousel-slide-to="3"></button>
-        <button type="button" class="w-3 h-3 rounded-full" aria-current="false" aria-label="Slide 5" data-carousel-slide-to="4"></button>
-    </div>
-    <!-- Slider controls -->
-    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4" />
-            </svg>
-            <span class="sr-only">Previous</span>
-        </span>
-    </button>
-    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
-            </svg>
-            <span class="sr-only">Next</span>
-        </span>
-    </button>
-</div>
 
-<hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700" />
+        <!-- Indicators - Pill style -->
+        <div class="absolute z-30 flex -translate-x-1/2 bottom-4 left-1/2 space-x-1.5">
+            @for (_ of [1,2,3,4,5]; track $index) {
+                <button type="button"
+                    class="h-1 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/70 data-[active]:w-8 data-[active]:bg-white"
+                    [attr.data-carousel-slide-to]="$index"
+                    [attr.aria-label]="'Slide ' + ($index + 1)">
+                </button>
+            }
+        </div>
+
+        <!-- Nav Buttons -->
+        <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-2 md:px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/25 transition-all">
+                <svg class="w-5 h-5 rtl:rotate-180" fill="none" viewBox="0 0 6 10"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/></svg>
+            </span>
+        </button>
+        <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-2 md:px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/25 transition-all">
+                <svg class="w-5 h-5 rtl:rotate-180" fill="none" viewBox="0 0 6 10"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/></svg>
+            </span>
+        </button>
+    </div>
+</section>
+
+<hr class="my-8 border-gray-100 dark:border-gray-800" />
 
 <!-- Categories -->
-<div class="px-4">
-    <div>
-        <h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Categories</h2>
+<section class="px-4">
+    <div class="flex items-center gap-3 mb-8">
+        <div class="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-blue-700 rounded-full"></div>
+        <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Shop by Category</h2>
     </div>
-    <div class="grid sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-4 py-4">
+
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
         @for (cat of listCategories(); track cat.id) {
-            <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                <a [routerLink]="getLinkCategory(cat.name)">
-                    <img class="h-[165px] sm:h-[130px] md:h-[150px] lg:h-[165px] w-full rounded-lg"
-                        [src]="cat.imagePath" [alt]="cat.name">
-                    <span class="mb-2 text-base sm:text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        {{ cat.name }}
-                    </span>
-                </a>
-            </div>
+            <a [routerLink]="getLinkCategory(cat.name)"
+               class="group flex flex-col items-center gap-2.5 p-2 md:p-3 rounded-2xl bg-white dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700/60 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300">
+                <div class="w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 ring-1 ring-gray-100 dark:ring-gray-600 group-hover:ring-blue-200 dark:group-hover:ring-blue-700 transition-all">
+                    <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        [src]="cat.imagePath" [alt]="cat.name" loading="lazy">
+                </div>
+                <span class="text-xs md:text-sm font-semibold text-gray-600 dark:text-gray-300 text-center leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                    {{ cat.name }}
+                </span>
+            </a>
         }
     </div>
-</div>
+</section>
 
-<hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700" />
+<hr class="my-10 border-gray-100 dark:border-gray-800" />
 
-<div class="px-4">
-    <div class="flex justify-between">
-        <h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Product</h2>
+<!-- Promo Strip - Trust Signals -->
+<section class="px-4 my-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Free Shipping -->
+        <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-blue-100 dark:border-gray-700">
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shrink-0">
+                <i class="fa-solid fa-truck-fast text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">Free Shipping</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">On orders over $50</p>
+            </div>
+        </div>
+        <!-- Easy Returns -->
+        <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-green-50 dark:from-gray-800 dark:to-gray-800 border border-emerald-100 dark:border-gray-700">
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <i class="fa-solid fa-rotate-left text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">Easy Returns</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">30-day return policy</p>
+            </div>
+        </div>
+        <!-- Secure Payment -->
+        <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-800 border border-purple-100 dark:border-gray-700">
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 shrink-0">
+                <i class="fa-solid fa-shield-halved text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">Secure Payment</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">100% protected</p>
+            </div>
+        </div>
     </div>
-    <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4 py-4">
-        @for (product of listProduct(); track product.id) {
-            <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                <a [routerLink]="'/products/' + product.alias" class="h-[250px] md:h-[300px] lg:h-[350px]">
-                    <img class="h-[200px] md:h-[250px] lg:h-[300px] w-full rounded-lg"
-                        [src]="product.mainImagePath" [alt]="product.name">
-                </a>
-                <div class="px-5 pb-5">
-                    <a [routerLink]="'/products/' + product.alias" [title]="product.name" class="h-[80px]">
-                        <h5 class="sm:text-base md:text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ getShortName(product.name) }}</h5>
-                    </a>
-                    <div class="flex items-center mt-2.5 mb-5">
-                        <div class="flex items-center space-x-1 rtl:space-x-reverse">
-                            <svg class="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                                <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-                            </svg>
-                        </div>
-                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-3">{{ product.averageRating }}</span>
-                    </div>
-                    <div class="flex items-center justify-between sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                        @if (product.discountPercent > 0) {
-                            <div>
-                                <span>{{ settingService.formatMoney(product.discountPrice) }}</span>
-                                <span class="sm:text-sm md:text-base font-medium text-red-900">(-{{ product.discountPercent }}%)</span>
-                            </div>
-                        } @else {
-                            <div>
-                                <span>{{ settingService.formatMoney(product.price) }}</span>
-                            </div>
-                        }
+</section>
 
-                        <button type="button" (click)="cartService.addProductToCart(product.id, 1)"
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                            <i class="fa-solid fa-xl fa-cart-plus"></i>
-                        </button>
+<hr class="my-6 border-gray-100 dark:border-gray-800" />
+
+<!-- Products -->
+<section class="px-4 pb-12">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></div>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Featured Products</h2>
+        </div>
+        <a routerLink="/search" class="hidden sm:flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+            View all <i class="fa-solid fa-arrow-right text-xs"></i>
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+        @for (product of listProduct(); track product.id) {
+            <div class="group relative flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-2xl hover:shadow-blue-900/5 dark:hover:shadow-blue-900/20 transition-all duration-300 overflow-hidden">
+                
+                <!-- Image Container -->
+                <a [routerLink]="'/products/' + product.alias" 
+                    class="relative block aspect-[4/3] overflow-hidden bg-gray-50 dark:bg-gray-700/50">
+                    
+                    <img class="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-700 ease-out"
+                        [src]="product.mainImagePath" 
+                        [alt]="product.name" 
+                        loading="lazy">
+                    
+                    <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                        @if (product.discountPercent > 0) {
+                            <span class="px-2.5 py-1 text-xs font-bold text-white bg-red-500 rounded-lg shadow-sm">
+                                -{{ product.discountPercent }}%
+                            </span>
+                        }
+                    </div>
+
+                    <button 
+                        type="button"
+                        (click)="toggleWishlist($event, product.id)"
+                        class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-10"
+                        [class.!opacity-100]="wishlistService.isInWishlist(product.id)"
+                        [class.!translate-y-0]="wishlistService.isInWishlist(product.id)"
+                        [title]="wishlistService.isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
+                        <i class="fa-solid fa-heart text-base transition-colors duration-200"
+                        [class.text-red-500]="wishlistService.isInWishlist(product.id)"
+                        [class.text-gray-400]="!wishlistService.isInWishlist(product.id)">
+                        </i>
+                    </button>
+                </a>
+
+                <!-- Content Body -->
+                <div class="flex flex-col flex-grow p-4 md:p-5">
+                    <!-- Rating & Brand -->
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                            <span class="text-xs font-semibold text-gray-600 dark:text-gray-300">{{ product.averageRating }}</span>
+                        </div>
+                        @if (product.brand?.name) {
+                            <span class="text-[10px] uppercase tracking-wider font-medium text-gray-400 dark:text-gray-500">{{ product.brand.name }}</span>
+                        }
+                    </div>
+
+                    <!-- Title -->
+                    <a [routerLink]="'/products/' + product.alias" class="block mb-3 group/title">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-[3rem] leading-snug group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors">
+                            {{ product.name }}
+                        </h3>
+                    </a>
+
+                    <!-- Price & Actions -->
+                    <div class="mt-auto pt-3 border-t border-gray-50 dark:border-gray-700/50">
+                        <div class="flex items-end justify-between gap-2 mb-3">
+                            <div class="flex flex-col">
+                                @if (product.discountPercent > 0) {
+                                    <span class="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+                                        {{ settingService.formatMoney(product.discountPrice) }}
+                                    </span>
+                                    <span class="text-xs text-gray-400 line-through">
+                                        {{ settingService.formatMoney(product.price) }}
+                                    </span>
+                                } @else {
+                                    <span class="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+                                        {{ settingService.formatMoney(product.price) }}
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Action Row -->
+                        <div class="flex items-center gap-2">
+                            <!-- Mobile Wishlist Button -->
+                            <button 
+                                type="button"
+                                (click)="toggleWishlist($event, product.id)"
+                                class="sm:hidden flex items-center justify-center w-10 h-10 shrink-0 rounded-xl border transition-all duration-200"
+                                [class]="wishlistService.isInWishlist(product.id) 
+                                    ? 'border-red-200 bg-red-50 text-red-500 dark:bg-red-900/30 dark:border-red-800' 
+                                    : 'border-gray-200 text-gray-400 dark:border-gray-600 dark:bg-gray-700'"
+                                aria-label="Toggle wishlist">
+                                <i class="fa-solid fa-heart text-base"></i>
+                            </button>
+
+                            <!-- Add to Cart -->
+                            <button 
+                                type="button" 
+                                (click)="cartService.addProductToCart(product.id, 1)"
+                                class="flex-1 flex items-center justify-center gap-2 h-10 text-sm font-semibold text-white bg-gray-900 dark:bg-blue-600 rounded-xl hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-[0.98] transition-all duration-200 shadow-md shadow-gray-900/10 dark:shadow-blue-900/20">
+                                <i class="fa-solid fa-cart-plus text-sm"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         }
     </div>
-</div>
+
+    <!-- Mobile View All Link -->
+    <div class="mt-8 text-center sm:hidden">
+        <a routerLink="/search" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+            View All Products <i class="fa-solid fa-arrow-right text-xs"></i>
+        </a>
+    </div>
+</section>

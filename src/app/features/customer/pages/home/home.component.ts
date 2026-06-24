@@ -9,6 +9,7 @@ import { AuthService } from '../../../auth/services/auth-service/auth.service';
 import { CartService } from '../../services/cart/cart.service';
 import { CategoryService } from '../../services/category/category.service';
 import { ProductService } from '../../services/product/product.service';
+import { WishlistService } from '../../services/wishlist/wishlist.service';
 
 @Component({
     selector: 'app-home',
@@ -29,6 +30,7 @@ export class HomeComponent {
   public settingService = inject(GeneralSettingService);
   private router = inject(Router);
   private authState = inject(AuthStateService);
+  public wishlistService = inject(WishlistService);
 
   // State
   listCategories = signal<any[]>([]);
@@ -41,7 +43,7 @@ export class HomeComponent {
 
     forkJoin({
       categories: this.categoryService.getAllCategories(),
-      products: this.productService.getTopFifteenRatedProduct()
+      products: this.productService.getProductForHomePage()
     }).pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -92,6 +94,17 @@ export class HomeComponent {
   }
 
   // Helper
+  toggleWishlist(event: Event, productId: number) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.wishlistService.isInWishlist(productId)) {
+      this.wishlistService.removeFromWishlist(productId).subscribe();
+    } else {
+      this.wishlistService.addToWishlist(productId).subscribe();
+    }
+  }
+
   getLinkCategory(name: string): string {
     return 'categories/' + name.replace(/ /g, '-');
   }

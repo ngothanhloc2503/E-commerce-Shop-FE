@@ -14,9 +14,9 @@ export class ProductService {
     private httpClient: HttpClient,
   ) { }
 
-  getProductByCategoryName(categoryName: string, pageNum: number): Observable<any> {
+  getProductByCategoryName(categoryName: string, pageNum: number, pageSize: number): Observable<any> {
     return this.httpClient.get(BASE_URL + `/category/${categoryName}`, { 
-      params: { pageNum }
+      params: { pageNum, pageSize }
     })
   }
 
@@ -24,7 +24,7 @@ export class ProductService {
     return this.httpClient.get(BASE_URL + `/alias/${alias}`);
   }
 
-  getTopFifteenRatedProduct(): Observable<any> {
+  getProductForHomePage(): Observable<any> {
     return this.httpClient.get(BASE_URL + '/home');
   }
 }
